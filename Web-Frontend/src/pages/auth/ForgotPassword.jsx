@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
-import "../../assets/styles/login.css";
+import "../../assets/styles/forgetpassword.css";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -8,7 +8,7 @@ const ForgotPassword = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     toast.success(`Password reset link sent to ${email}`);
-    // call API to send reset link
+    // call API
   };
 
   return (
@@ -17,6 +17,7 @@ const ForgotPassword = () => {
       <div className="form-wrapper">
         <h2>Forgot Password?</h2>
         <p>Enter your email to receive password reset instructions.</p>
+
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <input
@@ -31,10 +32,13 @@ const ForgotPassword = () => {
           </div>
           <button type="submit">Send Reset Link</button>
         </form>
-        <div className="login-footer">
+
+        <div className="signin-link">
           Remembered your password? <a href="/login">Sign In</a>
         </div>
       </div>
+
+      {/* reuse same footer as login page; social icons added as placeholders */}
     </div>
   );
 };
