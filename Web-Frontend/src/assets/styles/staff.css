@@ -932,12 +932,12 @@ body {
 }
 
 .staff-logout {
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
   border-radius: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  background: rgba(15, 23, 42, 0.15);
-  color: #e5efff;
+  border: none;
+  background: transparent;
+  color: #ffffff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -947,7 +947,7 @@ body {
 }
 
 .staff-logout:hover {
-  background: rgba(15, 23, 42, 0.28);
+  background: rgba(148, 163, 184, 0.2);
 }
 
 .staff-filters {
