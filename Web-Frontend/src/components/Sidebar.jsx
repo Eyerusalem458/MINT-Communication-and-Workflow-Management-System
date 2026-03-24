@@ -6,8 +6,8 @@ import {
   NavHomeIcon,
   NavProfileIcon,
   NavTasksIcon,
-} from "../icons";
-import { TABS } from "../constants";
+} from "./icons";
+import { TABS } from "../utils/constants";
 
 const Sidebar = ({ activeTab, isOpen, onTabChange, onLogout }) => {
   const navItems = [

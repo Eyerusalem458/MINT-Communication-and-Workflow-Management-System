@@ -5,8 +5,8 @@ import {
   MoonIcon,
   SearchIcon,
   SunIcon,
-} from "../icons";
-import { TABS } from "../constants";
+} from "./icons";
+import { TABS } from "../utils/constants";
 
 const Topbar = ({
   pageTitle,

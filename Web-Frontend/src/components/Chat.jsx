@@ -1,4 +1,4 @@
-import { CameraIcon, MicIcon, SendIcon } from "../icons";
+import { CameraIcon, MicIcon, SendIcon } from "./icons";
 
 const Chat = () => {
   return (

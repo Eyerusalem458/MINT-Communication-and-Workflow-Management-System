@@ -2,16 +2,16 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import "../../assets/styles/staff.css";
-import { TABS, getPageTitle } from "./constants";
-import { mockActivity, mockNotifications, mockTasks } from "./data";
-import Sidebar from "./components/Sidebar";
-import Topbar from "./components/Topbar";
-import DashboardHome from "./components/DashboardHome";
-import MyTasks from "./components/MyTasks";
-import Chat from "./components/Chat";
-import NotificationsPage from "./components/NotificationsPage";
-import ActivityLog from "./components/ActivityLog";
-import ProfilePage from "./components/ProfilePage";
+import { TABS, getPageTitle } from "../../utils/constants";
+import { mockActivity, mockNotifications, mockTasks } from "../../utils/data";
+import Sidebar from "../../components/Sidebar";
+import Topbar from "../../components/Topbar";
+import DashboardHome from "../../components/DashboardHome";
+import MyTasks from "../../components/MyTasks";
+import Chat from "../../components/Chat";
+import NotificationsPage from "../../components/NotificationsPage";
+import ActivityLog from "../../components/ActivityLog";
+import ProfilePage from "../../components/ProfilePage";
 
 const StaffDashboard = () => {
   const { logout } = useContext(AuthContext);
