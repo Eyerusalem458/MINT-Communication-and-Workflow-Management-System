@@ -154,9 +154,19 @@
 
 .password-wrapper {
   position: relative;
+
 }
 /* Password rules*/
 .password-hint {
+  position: absolute;
+  bottom: -17px;
+  left: 0;
+  font-size: 12px;
+  color: red;
+  font-style: italic;
+  margin: 0;
+}
+.email-hint {
   position: absolute;
   bottom: 0px;
   left: 0;
@@ -168,6 +178,9 @@
 .password-hint p {
   margin: 2px 0;
 }
+.password-hint p {
+  margin: 2px 0;
+}
 .eye-icon {
   position: absolute;
   right: 10px;
@@ -175,7 +188,7 @@
   transform: translateY(-50%);
   cursor: pointer;
   color: #666;
-  z-index: 2;
+    z-index: 2;
 }
 
 .captcha-row {

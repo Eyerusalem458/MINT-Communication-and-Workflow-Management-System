@@ -164,7 +164,12 @@ export const LogoutIcon = () => (
       strokeLinecap="round"
       strokeLinejoin="round"
     />
-    <path d="M20 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    <path
+      d="M20 12H9"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
   </svg>
 );
 
@@ -176,7 +181,6 @@ export const NavHomeIcon = () => (
     />
   </svg>
 );
-
 export const NavTasksIcon = () => (
   <svg {...navIconProps}>
     <path
@@ -212,7 +216,12 @@ export const NavBellIcon = () => (
       d="M12 3.5a4.5 4.5 0 00-4.5 4.5V10c0 1.8-.8 3.4-2 4.5h13c-1.2-1.1-2-2.7-2-4.5V8A4.5 4.5 0 0012 3.5Z"
       fill="currentColor"
     />
-    <path d="M10 17a2 2 0 004 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    <path
+      d="M10 17a2 2 0 004 0"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
   </svg>
 );
 

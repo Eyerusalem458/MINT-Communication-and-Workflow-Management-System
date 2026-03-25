@@ -1,84 +1,143 @@
-import { useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext";
-import "../../assets/styles/staff.css";
-import { TABS, getPageTitle } from "./constants";
-import { mockActivity, mockNotifications, mockTasks } from "./data";
-import Sidebar from "./components/Sidebar";
-import Topbar from "./components/Topbar";
-import DashboardHome from "./components/DashboardHome";
-import MyTasks from "./components/MyTasks";
-import Chat from "./components/Chat";
-import NotificationsPage from "./components/NotificationsPage";
-import ActivityLog from "./components/ActivityLog";
-import ProfilePage from "./components/ProfilePage";
+import { mockTasks, mockNotifications } from "../../utils/data";
 
-const StaffDashboard = () => {
-  const { logout } = useContext(AuthContext);
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState(TABS.DASHBOARD);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
-  const [language, setLanguage] = useState(() => localStorage.getItem("lang") || "en");
+const Dashboard = () => {
+  const tasks = mockTasks;
+  const notifications = mockNotifications;
 
-  useEffect(() => {
-    localStorage.setItem("theme", theme);
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
-
-  useEffect(() => {
-    localStorage.setItem("lang", language);
-  }, [language]);
-
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
-
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    setIsSidebarOpen(false);
-  };
+  const totalTasks = tasks.length;
+  const completed = tasks.filter((t) => t.status === "Completed").length;
+  const inProgress = tasks.filter((t) => t.status === "In Progress").length;
+  const pending = tasks.filter((t) => t.status === "Pending").length;
 
   return (
-    <div className="staff-shell" data-theme={theme}>
-      <div
-        className={`staff-backdrop ${isSidebarOpen ? "staff-backdrop--open" : ""}`}
-        onClick={() => setIsSidebarOpen(false)}
-      />
+    <>
+      <div className="staff-welcome">
+        <h1 className="staff-welcome-title">Welcome, Staff Member</h1>
+        <p className="staff-welcome-subtitle">
+          Track your tasks, collaborate with your team, and keep projects moving
+          for MINT.
+        </p>
+      </div>
 
-      <Sidebar
-        activeTab={activeTab}
-        isOpen={isSidebarOpen}
-        onTabChange={handleTabChange}
-        onLogout={handleLogout}
-      />
+      <div className="staff-grid staff-grid--cols-3">
+        <div className="staff-card staff-card--metric">
+          <div className="staff-card-label">Assigned Tasks</div>
+          <div className="staff-card-value">{totalTasks}</div>
+          <div className="staff-card-caption">
+            Tasks assigned to you this period
+          </div>
+        </div>
+        <div className="staff-card staff-card--metric">
+          <div className="staff-card-label">In Progress</div>
+          <div className="staff-card-value staff-card-value--warning">
+            {inProgress}
+          </div>
+          <div className="staff-card-caption">
+            Stay focused on high-priority work
+          </div>
+        </div>
+        <div className="staff-card staff-card--metric">
+          <div className="staff-card-label">Completed</div>
+          <div className="staff-card-value staff-card-value--success">
+            {completed}
+          </div>
+          <div className="staff-card-caption">
+            Great progress towards MINT objectives
+          </div>
+        </div>
+      </div>
 
-      <main className="staff-main">
-        <Topbar
-          pageTitle={getPageTitle(activeTab)}
-          theme={theme}
-          onToggleSidebar={() => setIsSidebarOpen((v) => !v)}
-          onToggleTheme={() => setTheme((t) => (t === "light" ? "dark" : "light"))}
-          onToggleLanguage={() => setLanguage((l) => (l === "en" ? "am" : "en"))}
-          onOpenNotifications={setActiveTab}
-        />
+      <div className="staff-grid staff-grid--cols-2">
+        <div className="staff-card">
+          <div className="staff-card-header">
+            <h2>Task Completion Overview</h2>
+          </div>
+          <div className="staff-chart">
+            {[
+              {
+                label: "Completed",
+                value: completed,
+                cls: "staff-chart-bar-fill--success",
+              },
+              {
+                label: "In Progress",
+                value: inProgress,
+                cls: "staff-chart-bar-fill--warning",
+              },
+              {
+                label: "Pending",
+                value: pending,
+                cls: "staff-chart-bar-fill--muted",
+              },
+            ].map((row) => (
+              <div className="staff-chart-row" key={row.label}>
+                <span>{row.label}</span>
+                <div className="staff-chart-bar">
+                  <div
+                    className={`staff-chart-bar-fill ${row.cls}`}
+                    style={{
+                      width: totalTasks
+                        ? `${(row.value / totalTasks) * 100}%`
+                        : "0%",
+                    }}
+                  />
+                </div>
+                <span className="staff-chart-value">{row.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
 
-        <section className="staff-content">
-          {activeTab === TABS.DASHBOARD && (
-            <DashboardHome tasks={mockTasks} notifications={mockNotifications} />
-          )}
-          {activeTab === TABS.TASKS && <MyTasks tasks={mockTasks} />}
-          {activeTab === TABS.CHAT && <Chat />}
-          {activeTab === TABS.NOTIFICATIONS && (
-            <NotificationsPage notifications={mockNotifications} />
-          )}
-          {activeTab === TABS.ACTIVITY && <ActivityLog activity={mockActivity} />}
-          {activeTab === TABS.PROFILE && <ProfilePage />}
-        </section>
-      </main>
-    </div>
+        <div className="staff-card">
+          <div className="staff-card-header">
+            <h2>Deadline Alerts</h2>
+          </div>
+          <ul className="staff-list">
+            {tasks.map((task) => (
+              <li key={task.id} className="staff-list-item">
+                <div>
+                  <div className="staff-list-title">{task.title}</div>
+                  <div className="staff-list-meta">
+                    {task.project} · Due {task.due}
+                  </div>
+                </div>
+                <span
+                  className={`staff-badge staff-badge--${
+                    task.priority === "High"
+                      ? "danger"
+                      : task.priority === "Medium"
+                        ? "warning"
+                        : "muted"
+                  }`}
+                >
+                  {task.priority} priority
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <div className="staff-grid staff-grid--stack staff-profile-layout">
+        <div className="staff-card">
+          <div className="staff-card-header">
+            <h2>Recent Notifications</h2>
+          </div>
+          <ul className="staff-list">
+            {notifications.map((n) => (
+              <li key={n.id} className="staff-list-item">
+                <div>
+                  <div className="staff-list-title">{n.message}</div>
+                  <div className="staff-list-meta">{n.time}</div>
+                </div>
+                <span className="staff-badge staff-badge--muted">{n.type}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </>
   );
 };
 
-export default StaffDashboard;
+export default Dashboard;

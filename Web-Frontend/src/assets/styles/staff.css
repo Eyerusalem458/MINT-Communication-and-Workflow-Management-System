@@ -68,14 +68,16 @@ body {
   top: 0;
   left: 0;
   bottom: 0;
-  width: 280px;
+  width: 240px;
   transform: translateX(-110%);
   transition: transform 0.22s ease;
-  z-index: 50;
+  /* z-index: 50; */
+  z-index: 1000; /* below the hamburger */
 }
 
 .staff-sidebar--open {
   transform: translateX(0);
+   width: 240px;
 }
 
 .staff-sidebar__brand {
@@ -221,7 +223,7 @@ body {
   margin-bottom: 12px;
   width: 100%;
   min-width: 0;
-  padding-right: 8px;
+  padding:0 16px;
   box-sizing: border-box;
 }
 
@@ -300,6 +302,9 @@ body {
   width: 34px;
   height: 34px;
   flex-shrink: 0;
+   position: relative;
+  z-index: 1001; 
+  margin-top: 4px;
 }
 
 .staff-icon-btn:hover {

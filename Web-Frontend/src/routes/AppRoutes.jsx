@@ -9,7 +9,14 @@ import ResetPassword from "../pages/auth/ResetPassword";
 import ProtectedRoute from "../pages/auth/ProtectedRoute";
 
 import ManagerDashboard from "../pages/manager/Dashboard";
-import StaffDashboard from "../pages/staff/Dashboard";
+import Dashboard from "../pages/staff/Dashboard";
+import MyTasks from "../pages/staff/MyTasks";
+import Profile from "../pages/staff/Profile";
+import Chat from "../pages/staff/Chat";
+import Notifications from "../pages/shared/Notifications";
+import ActivityLog from "../pages/shared/ActivityLog";
+import NotFound from "../pages/shared/NotFound";
+import Layout from "../components/layout/layout";
 
 const AppRoutes = () => {
   return (
@@ -34,18 +41,27 @@ const AppRoutes = () => {
           }
         />
 
-        {/* Staff Dashboard */}
+        {/* Staff Routes with Layout */}
         <Route
-          path="/staff/dashboard"
+          path="/staff/"
           element={
             <ProtectedRoute role="staff">
-              <StaffDashboard />
+              <Layout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="tasks" element={<MyTasks />} />
+          <Route path="chat" element={<Chat />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="notifications" element={<Notifications />} />
+          <Route path="activity" element={<ActivityLog />} />
+          {/* Show NotFound for unknown nested staff routes */}
+          <Route path="*" element={<NotFound />} />
+        </Route>
 
-        {/* Unknown Routes */}
-        <Route path="*" element={<Navigate to="/" />} />
+        {/* Show NotFound for any other  unknown routes */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );
