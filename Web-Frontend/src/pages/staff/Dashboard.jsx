@@ -7,11 +7,11 @@ import { mockActivity, mockNotifications, mockTasks } from "../../utils/data";
 import Sidebar from "../../components/Sidebar";
 import Topbar from "../../components/Topbar";
 import DashboardHome from "../../components/DashboardHome";
-import MyTasks from "../../components/MyTasks";
-import Chat from "../../components/Chat";
+import MyTasks from "./MyTasks";
+import Chat from "./Chat";
 import NotificationsPage from "../../components/NotificationsPage";
 import ActivityLog from "../../components/ActivityLog";
-import ProfilePage from "../../components/ProfilePage";
+import ProfilePage from "./ProfilePage";
 
 const StaffDashboard = () => {
   const { logout } = useContext(AuthContext);
@@ -58,9 +58,10 @@ const StaffDashboard = () => {
         <Topbar
           pageTitle={getPageTitle(activeTab)}
           theme={theme}
+          language={language}
           onToggleSidebar={() => setIsSidebarOpen((v) => !v)}
           onToggleTheme={() => setTheme((t) => (t === "light" ? "dark" : "light"))}
-          onToggleLanguage={() => setLanguage((l) => (l === "en" ? "am" : "en"))}
+          onToggleLanguage={(lang) => setLanguage(lang || "en")}
           onOpenNotifications={setActiveTab}
         />
 

@@ -1,4 +1,10 @@
+import { showSuccessToast } from "../../utils/toast";
+import Button from "../../components/ui/Button";
+
 const ProfilePage = () => {
+  const onSave = () => showSuccessToast("Profile updated successfully");
+  const onPasswordChange = () => showSuccessToast("Password changed successfully");
+
   return (
     <div className="staff-card staff-card--full">
       <div className="staff-card-header">
@@ -36,7 +42,7 @@ const ProfilePage = () => {
               <input type="email" className="staff-input" placeholder="name@mint.gov" />
             </div>
             <div className="staff-form-actions">
-              <button className="staff-btn staff-btn--primary">Save changes</button>
+              <Button variant="primary" onClick={onSave}>Save changes</Button>
             </div>
           </form>
         </div>
@@ -65,7 +71,7 @@ const ProfilePage = () => {
               />
             </div>
             <div className="staff-form-actions">
-              <button className="staff-btn staff-btn--primary">Change password</button>
+              <Button variant="primary" onClick={onPasswordChange}>Change password</Button>
             </div>
           </form>
 

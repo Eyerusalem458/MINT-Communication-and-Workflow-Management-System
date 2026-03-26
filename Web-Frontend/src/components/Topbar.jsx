@@ -1,9 +1,9 @@
+import { useState } from "react";
 import {
   BellIcon,
   HamburgerIcon,
   LanguageIcon,
   MoonIcon,
-  SearchIcon,
   SunIcon,
 } from "./icons";
 import { TABS } from "../utils/constants";
@@ -11,21 +11,19 @@ import { TABS } from "../utils/constants";
 const Topbar = ({
   pageTitle,
   theme,
+  language,
   onToggleSidebar,
   onToggleTheme,
   onToggleLanguage,
   onOpenNotifications,
 }) => {
+  const [langOpen, setLangOpen] = useState(false);
+
   return (
     <header className="staff-topbar">
       <button className="staff-icon-btn" title="menu" type="button" onClick={onToggleSidebar}>
         <HamburgerIcon />
       </button>
-
-      <div className="staff-topbar-search">
-        <SearchIcon />
-        <input type="text" className="staff-topbar-search-input" placeholder="Search..." />
-      </div>
 
       <div className="staff-topbar-title">{pageTitle}</div>
 
@@ -48,9 +46,22 @@ const Topbar = ({
           {theme === "light" ? <MoonIcon /> : <SunIcon />}
         </button>
 
-        <button className="staff-icon-btn staff-lang" title="language" type="button" onClick={onToggleLanguage}>
-          <LanguageIcon />
-        </button>
+        <div style={{position: 'relative'}}>
+          <button
+            className="staff-icon-btn staff-lang"
+            title="language"
+            type="button"
+            onClick={() => setLangOpen((v) => !v)}
+          >
+            <LanguageIcon />
+          </button>
+          {langOpen && (
+            <div className="staff-lang-dropdown">
+              <button onClick={() => { onToggleLanguage("en"); setLangOpen(false); }} type="button">English</button>
+              <button onClick={() => { onToggleLanguage("am"); setLangOpen(false); }} type="button">Amharic</button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
