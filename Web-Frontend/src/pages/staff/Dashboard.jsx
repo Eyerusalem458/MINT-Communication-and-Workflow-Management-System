@@ -1,4 +1,4 @@
-import { mockTasks, mockNotifications } from "../../utils/data";
+import { mockNotifications, mockTasks } from "../../utils/data";
 
 const Dashboard = () => {
   const tasks = mockTasks;
@@ -27,6 +27,7 @@ const Dashboard = () => {
             Tasks assigned to you this period
           </div>
         </div>
+
         <div className="staff-card staff-card--metric">
           <div className="staff-card-label">In Progress</div>
           <div className="staff-card-value staff-card-value--warning">
@@ -36,6 +37,7 @@ const Dashboard = () => {
             Stay focused on high-priority work
           </div>
         </div>
+
         <div className="staff-card staff-card--metric">
           <div className="staff-card-label">Completed</div>
           <div className="staff-card-value staff-card-value--success">
@@ -52,6 +54,7 @@ const Dashboard = () => {
           <div className="staff-card-header">
             <h2>Task Completion Overview</h2>
           </div>
+
           <div className="staff-chart">
             {[
               {
@@ -92,6 +95,7 @@ const Dashboard = () => {
           <div className="staff-card-header">
             <h2>Deadline Alerts</h2>
           </div>
+
           <ul className="staff-list">
             {tasks.map((task) => (
               <li key={task.id} className="staff-list-item">
@@ -101,6 +105,7 @@ const Dashboard = () => {
                     {task.project} · Due {task.due}
                   </div>
                 </div>
+
                 <span
                   className={`staff-badge staff-badge--${
                     task.priority === "High"
@@ -123,6 +128,7 @@ const Dashboard = () => {
           <div className="staff-card-header">
             <h2>Recent Notifications</h2>
           </div>
+
           <ul className="staff-list">
             {notifications.map((n) => (
               <li key={n.id} className="staff-list-item">
@@ -130,6 +136,7 @@ const Dashboard = () => {
                   <div className="staff-list-title">{n.message}</div>
                   <div className="staff-list-meta">{n.time}</div>
                 </div>
+
                 <span className="staff-badge staff-badge--muted">{n.type}</span>
               </li>
             ))}
