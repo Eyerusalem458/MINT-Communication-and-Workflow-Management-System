@@ -1,12 +1,12 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   BellIcon,
   HamburgerIcon,
   LanguageIcon,
   MoonIcon,
-  SearchIcon,
   SunIcon,
 } from "../../pages/shared/icon";
-import { TABS } from "../../utils/constants";
 
 const Header = ({
   pageTitle,
@@ -16,61 +16,81 @@ const Header = ({
   onToggleLanguage,
   onOpenNotifications,
 }) => {
+  const [langOpen, setLangOpen] = useState(false);
+  const navigate = useNavigate();
+  
+ const handleNotificationsClick = () => {
+   onOpenNotifications(); // update active tab
+  //  navigate("/staff/notifications"); // navigate to notifications page
+ };
   return (
     <header className="staff-topbar">
-      {/* Hamburger button */}
       <button
         className="staff-icon-btn"
         title="menu"
         type="button"
         onClick={onToggleSidebar}
-        style={{ position: "relative", zIndex: 1000 }}
       >
         <HamburgerIcon />
       </button>
 
-      {/* Search bar */}
-      <div className="staff-topbar-search">
-        <SearchIcon />
-        <input
-          type="text"
-          className="staff-topbar-search-input"
-          placeholder="Search..."
-        />
-      </div>
-
-      {/* Page title */}
       <div className="staff-topbar-title">{pageTitle}</div>
 
-      {/* Action buttons */}
-
       <div className="staff-topbar-actions">
+        {/* Notifications */}
         <button
           className="staff-icon-btn"
           title="notifications"
           type="button"
-          onClick={() => onOpenNotifications(TABS.NOTIFICATIONS)}
+          onClick={handleNotificationsClick}
         >
           <BellIcon />
         </button>
 
+        {/* Theme toggle */}
         <button
           className="staff-icon-btn"
           title={theme === "light" ? "dark mode" : "light mode"}
           type="button"
-          onClick={onToggleTheme}
+          onClick={onToggleTheme} // ✅ calls Layout's theme
         >
           {theme === "light" ? <MoonIcon /> : <SunIcon />}
         </button>
 
-        <button
-          className="staff-icon-btn staff-lang"
-          title="language"
-          type="button"
-          onClick={onToggleLanguage}
-        >
-          <LanguageIcon />
-        </button>
+        {/* Language dropdown */}
+        <div style={{ position: "relative" }}>
+          <button
+            className="staff-icon-btn staff-lang"
+            title="language"
+            type="button"
+            onClick={() => setLangOpen((v) => !v)}
+          >
+            <LanguageIcon />
+          </button>
+
+          {langOpen && (
+            <div className="staff-lang-dropdown">
+              <button
+                onClick={() => {
+                  onToggleLanguage("en");
+                  setLangOpen(false);
+                }}
+                type="button"
+              >
+                English
+              </button>
+              <button
+                onClick={() => {
+                  onToggleLanguage("am");
+                  setLangOpen(false);
+                }}
+                type="button"
+              >
+                Amharic
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
