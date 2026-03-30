@@ -1,8 +1,15 @@
-const Profile = () => {
+import { showSuccessToast } from "../../utils/toast";
+import Button from "../../components/ui/Button";
+
+const ProfilePage = () => {
+  const onSave = () => showSuccessToast("Profile updated successfully");
+  const onPasswordChange = () =>
+    showSuccessToast("Password changed successfully");
+
   return (
     <div className="staff-card staff-card--full">
       <div className="staff-card-header">
-        <h2>Profile</h2>
+
         <p className="staff-card-subtitle">
           Update your personal information and account security.
         </p>
@@ -55,9 +62,9 @@ const Profile = () => {
               />
             </div>
             <div className="staff-form-actions">
-              <button className="staff-btn staff-btn--primary">
+              <Button variant="primary" onClick={onSave}>
                 Save changes
-              </button>
+              </Button>
             </div>
           </form>
         </div>
@@ -90,9 +97,9 @@ const Profile = () => {
               />
             </div>
             <div className="staff-form-actions">
-              <button className="staff-btn staff-btn--primary">
+              <Button variant="primary" onClick={onPasswordChange}>
                 Change password
-              </button>
+              </Button>
             </div>
           </form>
 
@@ -109,4 +116,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default ProfilePage;
