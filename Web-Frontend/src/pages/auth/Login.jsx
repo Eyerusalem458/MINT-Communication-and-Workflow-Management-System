@@ -8,7 +8,7 @@ import { FaEnvelope, FaLock, FaFacebookF } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 
 import "../../assets/styles/Login.css";
-import { showSuccess, showError } from "../../utils/toast";
+import { showSuccessToast, showErrorToast } from "../../utils/toast";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -20,12 +20,12 @@ export default function Login() {
 
   const handleSignIn = (e) => {
     e.preventDefault();
-    showSuccess("Login successfully!");
+    showSuccessToast("Login successfully!");
   };
 
   // Simulate Google login (frontend-only)
   const handleGoogleLogin = () => {
-    showSuccess("Google login successfully!", () => {
+    showSuccessToast("Google login successfully!", () => {
       // below is replaced later just for testing navigation
       navigate("/staff/dashboard");
     });
@@ -33,7 +33,7 @@ export default function Login() {
 
   // Simulate Facebook login (frontend-only)
   const handleFacebookLogin = () => {
-    showSuccess("Facebook login successful!", () => {
+    showSuccessToast("Facebook login successful!", () => {
       // below is replaced later just for testing navigation
       navigate("/staff/dashboard");
     });
