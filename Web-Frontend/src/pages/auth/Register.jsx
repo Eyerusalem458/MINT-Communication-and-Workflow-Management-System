@@ -14,7 +14,7 @@ import {
   checkEmailRules,
   getEmailMessage,
 } from "../../utils/validators";
-import { showSuccess, showError } from "../../utils/toast";
+import { showSuccessToast, showErrorToast } from "../../utils/toast";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -74,24 +74,24 @@ export default function Register() {
 
     // email validation
     if (!isEmailValid(formData.email)) {
-      showError("Please enter a valid email!");
+      showErrorToast("Please enter a valid email!");
       return;
     }
 
     // password validation
     if (!rules.length || !rules.uppercase || !rules.number || !rules.symbol) {
-      showError("Password does not meet requirements");
+      showErrorToast("Password does not meet requirements");
       return;
     }
 
     // confirm password
     if (formData.password !== formData.confirmPassword) {
-      showError("Passwords do not match!");
+      showErrorToast("Passwords do not match!");
       return;
     }
 
     // Success
-    showSuccess("Account Created Successfully!", () => navigate("/login"));
+    showSuccessToast("Account Created Successfully!", () => navigate("/login"));
   };
   // State for modal
   const [modalOpen, setModalOpen] = useState(false);
