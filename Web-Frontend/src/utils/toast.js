@@ -1,28 +1,45 @@
-// utils/toast.js
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
-// Success notification
-export const showSuccess = (message, onClose = null) => {
+export const showSuccessToast = (message) => {
   toast.success(message, {
     position: "top-right",
-    autoClose: 2000,
-    onClose: onClose,
+    autoClose: 3000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
   });
 };
 
-// Error notification
-export const showError = (message) => {
+export const showErrorToast = (message) => {
   toast.error(message, {
     position: "top-right",
-    autoClose: 2000,
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
   });
 };
 
-// Info notification (optional)
-export const showInfo = (message) => {
+export const showInfoToast = (message) => {
   toast.info(message, {
     position: "top-right",
-    autoClose: 2000,
+    autoClose: 3000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+  });
+};
+
+export const showWarningToast = (message) => {
+  toast.warning(message, {
+    position: "top-right",
+    autoClose: 4000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
   });
 };
