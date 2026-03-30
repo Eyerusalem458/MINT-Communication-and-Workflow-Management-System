@@ -1,17 +1,22 @@
+import { useOutletContext } from "react-router-dom";
 import { mockActivity } from "../../utils/data";
+
 const ActivityLog = () => {
-  const activity = mockActivity;
+  // Try to get activity from Outlet context, fallback to mockActivity
+  const { activity } = useOutletContext() || {};
+  const activityList = activity || mockActivity;
+
   return (
     <div className="staff-card staff-card--full">
       <div className="staff-card-header">
-        <h2>Activity Log</h2>
+       
         <p className="staff-card-subtitle">
           Audit trail of your recent actions in the system.
         </p>
       </div>
 
       <ul className="staff-timeline">
-        {activity.map((item) => (
+        {activityList.map((item) => (
           <li key={item.id} className="staff-timeline-item">
             <div className="staff-timeline-dot" />
             <div className="staff-timeline-content">
