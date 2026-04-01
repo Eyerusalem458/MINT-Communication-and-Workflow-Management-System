@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useMemo } from "react";
 import Button from "../../components/ui/Button";
 import { showSuccessToast } from "../../utils/toast";
 import { useProjects } from "../../context/ProjectContext";
@@ -14,6 +14,18 @@ const MyProjects = () => {
     description: "",
     file: null,
   });
+
+  // 🔥 SEARCH STATE
+  const [query, setQuery] = useState("");
+
+  // 🔥 FILTERED PROJECTS
+  const filteredProjects = useMemo(() => {
+    return projects.filter(
+      (project) =>
+        project.title.toLowerCase().includes(query.toLowerCase()) ||
+        project.description.toLowerCase().includes(query.toLowerCase()),
+    );
+  }, [query, projects]);
 
   // Open create modal
   const handleNewProject = () => {
@@ -90,6 +102,17 @@ const MyProjects = () => {
         </Button>
       </div>
 
+      {/* 🔥 SEARCH BAR */}
+      <div className="staff-search-wrapper">
+        <input
+          type="search"
+          className="staff-input"
+          placeholder="Search projects..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+      </div>
+
       <div className="staff-table-scroll">
         <table className="staff-table">
           <thead>
@@ -104,7 +127,7 @@ const MyProjects = () => {
           </thead>
 
           <tbody>
-            {projects.map((project) => (
+            {filteredProjects.map((project) => (
               <tr key={project.id}>
                 <td>{project.title}</td>
                 <td>{project.description}</td>
@@ -212,6 +235,6 @@ const MyProjects = () => {
       )}
     </div>
   );
-};
+};;;
 
 export default MyProjects;
