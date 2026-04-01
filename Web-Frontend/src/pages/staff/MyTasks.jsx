@@ -1,10 +1,11 @@
 import { useMemo, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+
 import Button from "../../components/ui/Button";
 import { showSuccessToast } from "../../utils/toast";
 import { useTasks } from "../../context/TaskContext";
 
-const MyTasks = ({ tasks }) => {
+const MyTasks = () => {
   const navigate = useNavigate();
 
   const { tasks, updateTaskStatus } = useTasks();
@@ -14,7 +15,6 @@ const MyTasks = ({ tasks }) => {
   const [query, setQuery] = useState("");
   const [selectedTask, setSelectedTask] = useState(null);
   const [openModal, setOpenModal] = useState(false);
-  // const [showScrollTop, setShowScrollTop] = useState(false);
 
   const filteredTasks = useMemo(() => {
     return tasks.filter(

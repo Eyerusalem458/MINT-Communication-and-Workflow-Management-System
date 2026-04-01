@@ -84,7 +84,7 @@ const AppRoutes = () => {
           <Route path="projects" element={<MyProjects />} />
           <Route path="chat" element={<StaffChat />} />
           <Route path="profile" element={<Profile />} />
-          <Route path="status" element={<Status />} />
+         
           {/* shared pages for staff */}
           <Route path="notifications" element={<Notifications />} />
           <Route path="activity" element={<ActivityLog />} />
