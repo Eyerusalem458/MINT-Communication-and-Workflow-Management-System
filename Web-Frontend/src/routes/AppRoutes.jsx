@@ -1,15 +1,41 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import SplashScreen from "../pages/SplashScreen";
-
+// Auth Pages
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import ResetPassword from "../pages/auth/ResetPassword";
 import ProtectedRoute from "../pages/auth/ProtectedRoute";
-
+// manager Pages
 import ManagerDashboard from "../pages/manager/Dashboard";
-import StaffDashboard from "../pages/staff/Dashboard";
+import StaffManagement from "../pages/manager/StaffManagement";
+import TaskManagement from "../pages/manager/TaskManagement";
+import Reports from "../pages/manager/Reports";
+import Settings from "../pages/manager/Settings";
+import ProjectRequest from "../pages/manager/ProjectRequests";
+import ManagerChat from "../pages/manager/Chat";
+
+//staff pages
+import Dashboard from "../pages/staff/Dashboard";
+import MyTasks from "../pages/staff/MyTasks";
+import Profile from "../pages/staff/Profile";
+import StaffChat from "../pages/staff/Chat";
+import MyProjects from "../pages/staff/MyProjects";
+import Status from"../pages/staff/Status";
+
+// Admin pages
+import AdminDashboard from "../pages/Admin/Dashboard";
+import UserManagement from "../pages/Admin/UserManagement";
+import CreateUser from "../pages/Admin/CreateUser";
+import AdminChat from "../pages/Admin/Chat";
+import AdminSettings from "../pages/Admin/Settings";
+
+// shared pages
+import Notifications from "../pages/shared/Notifications";
+import ActivityLog from "../pages/shared/ActivityLog";
+import NotFound from "../pages/shared/NotFound";
+import Layout from "../components/layout/layout";
 
 const AppRoutes = () => {
   return (
@@ -26,26 +52,71 @@ const AppRoutes = () => {
 
         {/* Manager Dashboard */}
         <Route
-          path="/manager/dashboard"
+          path="/manager"
           element={
             <ProtectedRoute role="manager">
-              <ManagerDashboard />
+              <Layout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route path="dashboard" element={<ManagerDashboard />} />
+          <Route path="staffManagement" element={<StaffManagement />} />
+          <Route path="taskManagement" element={<TaskManagement />} />
+          <Route path="chat" element={<ManagerChat />} />
+          <Route path="reports" element={<Reports />} />
+          <Route path="projectRequests" element={<ProjectRequest />} />
+          <Route path="settings" element={<Settings />} />
+          {/* Shared pages for manager */}
+          <Route path="notifications" element={<Notifications />} />
+          <Route path="activity" element={<ActivityLog />} />
+        </Route>
 
-        {/* Staff Dashboard */}
+        {/* Staff Routes with Layout */}
         <Route
-          path="/staff/dashboard"
+          path="/staff/"
           element={
             <ProtectedRoute role="staff">
-              <StaffDashboard />
+              <Layout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="tasks" element={<MyTasks />} />
+          <Route path="projects" element={<MyProjects />} />
+          <Route path="chat" element={<StaffChat />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="status" element={<Status />} />
+          {/* shared pages for staff */}
+          <Route path="notifications" element={<Notifications />} />
+          <Route path="activity" element={<ActivityLog />} />
+          {/* Show NotFound for unknown nested staff routes */}
+          <Route path="*" element={<NotFound />} />
+        </Route>
 
-        {/* Unknown Routes */}
-        <Route path="*" element={<Navigate to="/" />} />
+        {/* Admin Routes with Layout */}
+        <Route
+          path="/admin/"
+          element={
+            <ProtectedRoute role="admin">
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="users" element={<UserManagement />} />
+          <Route path="create-user" element={<CreateUser />} />
+          <Route path="chat" element={<AdminChat />} />
+          <Route path="settings" element={<AdminSettings />} />
+          {/* Shared pages for admin */}
+          <Route path="notifications" element={<Notifications />} />
+          <Route path="activity" element={<ActivityLog />} />
+
+          {/* Show NotFound for unknown nested admin routes */}
+          <Route path="*" element={<NotFound />} />
+        </Route>
+
+        {/* Show NotFound for any other  unknown routes */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );
