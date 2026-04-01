@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import "../../assets/styles/staff.css";
-import { TABS, getPageTitle } from "../../utils/constants";
+import { TABS, getPageTitle } from "../../utils/Constants/constants";
 import { mockActivity, mockNotifications, mockTasks } from "../../utils/data";
 import Sidebar from "../../components/Sidebar";
 import Topbar from "../../components/Topbar";
@@ -18,8 +18,12 @@ const StaffDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(TABS.DASHBOARD);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
-  const [language, setLanguage] = useState(() => localStorage.getItem("lang") || "en");
+  const [theme, setTheme] = useState(
+    () => localStorage.getItem("theme") || "light",
+  );
+  const [language, setLanguage] = useState(
+    () => localStorage.getItem("lang") || "en",
+  );
 
   useEffect(() => {
     localStorage.setItem("theme", theme);
@@ -60,21 +64,28 @@ const StaffDashboard = () => {
           theme={theme}
           language={language}
           onToggleSidebar={() => setIsSidebarOpen((v) => !v)}
-          onToggleTheme={() => setTheme((t) => (t === "light" ? "dark" : "light"))}
+          onToggleTheme={() =>
+            setTheme((t) => (t === "light" ? "dark" : "light"))
+          }
           onToggleLanguage={(lang) => setLanguage(lang || "en")}
           onOpenNotifications={setActiveTab}
         />
 
         <section className="staff-content">
           {activeTab === TABS.DASHBOARD && (
-            <DashboardHome tasks={mockTasks} notifications={mockNotifications} />
+            <DashboardHome
+              tasks={mockTasks}
+              notifications={mockNotifications}
+            />
           )}
           {activeTab === TABS.TASKS && <MyTasks tasks={mockTasks} />}
           {activeTab === TABS.CHAT && <Chat />}
           {activeTab === TABS.NOTIFICATIONS && (
             <NotificationsPage notifications={mockNotifications} />
           )}
-          {activeTab === TABS.ACTIVITY && <ActivityLog activity={mockActivity} />}
+          {activeTab === TABS.ACTIVITY && (
+            <ActivityLog activity={mockActivity} />
+          )}
           {activeTab === TABS.PROFILE && <ProfilePage />}
         </section>
       </main>

@@ -7,7 +7,7 @@ import {
   NavProfileIcon,
   NavTasksIcon,
 } from "./icons";
-import { TABS } from "../utils/constants";
+import { TABS } from "../utils/Constants/constants";
 
 const Sidebar = ({ activeTab, isOpen, onTabChange, onLogout }) => {
   const navItems = [
@@ -49,7 +49,12 @@ const Sidebar = ({ activeTab, isOpen, onTabChange, onLogout }) => {
       </nav>
 
       <div className="staff-sidebar__footer">
-        <button className="staff-logout" title="logout" type="button" onClick={onLogout}>
+        <button
+          className="staff-logout"
+          title="logout"
+          type="button"
+          onClick={onLogout}
+        >
           <LogoutIcon />
         </button>
         <div className="staff-sidebar__meta-block">

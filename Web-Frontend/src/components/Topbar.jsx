@@ -6,7 +6,7 @@ import {
   MoonIcon,
   SunIcon,
 } from "./icons";
-import { TABS } from "../utils/constants";
+import { TABS } from "../utils/Constants/constants";
 
 const Topbar = ({
   pageTitle,
@@ -21,7 +21,12 @@ const Topbar = ({
 
   return (
     <header className="staff-topbar">
-      <button className="staff-icon-btn" title="menu" type="button" onClick={onToggleSidebar}>
+      <button
+        className="staff-icon-btn"
+        title="menu"
+        type="button"
+        onClick={onToggleSidebar}
+      >
         <HamburgerIcon />
       </button>
 
@@ -46,7 +51,7 @@ const Topbar = ({
           {theme === "light" ? <MoonIcon /> : <SunIcon />}
         </button>
 
-        <div style={{position: 'relative'}}>
+        <div style={{ position: "relative" }}>
           <button
             className="staff-icon-btn staff-lang"
             title="language"
@@ -57,8 +62,24 @@ const Topbar = ({
           </button>
           {langOpen && (
             <div className="staff-lang-dropdown">
-              <button onClick={() => { onToggleLanguage("en"); setLangOpen(false); }} type="button">English</button>
-              <button onClick={() => { onToggleLanguage("am"); setLangOpen(false); }} type="button">Amharic</button>
+              <button
+                onClick={() => {
+                  onToggleLanguage("en");
+                  setLangOpen(false);
+                }}
+                type="button"
+              >
+                English
+              </button>
+              <button
+                onClick={() => {
+                  onToggleLanguage("am");
+                  setLangOpen(false);
+                }}
+                type="button"
+              >
+                Amharic
+              </button>
             </div>
           )}
         </div>
