@@ -9,6 +9,7 @@ const ActivityLog = () => {
   return (
     <div className="staff-card staff-card--full">
       <div className="staff-card-header">
+       
         <p className="staff-card-subtitle">
           Audit trail of your recent actions in the system.
         </p>

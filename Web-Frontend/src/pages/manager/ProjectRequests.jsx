@@ -1,7 +1,9 @@
-import React from "react";
+import React from 'react'
 
 function ProjectRequests() {
-  return <div>Welcome ProjectRequests</div>;
+  return (
+    <div>Welcome ProjectRequests</div>
+  )
 }
 
-export default ProjectRequests;
+export default ProjectRequests

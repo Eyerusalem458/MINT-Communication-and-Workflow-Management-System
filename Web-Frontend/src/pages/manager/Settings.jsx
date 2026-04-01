@@ -1,9 +1,7 @@
-import React from 'react'
+import React from "react";
 
 function Settings() {
-  return (
-    <div>Welcome Settings</div>
-  )
+  return <div>Welcome Settings</div>;
 }
 
-export default Settings
+export default Settings;
