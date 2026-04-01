@@ -1,77 +1,78 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import Button from "../../components/ui/Button";
 import { showSuccessToast } from "../../utils/toast";
+import { useTasks } from "../../context/TaskContext";
 
 const MyTasks = ({ tasks }) => {
+  const navigate = useNavigate();
+
+  const { tasks, updateTaskStatus } = useTasks();
+  const [files, setFiles] = useState({});
+  const fileInputRefs = useRef({});
+
   const [query, setQuery] = useState("");
   const [selectedTask, setSelectedTask] = useState(null);
   const [openModal, setOpenModal] = useState(false);
-  const [showScrollTop, setShowScrollTop] = useState(false);
-
-  const fallbackTasks = Array.from({ length: 26 }, (_, i) => ({
-    id: i + 1,
-    title: `Task ${i + 1}`,
-    project: `Project ${((i % 4) + 1)}`,
-    due: `2025-12-${((i % 20) + 1).toString().padStart(2, "0")}`,
-    status: ["Pending", "In Progress", "Completed"][i % 3],
-    description: `This is a description for Task ${i + 1}. It shows extended details in the popup.`,
-  }));
-
-  const renderedTasks = (tasks && tasks.length > 0) ? tasks : fallbackTasks;
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const tableWrapper = document.querySelector('.staff-table-wrapper');
-      if (tableWrapper) {
-        setShowScrollTop(tableWrapper.scrollTop > 200);
-      }
-    };
-
-    const tableWrapper = document.querySelector('.staff-table-wrapper');
-    if (tableWrapper) {
-      tableWrapper.addEventListener('scroll', handleScroll);
-      return () => tableWrapper.removeEventListener('scroll', handleScroll);
-    }
-  }, []);
-
-  const scrollToTop = () => {
-    const tableWrapper = document.querySelector('.staff-table-wrapper');
-    if (tableWrapper) {
-      tableWrapper.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
+  // const [showScrollTop, setShowScrollTop] = useState(false);
 
   const filteredTasks = useMemo(() => {
-    return renderedTasks.filter((task) =>
-      task.title.toLowerCase().includes(query.toLowerCase()) ||
-      task.project.toLowerCase().includes(query.toLowerCase())
+    return tasks.filter(
+      (task) =>
+        task.title.toLowerCase().includes(query.toLowerCase()) ||
+        task.project.toLowerCase().includes(query.toLowerCase()),
     );
-  }, [query, renderedTasks]);
+  }, [query, tasks]);
 
   const openTask = (task) => {
     setSelectedTask(task);
     setOpenModal(true);
   };
 
-  const submitTask = (task) => {
-    showSuccessToast(`Submitted work for ${task.title}`);
+  // handle file change
+  const handleFileChange = (taskId, file) => {
+    setFiles((prev) => ({
+      ...prev,
+      [taskId]: file,
+    }));
+  };
+
+  // 🔥 trigger file input
+  const handleFileClick = (taskId) => {
+    fileInputRefs.current[taskId]?.click();
+  };
+
+  // ✅ STATUS BADGE
+  const getStatusClass = (status) => {
+    switch (status) {
+      case "Pending":
+        return "status-badge pending";
+      case "In Progress":
+        return "status-badge in-progress";
+      case "Approved":
+        return "status-badge approved";
+      case "Completed":
+        return "status-badge completed";
+      default:
+        return "status-badge";
+    }
   };
 
   return (
     <div className="staff-card staff-card--full">
       <div className="staff-card-header staff-card-header--with-actions">
-        <div>
-          <h2>My Tasks</h2>
-          <p className="staff-card-subtitle">
-            View assigned tasks, upload work files, and update your progress.
-          </p>
-        </div>
-        <div className="staff-header-actions">
-          <Button variant="primary" onClick={() => showSuccessToast("New task created")}>New Task</Button>
-          <Button variant="ghost" onClick={() => showSuccessToast("Message sent to manager")}>Message manager</Button>
-        </div>
-      </div>
+        <p className="staff-card-subtitle">
+          View assigned tasks, upload work files, and update your progress.
+        </p>
 
+        <Button
+          variant="ghost"
+          // onClick={() => showSuccessToast("Message sent to manager")}
+          onClick={() => navigate("/staff/chat")}
+        >
+          Message manager
+        </Button>
+      </div>
       <div className="staff-search-wrapper">
         <input
           type="search"
@@ -81,8 +82,7 @@ const MyTasks = ({ tasks }) => {
           onChange={(e) => setQuery(e.target.value)}
         />
       </div>
-
-      <div className="staff-table-wrapper staff-table-scroll">
+      <div className="staff-table-scroll">
         <table className="staff-table">
           <thead>
             <tr>
@@ -94,50 +94,144 @@ const MyTasks = ({ tasks }) => {
               <th>Actions</th>
             </tr>
           </thead>
+
           <tbody>
             {filteredTasks.map((task) => (
               <tr key={task.id}>
-                <td>
-                  <div className="staff-table-title" onClick={() => openTask(task)} style={{ cursor: "pointer" }}>{task.title}</div>
+                <td
+                  className="staff-table-title"
+                  onClick={() => openTask(task)}
+                  style={{ cursor: "pointer" }}
+                >
+                  {task.title}
                 </td>
+
                 <td>{task.project}</td>
                 <td>{task.due}</td>
+
+                {/* ✅ STATUS BADGE ONLY */}
                 <td>
-                  <select className="staff-select" defaultValue={task.status}>
-                    <option>Pending</option>
-                    <option>In Progress</option>
-                    <option>Completed</option>
-                  </select>
+                  <span className={getStatusClass(task.status)}>
+                    {task.status}
+                  </span>
+
+                  {/* 🔥 SHOW MANAGER COMMENT */}
+                  {task.comment && (
+                    <div
+                      style={{
+                        marginTop: "5px",
+                        fontSize: "12px",
+                        color: "#555",
+                      }}
+                    >
+                      💬 {task.comment}
+                    </div>
+                  )}
                 </td>
+
+                {/* 🔥 FILE UPLOAD FIXED */}
                 <td>
-                  <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); }}>Upload</Button>
+                  <div className="file-upload-wrapper">
+                    <input
+                      type="file"
+                      ref={(el) => (fileInputRefs.current[task.id] = el)}
+                      style={{ display: "none" }}
+                      onChange={(e) =>
+                        handleFileChange(task.id, e.target.files[0])
+                      }
+                    />
+
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      onClick={() => handleFileClick(task.id)}
+                    >
+                      📎 Choose File
+                    </Button>
+
+                    {files[task.id] && (
+                      <div className="file-name">{files[task.id].name}</div>
+                    )}
+                  </div>
                 </td>
+
                 <td>
                   <div className="staff-table-actions">
-                    <Button size="xs" variant="ghost" onClick={(e) => { e.stopPropagation(); showSuccessToast(`${task.title} marked completed`); }}>Mark completed</Button>
-                    <Button size="xs" variant="primary" onClick={(e) => { e.stopPropagation(); submitTask(task); }}>Submit work</Button>
+                    <Button
+                      size="xs"
+                      variant="primary"
+                      onClick={() => {
+                        updateTaskStatus(task.id, "In Progress");
+                        showSuccessToast(`Submitted ${task.title}`);
+                      }}
+                    >
+                      Submit work
+                    </Button>
+
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      onClick={() => {
+                        if (task.status !== "Approved") {
+                          showSuccessToast("Task must be approved first");
+                          return;
+                        }
+
+                        updateTaskStatus(task.id, "Completed");
+                        showSuccessToast(`${task.title} marked completed`);
+                      }}
+                    >
+                      Mark completed
+                    </Button>
+
+                    {task.status === "Rejected" && (
+                      <Button
+                        size="xs"
+                        variant="secondary"
+                        onClick={() => {
+                          updateTaskStatus(task.id, "In Progress");
+                          showSuccessToast(`Resubmitted ${task.title}`);
+                        }}
+                      >
+                        Resubmit
+                      </Button>
+                    )}
                   </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        {showScrollTop && (
-          <button className="staff-scroll-top" onClick={scrollToTop} title="Scroll to top">
-            ↑
-          </button>
-        )}
       </div>
 
       {openModal && selectedTask && (
-        <div className="staff-modal-backdrop" onClick={() => setOpenModal(false)}>
+        <div
+          className="staff-modal-backdrop"
+          onClick={() => setOpenModal(false)}
+        >
           <div className="staff-modal" onClick={(e) => e.stopPropagation()}>
             <h3>{selectedTask.title}</h3>
-            <p><strong>Project:</strong> {selectedTask.project}</p>
-            <p><strong>Due:</strong> {selectedTask.due}</p>
-            <p><strong>Status:</strong> {selectedTask.status}</p>
+
+            <p>
+              <strong>Project:</strong> {selectedTask.project}
+            </p>
+
+            <p>
+              <strong>Due:</strong> {selectedTask.due}
+            </p>
+
+            <p>
+              <strong>Status:</strong>{" "}
+              <span className={getStatusClass(selectedTask.status)}>
+                {selectedTask.status}
+              </span>
+            </p>
+
             <p>{selectedTask.description || "No description available."}</p>
-            <Button variant="primary" onClick={() => setOpenModal(false)}>Close</Button>
+
+            <Button variant="primary" onClick={() => setOpenModal(false)}>
+              Close
+            </Button>
           </div>
         </div>
       )}
