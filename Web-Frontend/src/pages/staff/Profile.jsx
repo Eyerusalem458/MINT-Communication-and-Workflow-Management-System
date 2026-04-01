@@ -3,12 +3,12 @@ import Button from "../../components/ui/Button";
 
 const ProfilePage = () => {
   const onSave = () => showSuccessToast("Profile updated successfully");
-  const onPasswordChange = () => showSuccessToast("Password changed successfully");
+  const onPasswordChange = () =>
+    showSuccessToast("Password changed successfully");
 
   return (
     <div className="staff-card staff-card--full">
       <div className="staff-card-header">
-        <h2>Profile</h2>
         <p className="staff-card-subtitle">
           Update your personal information and account security.
         </p>
@@ -24,25 +24,46 @@ const ProfilePage = () => {
               <span>Upload new picture</span>
             </label>
           </div>
-          <form className="staff-form-grid" onSubmit={(e) => e.preventDefault()}>
+          <form
+            className="staff-form-grid"
+            onSubmit={(e) => e.preventDefault()}
+          >
             <div className="staff-form-field">
               <label>Full name</label>
-              <input type="text" className="staff-input" placeholder="Enter your full name" />
+              <input
+                type="text"
+                className="staff-input"
+                placeholder="Enter your full name"
+              />
             </div>
             <div className="staff-form-field">
               <label>Position</label>
-              <input type="text" className="staff-input" placeholder="e.g. Innovation Officer" />
+              <input
+                type="text"
+                className="staff-input"
+                placeholder="e.g. Innovation Officer"
+              />
             </div>
             <div className="staff-form-field">
               <label>Department</label>
-              <input type="text" className="staff-input" placeholder="e.g. Digital Transformation" />
+              <input
+                type="text"
+                className="staff-input"
+                placeholder="e.g. Digital Transformation"
+              />
             </div>
             <div className="staff-form-field">
               <label>Work email</label>
-              <input type="email" className="staff-input" placeholder="name@mint.gov" />
+              <input
+                type="email"
+                className="staff-input"
+                placeholder="name@mint.gov"
+              />
             </div>
             <div className="staff-form-actions">
-              <Button variant="primary" onClick={onSave}>Save changes</Button>
+              <Button variant="primary" onClick={onSave}>
+                Save changes
+              </Button>
             </div>
           </form>
         </div>
@@ -60,7 +81,11 @@ const ProfilePage = () => {
             </div>
             <div className="staff-form-field">
               <label>New password</label>
-              <input type="password" className="staff-input" placeholder="Enter new password" />
+              <input
+                type="password"
+                className="staff-input"
+                placeholder="Enter new password"
+              />
             </div>
             <div className="staff-form-field">
               <label>Confirm new password</label>
@@ -71,7 +96,9 @@ const ProfilePage = () => {
               />
             </div>
             <div className="staff-form-actions">
-              <Button variant="primary" onClick={onPasswordChange}>Change password</Button>
+              <Button variant="primary" onClick={onPasswordChange}>
+                Change password
+              </Button>
             </div>
           </form>
 
@@ -79,7 +106,8 @@ const ProfilePage = () => {
 
           <h3>Account</h3>
           <p className="staff-card-subtitle">
-            Keep your account information up to date to receive important updates from MINT.
+            Keep your account information up to date to receive important
+            updates from MINT.
           </p>
         </div>
       </div>

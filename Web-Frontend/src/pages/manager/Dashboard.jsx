@@ -1,10 +1,7 @@
-const ManagerDashboard = () => {
-  return (
-    <div>
-      <h1>Manager Dashboard</h1>
-      <p>Welcome to the Manager Dashboard!</p>
-    </div>
-  );
-};
+import React from "react";
 
-export default ManagerDashboard;
+function Dashboard() {
+  return <div>Welcome Manager Dashboard </div>;
+}
+
+export default Dashboard;

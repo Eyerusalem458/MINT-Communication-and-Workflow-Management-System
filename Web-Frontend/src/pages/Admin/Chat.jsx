@@ -2,7 +2,7 @@ import React from 'react'
 
 function Chat() {
   return (
-    <div>Welcome Manager Chat</div>
+    <div>Welcome adminChat</div>
   )
 }
 

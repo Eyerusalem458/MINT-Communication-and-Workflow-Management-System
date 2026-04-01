@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import SplashScreen from "../pages/SplashScreen";
-// Auth Pages
+
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import ForgotPassword from "../pages/auth/ForgotPassword";
@@ -22,7 +22,6 @@ import MyTasks from "../pages/staff/MyTasks";
 import Profile from "../pages/staff/Profile";
 import StaffChat from "../pages/staff/Chat";
 import MyProjects from "../pages/staff/MyProjects";
-import Status from"../pages/staff/Status";
 
 // Admin pages
 import AdminDashboard from "../pages/Admin/Dashboard";

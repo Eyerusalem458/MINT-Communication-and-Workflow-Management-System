@@ -8,6 +8,7 @@ import { FaEnvelope, FaLock, FaFacebookF } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 
 import "../../assets/styles/Login.css";
+import { showSuccessToast, showErrorToast } from "../../utils/toast";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -19,32 +20,23 @@ export default function Login() {
 
   const handleSignIn = (e) => {
     e.preventDefault();
-    toast.success("Sign In clicked!", {
-      position: "top-right",
-      autoClose: 2000,
-    });
+    showSuccessToast("Login successfully!");
   };
 
   // Simulate Google login (frontend-only)
   const handleGoogleLogin = () => {
-    toast.success("Google login successful!", {
-      position: "top-right",
-      autoClose: 2000,
+    showSuccessToast("Google login successfully!", () => {
+      // below is replaced later just for testing navigation
+      navigate("/staff/dashboard");
     });
-    setTimeout(() => {
-      navigate("/dashboard"); // replace with your dashboard route
-    }, 2000);
   };
 
   // Simulate Facebook login (frontend-only)
   const handleFacebookLogin = () => {
-    toast.success("Facebook login successful!", {
-      position: "top-right",
-      autoClose: 2000,
+    showSuccessToast("Facebook login successful!", () => {
+      // below is replaced later just for testing navigation
+      navigate("/staff/dashboard");
     });
-    setTimeout(() => {
-      navigate("/dashboard"); // replace with your dashboard route
-    }, 2000);
   };
 
   // Modal content based on type

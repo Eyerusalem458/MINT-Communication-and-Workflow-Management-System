@@ -7,6 +7,15 @@ import logo from "../../assets/images/logo.png";
 
 import "../../assets/styles/Register.css"; // Adjust path as needed
 
+import {
+  isEmailValid,
+  checkPasswordRules,
+  getPasswordMessage,
+  checkEmailRules,
+  getEmailMessage,
+} from "../../utils/validators";
+import { showSuccessToast, showErrorToast } from "../../utils/toast";
+
 export default function Register() {
   const navigate = useNavigate();
 
@@ -29,38 +38,13 @@ export default function Register() {
     number: false,
     symbol: false,
   });
-  // State for modal
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalType, setModalType] = useState("privacy"); // "privacy" or "terms"
+  const [emailRules, setEmailRules] = useState({
+    hasAt: false,
+    hasDot: false,
+    noSpaces: true,
+  });
 
-  // check password rules
-  const checkPasswordRules = (password) => {
-    setPasswordRules({
-      length: password.length >= 8,
-      uppercase: /[A-Z]/.test(password),
-      number: /[0-9]/.test(password),
-      symbol: /[!@#$%^&*]/.test(password),
-    });
-  };
-  // Generate inline password hint message
-  const getPasswordMessage = () => {
-    const missing = [];
-    if (!passwordRules.length) missing.push("8 characters");
-    if (!passwordRules.uppercase) missing.push("1 uppercase letter");
-    if (!passwordRules.number) missing.push("1 number");
-    if (!passwordRules.symbol) missing.push("1 special symbol");
-
-    return missing.length > 0
-      ? `✖ Must include: ${missing.join(", ")}`
-      : "✔ Password looks good!";
-  };
-
-  // email validation regex
-  const isEmailValid = (email) => {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
-  };
-
+  // handle input
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -69,41 +53,50 @@ export default function Register() {
       [name]: value,
     });
 
+    if (name === "email") {
+      const rules = checkEmailRules(value);
+      setEmailRules(rules);
+    }
+
+    // use validator.js
     if (name === "password") {
-      checkPasswordRules(value);
+      const rules = checkPasswordRules(value);
+      setPasswordRules(rules);
     }
   };
 
+  // handle submit
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Recheck password rules on submit
-    checkPasswordRules(formData.password);
+    const rules = checkPasswordRules(formData.password);
+    setPasswordRules(rules);
 
-    // Validate email
+    // email validation
     if (!isEmailValid(formData.email)) {
-      toast.error("Please enter a valid email!");
+      showErrorToast("Please enter a valid email!");
       return;
     }
 
-    if (
-      !passwordRules.length ||
-      !passwordRules.uppercase ||
-      !passwordRules.number ||
-      !passwordRules.symbol
-    ) {
-      return; // Don't submit if password invalid
-    }
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
+    // password validation
+    if (!rules.length || !rules.uppercase || !rules.number || !rules.symbol) {
+      showErrorToast("Password does not meet requirements");
       return;
     }
-    toast.success("Account Created Successfully!", {
-      position: "top-right",
-      autoClose: 2000,
-      onClose: () => navigate("/login"),
-    });
+
+    // confirm password
+    if (formData.password !== formData.confirmPassword) {
+      showErrorToast("Passwords do not match!");
+      return;
+    }
+
+    // Success
+    showSuccessToast("Account Created Successfully!", () => navigate("/login"));
   };
+  // State for modal
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState("privacy"); // "privacy" or "terms"
+
   // Modal content based on type
   const getModalContent = () => {
     if (modalType === "privacy") {
@@ -168,9 +161,9 @@ export default function Register() {
                   onChange={handleChange}
                   required
                 />
-                {formData.email && !isEmailValid(formData.email) && (
-                  <div className="password-hint">
-                    ✖ Please enter a valid email
+                {formData.email && (
+                  <div className="email-hint">
+                    {getEmailMessage(emailRules)}
                   </div>
                 )}
               </div>
@@ -253,7 +246,7 @@ export default function Register() {
                     {/* Inline real-time password hint */}
                     {formData.password && (
                       <div className="password-hint">
-                        {getPasswordMessage()}
+                        {getPasswordMessage(passwordRules)}
                       </div>
                     )}
                   </div>
@@ -348,6 +341,8 @@ export default function Register() {
           </div>
         </div>
       )}
+      {/* Toast notifications */}
+      <ToastContainer />
     </div>
   );
 }

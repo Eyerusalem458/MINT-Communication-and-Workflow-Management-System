@@ -2,7 +2,7 @@ import React from 'react'
 
 function Settings() {
   return (
-    <div>Welcome Settings</div>
+    <div>Welcome admin Settings</div>
   )
 }
 
