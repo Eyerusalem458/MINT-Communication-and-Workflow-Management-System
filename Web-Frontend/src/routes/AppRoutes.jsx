@@ -21,6 +21,7 @@ import Dashboard from "../pages/staff/Dashboard";
 import MyTasks from "../pages/staff/MyTasks";
 import Profile from "../pages/staff/Profile";
 import StaffChat from "../pages/staff/Chat";
+import MyProjects from "../pages/staff/MyProjects";
 
 // Admin pages
 import AdminDashboard from "../pages/Admin/Dashboard";
@@ -78,12 +79,12 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         >
-
-          
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="tasks" element={<MyTasks />} />
+          <Route path="projects" element={<MyProjects />} />
           <Route path="chat" element={<StaffChat />} />
           <Route path="profile" element={<Profile />} />
+         
           {/* shared pages for staff */}
           <Route path="notifications" element={<Notifications />} />
           <Route path="activity" element={<ActivityLog />} />

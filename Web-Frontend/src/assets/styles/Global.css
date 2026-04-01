@@ -552,6 +552,73 @@ body {
   background: var(--subtle);
 }
 
+/* css for modals */
+
+.staff-modal--clean {
+  width: 450px;
+  max-width: 95%;
+  background: white;
+  border-radius: 12px;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* HEADER */
+.staff-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.staff-modal-close {
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* BODY */
+.staff-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.staff-form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.staff-form-group label {
+  font-size: 14px;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+/* FOOTER */
+.staff-modal-footer {
+  padding: 15px 20px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* INPUT IMPROVEMENT */
+.staff-input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  outline: none;
+}
+
+.staff-input:focus {
+  border-color: #007bff;
+}
+
+
 .staff-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -1390,6 +1457,75 @@ border-color: var(--blue);
   border-top: 1px dashed #e5e7eb;
 }
 
+/* status css */
+
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-badge.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.approved {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-badge.rejected {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* Smooth animation */
+.staff-modal-backdrop {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.staff-modal {
+  animation: slideUp 0.25s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+
+/* fileinput css */
+.file-upload-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.file-name {
+  font-size: 12px;
+  color: #555;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+
+/* responsiveness */
 @media (max-width: 960px) {
   .staff-shell {
     grid-template-columns: 1fr;

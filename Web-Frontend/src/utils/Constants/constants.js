@@ -34,6 +34,7 @@ export const ROLE_TABS = {
   staff: [
     "STAFF_DASHBOARD",
     "STAFF_TASKS",
+    "STAFF_PROJECTS",
     "STAFF_CHAT",
     "STAFF_NOTIFICATIONS",
     "STAFF_ACTIVITY",
