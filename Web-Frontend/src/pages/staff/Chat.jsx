@@ -6,6 +6,7 @@ import {
   SearchIcon,
 } from "../../pages/shared/icon";
 import Button from "../../components/ui/Button";
+import ChatSidebarSection from "../../components/layout/ChatSidebarSection";
 
 // Mock conversations with English + Amharic
 const mockConversations = [
@@ -184,7 +185,7 @@ const Chat = () => {
         }}
       >
         <div>
-          
+
           <p className="staff-card-subtitle">
             Stay connected with your manager and colleagues.
           </p>
@@ -212,21 +213,59 @@ const Chat = () => {
       <div className="staff-chat">
         {/* Sidebar */}
         <div className="staff-chat-sidebar staff-chat-sidebar--scroll">
-          <div className="staff-chat-section-title">Conversations</div>
-          {filteredPeople.map((c) => (
-            <button
-              key={c.person}
-              className={`staff-chat-thread ${
-                c.person === activePerson ? "staff-chat-thread--active" : ""
-              }`}
-              onClick={() => {
-                setActivePerson(c.person);
-                setMessageQuery("");
-              }}
-            >
-              {c.person}
-            </button>
-          ))}
+          {/* Shared chat dashboard sections */}
+          <ChatSidebarSection
+            label="All chats"
+            type="all"
+            count={conversations.length}
+            active={sidebarFilter === 'all'}
+            onClick={() => setSidebarFilter('all')}
+          />
+          <ChatSidebarSection
+            label="Personal"
+            type="personal"
+            count={conversations.filter(c => !isGroup(c)).length}
+            active={sidebarFilter === 'personal'}
+            onClick={() => setSidebarFilter('personal')}
+          />
+          <ChatSidebarSection
+            label="Unread"
+            type="unread"
+            count={conversations.reduce((acc, c) => acc + (c.messages.length), 0)}
+            active={sidebarFilter === 'unread'}
+            onClick={() => setSidebarFilter('unread')}
+          />
+          <ChatSidebarSection
+            label="Groups"
+            type="groups"
+            count={conversations.filter(isGroup).length}
+            active={sidebarFilter === 'groups'}
+            onClick={() => setSidebarFilter('groups')}
+          />
+          {/* Filtered conversation list */}
+          <div style={{ borderTop: '1px solid #e5e7eb', marginTop: 4 }}>
+            {filteredPeople
+              .filter(c => {
+                if (sidebarFilter === 'personal') return !isGroup(c);
+                if (sidebarFilter === 'groups') return isGroup(c);
+                return true;
+              })
+              .map((c) => (
+                <button
+                  key={c.person}
+                  className={`staff-chat-thread ${c.person === activePerson ? "staff-chat-thread--active" : ""}`}
+                  onClick={() => {
+                    setActivePerson(c.person);
+                    setMessageQuery("");
+                  }}
+                >
+                  {c.person}
+                  {isGroup(c) && (
+                    <span style={{ marginLeft: 6, fontSize: 12, color: '#1976d2' }}>👥</span>
+                  )}
+                </button>
+              ))}
+          </div>
         </div>
 
         <div className="staff-chat-divider" />

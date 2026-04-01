@@ -4,7 +4,7 @@ export default function Dashboard() {
   return (
     <div className="admin-page">
       <div className="admin-top">
-        <h2>Dashboard</h2>
+
         <p>Overview of admin activity and user statistics</p>
       </div>
 

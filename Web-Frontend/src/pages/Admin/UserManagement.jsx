@@ -6,7 +6,6 @@ export default function UserManagement() {
   return (
     <div className="admin-page">
       <div className="admin-top">
-        <h2>User Management</h2>
         <p>Track and manage users across roles.</p>
       </div>
 
