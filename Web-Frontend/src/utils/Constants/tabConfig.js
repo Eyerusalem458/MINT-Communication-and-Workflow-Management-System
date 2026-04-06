@@ -29,6 +29,12 @@ export const TAB_CONFIG = {
     icon: NavTasksIcon,
     path: "/tasks",
   },
+  STAFF_PROJECTS: {
+    key: "STAFF_PROJECTS",
+    label: "My Projects",
+    icon: NavProjectIcon,
+    path: "/projects",
+  },
   STAFF_CHAT: {
     key: "STAFF_CHAT",
     label: "Chat",

@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { NotificationContext } from "../../context/NotificationContext";
+
 import {
   BellIcon,
   HamburgerIcon,
@@ -18,11 +20,13 @@ const Header = ({
 }) => {
   const [langOpen, setLangOpen] = useState(false);
   const navigate = useNavigate();
-  
- const handleNotificationsClick = () => {
-   onOpenNotifications(); // update active tab
-  //  navigate("/staff/notifications"); // navigate to notifications page
- };
+  const { notifications } = useContext(NotificationContext);
+
+  const unseenCount = notifications.filter((n) => n.unseen).length;
+
+  const handleNotificationsClick = () => {
+    onOpenNotifications(); // update active tab
+  };
   return (
     <header className="staff-topbar">
       <button
@@ -43,8 +47,12 @@ const Header = ({
           title="notifications"
           type="button"
           onClick={handleNotificationsClick}
+          style={{ position: "relative" }}
         >
           <BellIcon />
+          {unseenCount > 0 && (
+            <span className="notif-badge">{unseenCount}</span>
+          )}
         </button>
 
         {/* Theme toggle */}

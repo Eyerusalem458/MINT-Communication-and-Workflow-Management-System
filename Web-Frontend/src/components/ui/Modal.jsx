@@ -10,3 +10,17 @@ Why use it:
 Keeps the user in the same context
 Can be reused with different content
 */
+
+import React from "react";
+
+const Modal = ({ onClose, children, style = {} }) => {
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content" style={style}>
+        <div className="modal-body">{children}</div>
+      </div>
+    </div>
+  );
+};
+
+export default Modal;
