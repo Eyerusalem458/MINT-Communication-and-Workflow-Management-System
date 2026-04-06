@@ -331,6 +331,20 @@ body {
 .staff-icon-btn:hover {
   background: rgba(148, 163, 184, 0.18);
 }
+/*notification badge icon style  */
+.notif-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: red;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 999px;
+  min-width: 16px;
+  text-align: center;
+}
 
 .staff-lang {
   font-size: 11px;
