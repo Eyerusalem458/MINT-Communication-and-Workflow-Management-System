@@ -1,32 +1,35 @@
 import { useMemo, useState } from "react";
-import { mockNotifications } from "../../utils/data";
+// import { mockNotifications } from "../../utils/data";
+import { useNotifications } from "../../context/NotificationContext";
 
 const Notifications = () => {
   const [filter, setFilter] = useState("All");
-  const [list, setList] = useState(mockNotifications); // define the list
+  const { notifications, markAllAsRead} = useNotifications();
+  // const [list, setList] = useState(mockNotifications); // define the list
 
   // ✅ Filter notifications based on filter selection
   const filteredNotifications = useMemo(() => {
-    if (filter === "All") return list;
+    // if (filter === "All") return list;
+    if (filter === "All") return notifications;
 
-    if (filter === "Unseen") return list.filter((n) => n.unseen);
+    if (filter === "Unseen") return notifications.filter((n) => n.unseen);
     if (filter === "Personal")
-      return list.filter((n) => n.type.toLowerCase() === "personal");
+      return notifications.filter((n) => n.type.toLowerCase() === "personal");
 
     if (filter === "Tasks")
-      return list.filter(
+      return notifications.filter(
         (n) =>
           n.type.toLowerCase() === "task" ||
           n.type.toLowerCase() === "deadline",
       );
 
-    return list.filter((n) => n.type.toLowerCase() === filter.toLowerCase());
-  }, [filter, list]);
+    return notifications.filter((n) => n.type.toLowerCase() === filter.toLowerCase());
+  }, [filter, notifications]);
 
   // ✅ Mark all as read (optional)
-  const markAllAsRead = () => {
-    setList((prev) => prev.map((n) => ({ ...n, unseen: false })));
-  };
+  // const markAllAsRead = () => {
+  //   setList((prev) => prev.map((n) => ({ ...n, unseen: false })));
+  // };
 
   return (
     <div className="staff-card staff-card--full">
