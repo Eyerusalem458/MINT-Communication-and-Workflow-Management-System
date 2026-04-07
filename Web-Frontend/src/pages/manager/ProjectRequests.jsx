@@ -76,8 +76,8 @@ const ProjectRequest = () => {
                     {project.title}
                   </td>
 
-                  <td>{project.createdBy  "Staff"}</td>
-                  <td>{project.department  "N/A"}</td>
+                  <td>{project.createdBy || "Staff"}</td>
+<td>{project.department || "N/A"}</td>
 
                   {/* STATUS BADGE */}
                   <td>
@@ -89,7 +89,7 @@ const ProjectRequest = () => {
                   <td>
                     {project.file ? (
                       <div className="file-actions">
-                        <span>📎 {project.file.name  "File attached"}</span>
+                        <span>📎 {project.file?.name || "File attached"}</span>
 
                         {/* Download */}
                         <a
@@ -201,7 +201,7 @@ const ProjectRequest = () => {
                       style={{ width: "200px", borderRadius: "8px" }}
                     />
                   ) : (
-                    <p>📄 {selectedProject.file.name  "Attached file"}</p>
+                    <p>📄 {selectedProject.file?.name || "Attached file"}</p>
                   )}
  {/* ⬇️ Download */}
                   <div style={{ marginTop: "10px" }}>
