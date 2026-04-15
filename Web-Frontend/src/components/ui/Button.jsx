@@ -24,7 +24,11 @@ const Button = ({
       ? "staff-btn--ghost"
       : variant === "danger"
         ? "staff-btn--danger"
-        : "staff-btn--primary";
+        : variant === "reject"
+          ? "staff-btn--reject"
+          : variant === "approve" // 🔥 ADD THIS
+            ? "staff-btn--approve"
+            : "staff-btn--primary";
   const s =
     size === "sm" ? "staff-btn--sm" : size === "xs" ? "staff-btn--xs" : "";
 
