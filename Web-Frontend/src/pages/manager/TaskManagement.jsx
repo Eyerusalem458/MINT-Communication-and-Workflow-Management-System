@@ -9,6 +9,10 @@ const TaskManagement = () => {
   const { tasks, updateTaskStatus } = useTasks();
   const [openModal, setOpenModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [rejectModal, setRejectModal] = useState(false);
+  const [rejectComment, setRejectComment] = useState("");
+  const [taskToReject, setTaskToReject] = useState(null);
+  
 
   // Form state for creating or editing tasks
   const [taskForm, setTaskForm] = useState({
@@ -78,12 +82,30 @@ const TaskManagement = () => {
     setOpenModal(false);
   };
 
+const handleReject = (task) => {
+  setTaskToReject(task);
+  setRejectModal(true);
+};
+
+const submitRejection = () => {
+  if (!rejectComment) return;
+
+  updateTaskStatus(taskToReject.id, "Rejected", rejectComment);
+
+  setRejectModal(false);
+  setRejectComment("");
+};
+
   const getStatusClass = (status) => {
     switch (status) {
       case "Pending":
         return "status-badge pending";
       case "In Progress":
         return "status-badge in-progress";
+      case "Approved":
+        return "status-badge approved";
+      case "Rejected":
+        return "status-badge rejected";
       case "Completed":
         return "status-badge completed";
       default:
@@ -121,47 +143,96 @@ const TaskManagement = () => {
               <th>Due</th>
               <th>Priority</th>
               <th>Status</th>
+              <th>File</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredTasks.map((task) => (
-              <tr key={task.id}>
-                <td
-                  className="staff-table-title"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => openTaskModal(task)}
-                >
-                  {task.title}
-                </td>
-                <td>{task.assignedTo}</td>
-                <td>{task.due}</td>
-                <td>{task.priority}</td>
-                <td>
-                  <span className={getStatusClass(task.status)}>
-                    {task.status}
-                  </span>
-                </td>
-                <td>
-                  <Button
-                    size="xs"
-                    variant="ghost"
+            {filteredTasks.map((task) => {
+              const isFinal =
+                task.status === "Approved" || task.status === "Rejected";
+
+              return (
+                <tr key={task.id}>
+                  <td
+                    className="staff-table-title"
+                    style={{ cursor: "pointer" }}
                     onClick={() => openTaskModal(task)}
                   >
-                    Edit
-                  </Button>
-                  <Button
-                    size="xs"
-                    variant="secondary"
-                    onClick={() =>
-                      updateTaskStatus(task.id, "Cancelled", task.description)
-                    }
-                  >
-                    Cancel
-                  </Button>
-                </td>
-              </tr>
-            ))}
+                    {task.title}
+                  </td>
+
+                  <td>{task.assignedTo}</td>
+                  <td>{task.due}</td>
+                  <td>{task.priority}</td>
+
+                  <td>
+                    <span className={getStatusClass(task.status)}>
+                      {task.status}
+                    </span>
+                  </td>
+
+                  {/* FILE DOWNLOAD */}
+                  <td>
+                    {task.file ? (
+                      <Button
+                        size="xs"
+                        variant="ghost"
+                        onClick={() => window.open(task.file, "_blank")}
+                      >
+                        📥 Download
+                      </Button>
+                    ) : (
+                      <span style={{ fontSize: "12px", color: "#999" }}>
+                        No file
+                      </span>
+                    )}
+                  </td>
+
+                  {/* ACTIONS */}
+                  <td>
+                    {/* View */}
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      onClick={() => openTaskModal(task)}
+                    >
+                      View
+                    </Button>
+
+                    {/* Approve */}
+                    <Button
+                      size="xs"
+                      variant="approve"
+                      onClick={() => updateTaskStatus(task.id, "Approved")}
+                      disabled={isFinal || task.status !== "In Progress"}
+                    >
+                      Approve
+                    </Button>
+
+                    {/* Reject */}
+                    <Button
+                      size="xs"
+                      variant="reject"
+                      onClick={() => handleReject(task)}
+                      disabled={isFinal || task.status !== "In Progress"}
+                    >
+                      Reject
+                    </Button>
+
+                    {/* Cancel */}
+                    <Button
+                      size="xs"
+                      variant="secondary"
+                      onClick={() => updateTaskStatus(task.id, "Cancelled")}
+                      disabled={isFinal}
+                    >
+                      Cancel
+                    </Button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -253,6 +324,28 @@ const TaskManagement = () => {
             </Button>
             <Button variant="primary" onClick={handleSaveTask}>
               {selectedTask ? "Update Task" : "Create Task"}
+            </Button>
+          </div>
+        </Modal>
+      )}
+      {rejectModal && (
+        <Modal onClose={() => setRejectModal(false)}>
+          <h3>Reject Task</h3>
+
+          <textarea
+            className="staff-input"
+            placeholder="Write what should be fixed..."
+            value={rejectComment}
+            onChange={(e) => setRejectComment(e.target.value)}
+          />
+
+          <div className="staff-modal-footer">
+            <Button variant="ghost" onClick={() => setRejectModal(false)}>
+              Cancel
+            </Button>
+
+            <Button variant="secondary" onClick={submitRejection}>
+              Submit Rejection
             </Button>
           </div>
         </Modal>
