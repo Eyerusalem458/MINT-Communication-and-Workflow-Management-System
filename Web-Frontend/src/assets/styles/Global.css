@@ -22,7 +22,7 @@ body {
   --blue: #0b63ce;
   --ring: rgba(59, 130, 246, 0.45);
   display: flex;
- 
+
   min-height: 100vh;
   background: linear-gradient(
     135deg,
@@ -144,7 +144,7 @@ body {
     background-color 0.2s ease,
     opacity 0.2s ease,
     transform 0.1s ease;
-    text-decoration: none;
+  text-decoration: none;
 }
 
 .staff-nav-item:hover {
@@ -158,7 +158,6 @@ body {
   transform: translateX(2px);
   box-sizing: border-box;
 }
-
 
 .staff-nav-dot {
   width: 6px;
@@ -217,10 +216,6 @@ body {
   font-size: 11px;
 }
 
-
-
-
-
 .staff-main {
   display: flex;
   flex-direction: column;
@@ -230,7 +225,6 @@ body {
   box-sizing: border-box;
   overflow-x: hidden;
   margin-left: 250px;
- 
 }
 .staff-sidebar:not(.staff-sidebar--open) + .staff-main {
   margin-left: 20px; /* width of collapsed sidebar */
@@ -421,6 +415,28 @@ body {
   background: rgba(148, 163, 184, 0.24);
 }
 
+.staff-btn--approve {
+  background: #63de90;
+  color: white;
+  box-shadow: 0 6px 12px rgba(34, 197, 94, 0.35);
+}
+
+.staff-btn--approve:hover {
+  background: #16a34a;
+  transform: translateY(-1px);
+}
+
+.staff-btn--reject {
+  background: #cd4e4e;
+  color: white;
+  box-shadow: 0 8px 12px rgba(239, 68, 68, 0.4);
+}
+
+.staff-btn--reject:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
 .staff-btn--danger {
   background: rgba(248, 113, 113, 0.12);
   color: #b91c1c;
@@ -511,7 +527,6 @@ body {
 .staff-chat-sidebar--scroll {
   min-height: 480px;
 }
-
 
 .staff-chat-sidebar--scroll,
 .staff-chat-messages--scroll,
@@ -631,7 +646,6 @@ body {
 .staff-input:focus {
   border-color: #007bff;
 }
-
 
 .staff-modal-backdrop {
   position: fixed;
@@ -840,12 +854,12 @@ body {
 .staff-list-title {
   font-size: 13px;
   font-weight: 500;
-    color: var(--text);
+  color: var(--text);
 }
 
 .staff-list-meta {
   font-size: 11px;
- color: var(--muted);
+  color: var(--muted);
 }
 
 .staff-badge {
@@ -884,7 +898,7 @@ body {
 
 .staff-table thead {
   background: rgba(148, 163, 184, 0.16);
-   position: sticky;
+  position: sticky;
   top: 0;
   z-index: 20;
 }
@@ -893,7 +907,7 @@ body {
   top: 0;
   z-index: 20;
   background: var(--card); /* VERY IMPORTANT (prevents overlap issues) */
-   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 .staff-table th,
 .staff-table td {
@@ -1041,7 +1055,7 @@ body {
 }
 
 .staff-table-scroll {
-    height: 480px;
+  height: 480px;
   overflow-y: auto;
   overflow-x: hidden;
   border: 1px solid var(--border);
@@ -1101,7 +1115,6 @@ body {
   color: var(--text);
 }
 
-
 /* this is added also to make the placeholders in the input to be visible when dark mode */
 /* FIX: Input placeholder visibility in dark mode */
 .staff-shell[data-theme="dark"] .staff-input::placeholder {
@@ -1159,13 +1172,12 @@ body {
   background: rgba(148, 163, 184, 0.12);
 }
 
-
 /* edited to  make when its dark to make the buttons color visible */
 /* FIX: Buttons visibility in dark mode */
 .staff-shell[data-theme="dark"] .staff-btn--ghost {
   background: rgba(148, 163, 184, 0.2);
   color: #e5e7eb; /* LIGHT TEXT */
-   border: 1px solid rgba(148, 163, 184, 0.3);
+  border: 1px solid rgba(148, 163, 184, 0.3);
 }
 
 .staff-shell[data-theme="dark"] .staff-btn--ghost:hover {
@@ -1191,8 +1203,6 @@ body {
 .staff-shell[data-theme="dark"] .staff-timeline-time {
   color: rgba(148, 163, 184, 0.75);
 }
-
-
 
 .staff-chat-message {
   max-width: 70%;
@@ -1338,7 +1348,7 @@ body {
 }
 
 .staff-filter {
-   border-radius: 999px;
+  border-radius: 999px;
   border: 1px solid var(--border);
   padding: 4px 10px;
   font-size: 11px;
@@ -1349,7 +1359,7 @@ body {
 
 .staff-filter--active,
 .staff-filter:hover {
-border-color: var(--blue);
+  border-color: var(--blue);
   background: rgba(59, 130, 246, 0.12);
   color: var(--text); /* FIX */
 }
@@ -1395,7 +1405,7 @@ border-color: var(--blue);
 
 .staff-timeline-action {
   font-size: 12px;
-  color: var(--text)
+  color: var(--text);
 }
 
 .staff-profile-block {
@@ -1505,8 +1515,12 @@ border-color: var(--blue);
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
@@ -1519,7 +1533,6 @@ border-color: var(--blue);
     opacity: 1;
   }
 }
-
 
 /* fileinput css */
 .file-upload-wrapper {
@@ -1536,8 +1549,6 @@ border-color: var(--blue);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
-
 
 /* responsiveness */
 @media (max-width: 960px) {
