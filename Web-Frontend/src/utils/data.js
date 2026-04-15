@@ -25,7 +25,7 @@ export const mockTasks = [
     createdAt: "2026-04-02",
     completedAt: null,
     file: "report.pdf",
-    comment: "", // 🔥 NEW
+    comment: "please fix the structure", // 🔥 NEW
     description:
       "Check KPIs and compliance before sharing with the project's steering committee.",
   },
