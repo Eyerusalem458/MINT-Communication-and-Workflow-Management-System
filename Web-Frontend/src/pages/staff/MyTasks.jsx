@@ -51,6 +51,8 @@ const MyTasks = () => {
         return "status-badge in-progress";
       case "Approved":
         return "status-badge approved";
+      case "Rejected":
+        return "status-badge rejected";
       case "Completed":
         return "status-badge completed";
       default:
@@ -162,10 +164,14 @@ const MyTasks = () => {
                       variant="primary"
                       onClick={() => {
                         updateTaskStatus(task.id, "In Progress");
-                        showSuccessToast(`Submitted ${task.title}`);
+                        showSuccessToast(
+                          task.status === "Rejected"
+                            ? `Resubmitted ${task.title}`
+                            : `Submitted ${task.title}`,
+                        );
                       }}
                     >
-                      Submit work
+                      {task.status === "Rejected" ? "Resubmit" : "Submit Work"}
                     </Button>
 
                     <Button

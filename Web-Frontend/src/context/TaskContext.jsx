@@ -9,17 +9,26 @@ export const TaskProvider = ({ children }) => {
   const { addNotification } = useNotifications();
 
   // update task status
- const updateTaskStatus = (id, status, comment) => {
+ const updateTaskStatus = (id, status, comment = "") => {
    setTasks((prevTasks) =>
      prevTasks.map((task) => {
        if (task.id !== id) return task;
 
+       // 🔔 Notifications
        if (status === "In Progress") {
-         addNotification(`Task "${task.title}" started 🛠`, "Task");
+         addNotification(`Task "${task.title}" submitted 🛠`, "Task");
        }
 
+if (status === "Approved") {
+  addNotification(`Task "${task.title}" approved ✅`, "Task");
+}
+
+if (status === "Rejected") {
+  addNotification(`Task "${task.title}" rejected ❌`, "Task");
+}
+
        if (status === "Completed") {
-         addNotification(`Task "${task.title}" completed ✅`, "Task");
+         addNotification(`Task "${task.title}" completed  🎉`, "Task");
        }
 
        return {
