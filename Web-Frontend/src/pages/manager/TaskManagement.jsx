@@ -353,5 +353,4 @@ const submitRejection = () => {
     </div>
   );
 };
-
 export default TaskManagement;
