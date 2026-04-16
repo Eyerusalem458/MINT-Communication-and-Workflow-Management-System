@@ -97,7 +97,7 @@ const ManagerDashboard = () => {
       </div>
 
       {/* 📊 TOP METRICS */}
-      <div className="staff-grid staff-grid--cols-4">
+      <div className="staff-grid staff-grid--cols-2">
         <div className="staff-card staff-card--metric">
           <div className="staff-card-label">Total Staff</div>
           <div className="staff-card-value">{totalStaff}</div>

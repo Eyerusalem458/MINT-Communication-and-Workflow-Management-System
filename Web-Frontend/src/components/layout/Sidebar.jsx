@@ -40,7 +40,7 @@ const Sidebar = ({
       <nav className="staff-nav">
         {tabs.map((item, index) => (
           <div key={item.key}>
-            {index === 3 && <div className="staff-nav-divider" />}
+            {/* {index === 3 && <div className="staff-nav-divider" />} */}
             <NavLink
               to={`${basePath}${item.path}`}
               className={({ isActive }) =>
@@ -48,13 +48,16 @@ const Sidebar = ({
                   ? "staff-nav-item staff-nav-item--active"
                   : "staff-nav-item"
               }
-             
             >
               <span className="staff-nav-icon">
                 {item.icon && <item.icon />}
               </span>
               {isOpen && <span>{item.label}</span>}
             </NavLink>
+            {/* 👇 divider after every 3 items */}
+            {(index + 1) % 3 === 0 && index !== tabs.length - 1 && (
+              <div className="staff-nav-divider" />
+            )}
           </div>
         ))}
       </nav>
