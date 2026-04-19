@@ -1,5 +1,5 @@
-
 import { useState } from "react";
+import Button from "../../components/ui/Button";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -18,11 +18,13 @@ export default function CreateUser() {
 
   const [formData, setFormData] = useState({
     accountType: "",
-    email: "",
     firstName: "",
     middleName: "",
     lastName: "",
+    email: "",
     phone: "",
+    department: "",
+    gender: "",
     password: "",
     confirmPassword: "",
   });
@@ -107,9 +109,10 @@ export default function CreateUser() {
       }}>
         <form onSubmit={handleSubmit} className="admin-form" autoComplete="off">
           <div className="admin-form-grid" style={{ display: 'flex', gap: 40 }}>
-            <div className="admin-form-column" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 22 }}>
+            <div className="admin-form-column" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 22, alignItems: 'flex-start' }}>
               <label>Account Type</label>
               <select
+                className="staff-input"
                 name="accountType"
                 value={formData.accountType}
                 onChange={handleChange}
@@ -124,6 +127,7 @@ export default function CreateUser() {
 
               <label>First Name</label>
               <input
+                className="staff-input"
                 type="text"
                 name="firstName"
                 placeholder="First Name"
@@ -135,6 +139,7 @@ export default function CreateUser() {
 
               <label>Middle Name</label>
               <input
+                className="staff-input"
                 type="text"
                 name="middleName"
                 placeholder="Middle Name"
@@ -145,6 +150,7 @@ export default function CreateUser() {
 
               <label>Last Name</label>
               <input
+                className="staff-input"
                 type="text"
                 name="lastName"
                 placeholder="Last Name"
@@ -153,18 +159,68 @@ export default function CreateUser() {
                 required
                 style={{ marginBottom: 12 }}
               />
+
+              <label>Department</label>
+              <select
+                className="staff-input"
+                name="department"
+                value={formData.department}
+                onChange={handleChange}
+                required
+                style={{ marginBottom: 12 }}
+              >
+                <option value="">Select department</option>
+                <optgroup label="Top Level">
+                  <option value="Minister's Support Staff Unit">Minister's Support Staff Unit</option>
+                  <option value="Public Relations and Communications">Public Relations and Communications</option>
+                </optgroup>
+                <optgroup label="Middle Management">
+                  <option value="Innovation and Technology Sector">Innovation and Technology Sector</option>
+                  <option value="Digital Economy Sector">Digital Economy Sector</option>
+                </optgroup>
+                <optgroup label="Innovation & Technology Cluster">
+                  <option value="Innovation and Technology Research">Innovation and Technology Research</option>
+                  <option value="Creative Works Development">Creative Works Development</option>
+                  <option value="Technology Transfer">Technology Transfer</option>
+                  <option value="Innovation Hub Management">Innovation Hub Management</option>
+                  <option value="Standardization and Quality Control">Standardization and Quality Control</option>
+                </optgroup>
+                <optgroup label="Digital Economy Cluster">
+                  <option value="Digital Infrastructure">Digital Infrastructure</option>
+                  <option value="Digital Services Development">Digital Services Development</option>
+                  <option value="Cyber Security">Cyber Security</option>
+                  <option value="E-Commerce Development">E-Commerce Development</option>
+                  <option value="Data Management and Analysis">Data Management and Analysis</option>
+                </optgroup>
+              </select>
+
+              <label>Gender</label>
+              <select
+                className="staff-input"
+                name="gender"
+                value={formData.gender}
+                onChange={handleChange}
+                required
+                style={{ marginBottom: 12 }}
+              >
+                <option value="">Select gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
             </div>
 
-            <div className="admin-form-column" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 22 }}>
+            <div className="admin-form-column" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 22, alignItems: 'flex-start' }}>
               <label>Email</label>
               <input
+                className="staff-input"
                 type="email"
                 name="email"
                 placeholder="Enter your email"
                 value={formData.email}
                 onChange={handleChange}
                 required
-                style={{ marginBottom: 8 }}
+                style={{ marginBottom: 12, maxWidth: 400, width: '100%' }}
               />
               {touched.email && formData.email && !isEmailValid(formData.email) && (
                 <div className="errorText">✖️ Please enter a valid email</div>
@@ -172,17 +228,19 @@ export default function CreateUser() {
 
               <label>Phone Number</label>
               <input
+                className="staff-input"
                 type="tel"
                 name="phone"
                 placeholder="+251 Enter your phone number"
                 value={formData.phone}
                 onChange={handleChange}
-                style={{ marginBottom: 12 }}
+                style={{ marginBottom: 12, maxWidth: 400, width: '100%' }}
               />
 
               <label>Password</label>
               <div className="password-wrapper" style={{ marginBottom: 0, position: 'relative' }}>
                 <input
+                  className="staff-input"
                   type={showPassword ? "text" : "password"}
                   name="password"
                   placeholder="Enter password"
@@ -200,12 +258,13 @@ export default function CreateUser() {
                 </span>
               </div>
               {touched.password && formData.password && (
-                <div className="password-hint" style={{ color: passwordRules.length && passwordRules.uppercase && passwordRules.lowercase && passwordRules.number && passwordRules.symbol ? 'green' : 'red', fontSize: 13, marginTop: 2, marginBottom: 8, position: 'absolute', left: 0, top: '100%' }}>{getPasswordMessage()}</div>
+                <div className="password-hint" style={{ color: passwordRules.length && passwordRules.uppercase && passwordRules.lowercase && passwordRules.number && passwordRules.symbol ? 'green' : 'red', fontSize: 13, marginTop: 4, marginBottom: 8, position: 'static', left: 'unset', top: 'unset' }}>{getPasswordMessage()}</div>
               )}
 
               <label>Confirm Password</label>
               <div className="password-wrapper" style={{ position: 'relative' }}>
                 <input
+                  className="staff-input"
                   type={showConfirmPassword ? "text" : "password"}
                   name="confirmPassword"
                   placeholder="Confirm password"
@@ -223,14 +282,14 @@ export default function CreateUser() {
                 </span>
               </div>
               {touched.confirmPassword && formData.confirmPassword && formData.password !== formData.confirmPassword && (
-                <div className="errorText" style={{ color: 'red', fontSize: 13, marginTop: 2, marginBottom: 8, position: 'absolute', left: 0, top: '100%' }}>✖️ Passwords do not match</div>
+                <div className="errorText" style={{ color: 'red', fontSize: 13, marginTop: 4, marginBottom: 8, position: 'static', left: 'unset', top: 'unset' }}>✖️ Passwords do not match</div>
               )}
             </div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 40 }}>
-            <button type="submit" className="submitBtn" style={{ minWidth: 180, fontSize: 18, fontWeight: 600, borderRadius: 8, padding: '12px 0', background: 'linear-gradient(90deg, #1976d2 60%, #1565c0 100%)', color: '#fff', boxShadow: '0 2px 8px #1976d222', border: 'none' }}>
+            <Button type="submit" size="sm" variant="primary">
               Create User
-            </button>
+            </Button>
           </div>
         </form>
       </div>

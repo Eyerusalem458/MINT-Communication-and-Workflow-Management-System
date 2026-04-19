@@ -1365,13 +1365,14 @@ body {
 }
 
 .staff-input {
-  flex: 1;
   border-radius: 999px;
   border: 1px solid rgba(148, 163, 184, 0.45);
   padding: 11px 16px;
   font-size: 14px;
   outline: none;
   background: rgba(255, 255, 255, 0.85);
+  max-width: 400px;
+  width: 100%;
 }
 
 .staff-input:focus {

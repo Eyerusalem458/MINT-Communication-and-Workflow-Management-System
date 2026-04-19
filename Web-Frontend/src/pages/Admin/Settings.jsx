@@ -1,147 +1,133 @@
-import React, { useState } from "react";
-import "../../assets/styles/settings.css";
+import { showSuccessToast } from "../../utils/toast";
+import Button from "../../components/ui/Button";
 
-function Settings() {
-
-  const [profile, setProfile] = useState({
-    name: "",
-    email: ""
-  });
-
-  const [password, setPassword] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: ""
-  });
-
-  const handleProfileChange = (e) => {
-    setProfile({
-      ...profile,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handlePasswordChange = (e) => {
-    setPassword({
-      ...password,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const updateProfile = (e) => {
-    e.preventDefault();
-    console.log("Updating profile:", profile);
-
-    // API call example
-    // axios.put("/api/admin/profile", profile)
-
-    alert("Profile updated successfully!");
-  };
-
-  const changePassword = (e) => {
-    e.preventDefault();
-
-    if (password.newPassword !== password.confirmPassword) {
-      alert("Passwords do not match!");
-      return;
-    }
-
-    console.log("Changing password:", password);
-
-    // API call example
-    // axios.put("/api/admin/change-password", password)
-
-    alert("Password changed successfully!");
-  };
+const settings = () => {
+  const onSave = () => showSuccessToast("Profile updated successfully");
+  const onPasswordChange = () =>
+    showSuccessToast("Password changed successfully");
 
   return (
-    <div className="admin-settings">
+    <div className="staff-card staff-card--full">
+      <div className="staff-card-header">
 
-
-      {/* Profile Section */}
-      <div className="settings-card">
-        <h3>Profile Information</h3>
-
-        <form onSubmit={updateProfile}>
-
-
-          <div className="form-group">
-            <label style={{ marginBottom: 6, fontWeight: 500 }}></label>
-            <input
-              type="text"
-              name="name"
-              value={profile.name}
-              onChange={handleProfileChange}
-              placeholder="Enter your name"
-              style={{ marginBottom: 2 }}
-            />
-          </div>
-
-          <div className="form-group">
-            <label style={{ marginBottom: 6, fontWeight: 500 }}></label>
-            <input
-              type="email"
-              name="email"
-              value={profile.email}
-              onChange={handleProfileChange}
-              placeholder="Enter your email"
-              style={{ marginBottom: 2 }}
-            />
-          </div>
-
-          <button type="submit" className="btn-primary">
-            Update Profile
-          </button>
-
-        </form>
+        <p className="staff-card-subtitle">
+          Update your personal information and account security.
+        </p>
       </div>
 
-
-      {/* Password Section */}
-      <div className="settings-card">
-        <h3>Change Password</h3>
-
-        <form onSubmit={changePassword}>
-
-          <div className="form-group">
-            <label>Current Password</label>
-            <input
-              type="password"
-              name="currentPassword"
-              value={password.currentPassword}
-              onChange={handlePasswordChange}
-            />
+      <div className="staff-grid staff-grid--cols-2 staff-grid--stack">
+        <div className="staff-profile-block">
+          <h3>Personal Information</h3>
+          <div className="staff-profile-avatar">
+            <div className="staff-profile-avatar-circle">SM</div>
+            <label className="staff-upload staff-upload--inline">
+              <input type="file" className="staff-upload-input" />
+              <span>Upload new picture</span>
+            </label>
           </div>
+          <form
+            className="staff-form-grid"
+            onSubmit={(e) => e.preventDefault()}
+          >
+            <div className="staff-form-field">
+              <label>Full name</label>
+              <input
+                type="text"
+                className="staff-input"
+                placeholder="Enter your full name"
+                value="Admin User"
+                readOnly
+              />
+            </div>
+            <div className="staff-form-field">
+              <label>Position</label>
+              <input
+                type="text"
+                className="staff-input"
+                placeholder="e.g. Innovation Officer"
+                value="Chief Administrator"
+                readOnly
+              />
+            </div>
+            <div className="staff-form-field">
+              <label>Department</label>
+              <input
+                type="text"
+                className="staff-input"
+                placeholder="e.g. Digital Transformation"
+                value="Innovation & Technology"
+                readOnly
+              />
+            </div>
+            <div className="staff-form-field">
+              <label>Work email</label>
+              <input
+                type="email"
+                className="staff-input"
+                placeholder="name@mint.gov"
+                value="admin@mint.gov"
+                readOnly
+              />
+            </div>
+            <div className="staff-form-actions">
+              <Button variant="primary" size="sm" onClick={onSave}>
+                Save changes
+              </Button>
+            </div>
+          </form>
+        </div>
 
-          <div className="form-group">
-            <label>New Password</label>
-            <input
-              type="password"
-              name="newPassword"
-              value={password.newPassword}
-              onChange={handlePasswordChange}
-            />
-          </div>
+        <div className="staff-profile-block">
+          <h3>Security</h3>
+          <form onSubmit={(e) => e.preventDefault()}>
+            <div className="staff-form-field">
+              <label>Current password</label>
+              <input
+                type="password"
+                className="staff-input"
+                placeholder="Enter current password"
+                value="adminpass"
+                readOnly
+              />
+            </div>
+            <div className="staff-form-field">
+              <label>New password</label>
+              <input
+                type="password"
+                className="staff-input"
+                placeholder="Enter new password"
+                value="newpass123"
+                readOnly
+              />
+            </div>
+            <div className="staff-form-field">
+              <label>Confirm new password</label>
+              <input
+                type="password"
+                className="staff-input"
+                placeholder="Re-enter new password"
+                value="newpass123"
+                readOnly
+              />
+            </div>
+            <div className="staff-form-actions">
+              <Button variant="primary" size="sm" onClick={onPasswordChange}>
+                Change password
+              </Button>
+            </div>
+          </form>
 
-          <div className="form-group">
-            <label>Confirm Password</label>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={password.confirmPassword}
-              onChange={handlePasswordChange}
-            />
-          </div>
+          <div className="staff-profile-divider" />
 
-          <button type="submit" className="btn-primary">
-            Change Password
-          </button>
-
-        </form>
+          <h3>Account</h3>
+          <p className="staff-card-subtitle">
+            Keep your account information up to date to receive important
+            updates from MINT.
+          </p>
+        </div>
       </div>
-
     </div>
   );
-}
+};
 
-export default Settings;
+export default settings;

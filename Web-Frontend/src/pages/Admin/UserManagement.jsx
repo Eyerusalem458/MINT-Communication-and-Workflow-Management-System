@@ -1,7 +1,36 @@
 import { useNavigate } from "react-router-dom";
+import Button from "../../components/ui/Button";
 
 export default function UserManagement() {
   const navigate = useNavigate();
+
+  // Mock user data
+  const users = [
+    {
+      id: 1,
+      name: "Admin User",
+      email: "admin@mint.gov",
+      role: "Admin",
+      department: "Innovation & Technology",
+      status: "Active"
+    },
+    {
+      id: 2,
+      name: "Manager One",
+      email: "manager1@mint.gov",
+      role: "Manager",
+      department: "Digital Economy",
+      status: "Active"
+    },
+    {
+      id: 3,
+      name: "Staff Member",
+      email: "staff@mint.gov",
+      role: "Staff",
+      department: "Cyber Security",
+      status: "Inactive"
+    }
+  ];
 
   return (
     <div className="admin-page">
@@ -17,18 +46,38 @@ export default function UserManagement() {
           <option value="manager">Manager</option>
           <option value="staff">Staff</option>
         </select>
-        <button
-          className="createBtn"
+        <Button
+          size="sm"
+          variant="primary"
           onClick={() => navigate("/admin/create-user")}
         >
           + Create New User
-        </button>
+        </Button>
       </div>
 
       <div className="admin-table">
-        <p className="admin-empty-state">
-          No users loaded yet. Create a user to begin managing staff.
-        </p>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ background: "#f4f7fb" }}>
+              <th style={{ padding: 10, borderBottom: "1px solid #e5e7eb" }}>Name</th>
+              <th style={{ padding: 10, borderBottom: "1px solid #e5e7eb" }}>Email</th>
+              <th style={{ padding: 10, borderBottom: "1px solid #e5e7eb" }}>Role</th>
+              <th style={{ padding: 10, borderBottom: "1px solid #e5e7eb" }}>Department</th>
+              <th style={{ padding: 10, borderBottom: "1px solid #e5e7eb" }}>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map((user) => (
+              <tr key={user.id} style={{ background: user.status === "Inactive" ? "#fef2f2" : "#fff" }}>
+                <td style={{ padding: 10, borderBottom: "1px solid #e5e7eb" }}>{user.name}</td>
+                <td style={{ padding: 10, borderBottom: "1px solid #e5e7eb" }}>{user.email}</td>
+                <td style={{ padding: 10, borderBottom: "1px solid #e5e7eb" }}>{user.role}</td>
+                <td style={{ padding: 10, borderBottom: "1px solid #e5e7eb" }}>{user.department}</td>
+                <td style={{ padding: 10, borderBottom: "1px solid #e5e7eb", color: user.status === "Inactive" ? "#dc2626" : "#16a34a" }}>{user.status}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
