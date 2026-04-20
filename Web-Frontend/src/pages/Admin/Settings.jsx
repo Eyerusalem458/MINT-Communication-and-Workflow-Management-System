@@ -35,8 +35,6 @@ const settings = () => {
                 type="text"
                 className="staff-input"
                 placeholder="Enter your full name"
-                value="Admin User"
-                readOnly
               />
             </div>
             <div className="staff-form-field">
@@ -45,8 +43,6 @@ const settings = () => {
                 type="text"
                 className="staff-input"
                 placeholder="e.g. Innovation Officer"
-                value="Chief Administrator"
-                readOnly
               />
             </div>
             <div className="staff-form-field">
@@ -55,8 +51,6 @@ const settings = () => {
                 type="text"
                 className="staff-input"
                 placeholder="e.g. Digital Transformation"
-                value="Innovation & Technology"
-                readOnly
               />
             </div>
             <div className="staff-form-field">
@@ -65,12 +59,10 @@ const settings = () => {
                 type="email"
                 className="staff-input"
                 placeholder="name@mint.gov"
-                value="admin@mint.gov"
-                readOnly
               />
             </div>
             <div className="staff-form-actions">
-              <Button variant="primary" size="sm" onClick={onSave}>
+              <Button variant="primary" onClick={onSave}>
                 Save changes
               </Button>
             </div>
@@ -86,8 +78,6 @@ const settings = () => {
                 type="password"
                 className="staff-input"
                 placeholder="Enter current password"
-                value="adminpass"
-                readOnly
               />
             </div>
             <div className="staff-form-field">
@@ -96,8 +86,6 @@ const settings = () => {
                 type="password"
                 className="staff-input"
                 placeholder="Enter new password"
-                value="newpass123"
-                readOnly
               />
             </div>
             <div className="staff-form-field">
@@ -106,12 +94,10 @@ const settings = () => {
                 type="password"
                 className="staff-input"
                 placeholder="Re-enter new password"
-                value="newpass123"
-                readOnly
               />
             </div>
             <div className="staff-form-actions">
-              <Button variant="primary" size="sm" onClick={onPasswordChange}>
+              <Button variant="primary" onClick={onPasswordChange}>
                 Change password
               </Button>
             </div>
