@@ -59,10 +59,46 @@ export default function Login() {
       <div className="login-container">
         {/* Logo Card */}
         <div className="logo-wrapper">
-          <div className="logo-card logo-card-plain">
-            <img src={logo} alt="Ministry Logo" className="logo-card-img" />
+          <div className="logo-card logo-card-stacked">
+            <img src={logo} alt="Mint Logo" className="logo-card-img" />
             <div className="logo-card-text">
-              <span className=" english-text">STREAMLINED COLLABORATION</span>
+              <span className="english-text">STREAMLINED COLLABORATION</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Ministry Description */}
+        <div className="ministry-description">
+          <div className="description-content">
+            <h2 className="ministry-title">
+              Ministry of Innovation & Technology
+              <span className="expand-arrow">▼</span>
+            </h2>
+            <p className="ministry-subtitle">
+              Driving Ethiopia's Digital Transformation Through Innovation,
+              Collaboration, and Technological Excellence
+            </p>
+            <div className="ministry-details">
+              <div className="detail-item">
+                <span className="detail-icon">🚀</span>
+                <span className="detail-text">Digital Innovation Hub</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-icon">🤝</span>
+                <span className="detail-text">Public-Private Partnerships</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-icon">🎯</span>
+                <span className="detail-text">
+                  Technology Policy & Strategy
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-icon">🌍</span>
+                <span className="detail-text">
+                  Sustainable Development Goals
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -124,11 +160,6 @@ export default function Login() {
                 <FaFacebookF className="social-icon facebook-icon" />
                 Log in with Facebook
               </button>
-            </div>
-
-            {/* Register Link */}
-            <div className="signup-line">
-              Don't have an account? <Link to="/register">Sign Up</Link>
             </div>
           </div>
         </div>
