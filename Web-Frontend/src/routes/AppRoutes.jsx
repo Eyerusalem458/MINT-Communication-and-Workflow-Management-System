@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import SplashScreen from "../pages/SplashScreen";
 
 import Login from "../pages/auth/Login";
-import Register from "../pages/auth/Register";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import ResetPassword from "../pages/auth/ResetPassword";
 import ProtectedRoute from "../pages/auth/ProtectedRoute";
@@ -21,6 +20,7 @@ import Dashboard from "../pages/staff/Dashboard";
 import MyTasks from "../pages/staff/MyTasks";
 import Profile from "../pages/staff/Profile";
 import StaffChat from "../pages/staff/Chat";
+import MyProjects from "../pages/staff/MyProjects";
 
 // Admin pages
 import AdminDashboard from "../pages/Admin/Dashboard";
@@ -44,7 +44,6 @@ const AppRoutes = () => {
 
         {/* Auth Pages */}
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
@@ -82,6 +81,7 @@ const AppRoutes = () => {
           <Route index element={<Dashboard />} />
           <Route path="chat" element={<StaffChat />} />
           <Route path="profile" element={<Profile />} />
+         
           {/* shared pages for staff */}
           <Route path="notifications" element={<Notifications />} />
           <Route path="activity" element={<ActivityLog />} />

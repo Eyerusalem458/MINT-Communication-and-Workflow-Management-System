@@ -1,57 +1,80 @@
-import { mockTasks } from "../../utils/data";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+
 import Button from "../../components/ui/Button";
 import { showSuccessToast } from "../../utils/toast";
+import { useTasks } from "../../context/TaskContext";
 
-const MyTasks = ({ tasks }) => {
+const MyTasks = () => {
+  const navigate = useNavigate();
+
+  const { tasks, updateTaskStatus } = useTasks();
+  const [files, setFiles] = useState({});
+  const fileInputRefs = useRef({});
+
   const [query, setQuery] = useState("");
   const [selectedTask, setSelectedTask] = useState(null);
   const [openModal, setOpenModal] = useState(false);
 
-  // Use props.tasks if available, else use mockTasks
-  const renderedTasks = tasks && tasks.length > 0 ? tasks : mockTasks;
-
   const filteredTasks = useMemo(() => {
-    return renderedTasks.filter(
+    return tasks.filter(
       (task) =>
         task.title.toLowerCase().includes(query.toLowerCase()) ||
         task.project.toLowerCase().includes(query.toLowerCase()),
     );
-  }, [query, renderedTasks]);
+  }, [query, tasks]);
 
   const openTask = (task) => {
     setSelectedTask(task);
     setOpenModal(true);
   };
 
-  const submitTask = (task) => {
-    showSuccessToast(`Submitted work for ${task.title}`);
+  // handle file change
+  const handleFileChange = (taskId, file) => {
+    setFiles((prev) => ({
+      ...prev,
+      [taskId]: file,
+    }));
+  };
+
+  // 🔥 trigger file input
+  const handleFileClick = (taskId) => {
+    fileInputRefs.current[taskId]?.click();
+  };
+
+  // ✅ STATUS BADGE
+  const getStatusClass = (status) => {
+    switch (status) {
+      case "Pending":
+        return "status-badge pending";
+      case "In Progress":
+        return "status-badge in-progress";
+      case "Approved":
+        return "status-badge approved";
+      case "Rejected":
+        return "status-badge rejected";
+      case "Completed":
+        return "status-badge completed";
+      default:
+        return "status-badge";
+    }
   };
 
   return (
     <div className="staff-card staff-card--full">
       <div className="staff-card-header staff-card-header--with-actions">
-        <div>
-          <p className="staff-card-subtitle">
-            View assigned tasks, upload work files, and update your progress.
-          </p>
-        </div>
-        <div className="staff-header-actions">
-          <Button
-            variant="primary"
-            onClick={() => showSuccessToast("New task created")}
-          >
-            New Task
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => showSuccessToast("Message sent to manager")}
-          >
-            Message manager
-          </Button>
-        </div>
-      </div>
+        <p className="staff-card-subtitle">
+          View assigned tasks, upload work files, and update your progress.
+        </p>
 
+        <Button
+          variant="ghost"
+          // onClick={() => showSuccessToast("Message sent to manager")}
+          onClick={() => navigate("/staff/chat")}
+        >
+          Message manager
+        </Button>
+      </div>
       <div className="staff-search-wrapper">
         <input
           type="search"
@@ -61,7 +84,6 @@ const MyTasks = ({ tasks }) => {
           onChange={(e) => setQuery(e.target.value)}
         />
       </div>
-
       <div className="staff-table-scroll">
         <table className="staff-table">
           <thead>
@@ -74,58 +96,112 @@ const MyTasks = ({ tasks }) => {
               <th>Actions</th>
             </tr>
           </thead>
+
           <tbody>
             {filteredTasks.map((task) => (
               <tr key={task.id}>
-                <td>
-                  <div
-                    className="staff-table-title"
-                    onClick={() => openTask(task)}
-                    style={{ cursor: "pointer" }}
-                  >
-                    {task.title}
-                  </div>
+                <td
+                  className="staff-table-title"
+                  onClick={() => openTask(task)}
+                  style={{ cursor: "pointer" }}
+                >
+                  {task.title}
                 </td>
+
                 <td>{task.project}</td>
                 <td>{task.due}</td>
+
+                {/* ✅ STATUS BADGE ONLY */}
                 <td>
-                  <select className="staff-select" defaultValue={task.status}>
-                    <option>Pending</option>
-                    <option>In Progress</option>
-                    <option>Completed</option>
-                  </select>
+                  <span className={getStatusClass(task.status)}>
+                    {task.status}
+                  </span>
+
+                  {/* 🔥 SHOW MANAGER COMMENT */}
+                  {task.comment && (
+                    <div
+                      style={{
+                        marginTop: "5px",
+                        fontSize: "12px",
+                        color: "#555",
+                      }}
+                    >
+                      💬 {task.comment}
+                    </div>
+                  )}
                 </td>
+
+                {/* 🔥 FILE UPLOAD FIXED */}
                 <td>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    Upload
-                  </Button>
+                  <div className="file-upload-wrapper">
+                    <input
+                      type="file"
+                      ref={(el) => (fileInputRefs.current[task.id] = el)}
+                      style={{ display: "none" }}
+                      onChange={(e) =>
+                        handleFileChange(task.id, e.target.files[0])
+                      }
+                    />
+
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      onClick={() => handleFileClick(task.id)}
+                    >
+                      📎 Choose File
+                    </Button>
+
+                    {files[task.id] && (
+                      <div className="file-name">{files[task.id].name}</div>
+                    )}
+                  </div>
                 </td>
+
                 <td>
                   <div className="staff-table-actions">
                     <Button
                       size="xs"
+                      variant="primary"
+                      onClick={() => {
+                        updateTaskStatus(task.id, "In Progress");
+                        showSuccessToast(
+                          task.status === "Rejected"
+                            ? `Resubmitted ${task.title}`
+                            : `Submitted ${task.title}`,
+                        );
+                      }}
+                    >
+                      {task.status === "Rejected" ? "Resubmit" : "Submit Work"}
+                    </Button>
+
+                    <Button
+                      size="xs"
                       variant="ghost"
-                      onClick={(e) => {
-                        e.stopPropagation();
+                      onClick={() => {
+                        if (task.status !== "Approved") {
+                          showSuccessToast("Task must be approved first");
+                          return;
+                        }
+
+                        updateTaskStatus(task.id, "Completed");
                         showSuccessToast(`${task.title} marked completed`);
                       }}
                     >
                       Mark completed
                     </Button>
-                    <Button
-                      size="xs"
-                      variant="primary"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        submitTask(task);
-                      }}
-                    >
-                      Submit work
-                    </Button>
+
+                    {task.status === "Rejected" && (
+                      <Button
+                        size="xs"
+                        variant="secondary"
+                        onClick={() => {
+                          updateTaskStatus(task.id, "In Progress");
+                          showSuccessToast(`Resubmitted ${task.title}`);
+                        }}
+                      >
+                        Resubmit
+                      </Button>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -141,16 +217,24 @@ const MyTasks = ({ tasks }) => {
         >
           <div className="staff-modal" onClick={(e) => e.stopPropagation()}>
             <h3>{selectedTask.title}</h3>
+
             <p>
               <strong>Project:</strong> {selectedTask.project}
             </p>
+
             <p>
               <strong>Due:</strong> {selectedTask.due}
             </p>
+
             <p>
-              <strong>Status:</strong> {selectedTask.status}
+              <strong>Status:</strong>{" "}
+              <span className={getStatusClass(selectedTask.status)}>
+                {selectedTask.status}
+              </span>
             </p>
+
             <p>{selectedTask.description || "No description available."}</p>
+
             <Button variant="primary" onClick={() => setOpenModal(false)}>
               Close
             </Button>
