@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import logo from "../../assets/images/logo.png";
@@ -9,6 +9,7 @@ import { FcGoogle } from "react-icons/fc";
 
 import "../../assets/styles/Login.css";
 import { showSuccessToast, showErrorToast } from "../../utils/toast";
+import { AuthContext } from "../../context/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -18,9 +19,31 @@ export default function Login() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState("privacy"); // "privacy" or "terms"
 
+
   const handleSignIn = (e) => {
     e.preventDefault();
-    showSuccessToast("Login successfully!");
+    // Simulate authentication
+    // For demo: if email contains "admin", treat as admin
+    let userRole = "staff";
+    if (email.toLowerCase().includes("admin")) {
+      userRole = "admin";
+    } else if (email.toLowerCase().includes("manager")) {
+      userRole = "manager";
+    }
+    localStorage.setItem("token", "demo-token");
+    localStorage.setItem("role", userRole);
+    const { setUser } = useContext(AuthContext);
+    setUser({ role: userRole, token: "demo-token" });
+
+    showSuccessToast("Login successfully!", () => {
+      if (userRole === "admin") {
+        navigate("/admin/dashboard");
+      } else if (userRole === "manager") {
+        navigate("/manager/dashboard");
+      } else {
+        navigate("/staff/dashboard");
+      }
+    });
   };
 
   // Simulate Google login (frontend-only)
