@@ -79,9 +79,11 @@ const AppRoutes = () => {
           }
         >
           <Route index element={<Dashboard />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="tasks" element={<MyTasks />} />
+          <Route path="projects" element={<MyProjects />} />
           <Route path="chat" element={<StaffChat />} />
           <Route path="profile" element={<Profile />} />
-         
           {/* shared pages for staff */}
           <Route path="notifications" element={<Notifications />} />
           <Route path="activity" element={<ActivityLog />} />
