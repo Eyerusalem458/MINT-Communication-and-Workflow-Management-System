@@ -67,7 +67,6 @@ const ManagerDashboard = () => {
     <>
       {/* 🟣 WELCOME */}
       <div className="staff-welcome">
-        <h1 className="staff-welcome-title">Manager Dashboard</h1>
         <p className="staff-welcome-subtitle">
           Monitor your team, track performance, and take smart decisions.
         </p>
