@@ -63,6 +63,14 @@ export default function Layout() {
 
   const activeTab = currentTab?.path?.replace("/", "") || TABS.DASHBOARD;
 
+const roleLabel = user?.role
+  ? user.role.charAt(0).toUpperCase() + user.role.slice(1)
+  : "";
+
+const pageLabel = currentTab?.label || "Dashboard";
+
+const breadcrumb = `${roleLabel} / ${pageLabel}`;
+
   if (loading) return <div style={{ padding: 20 }}>Loading User...</div>; // optional: loading screen
 
   return (
@@ -82,7 +90,7 @@ export default function Layout() {
 
       <div className="staff-main">
         <Header
-          pageTitle={currentTab?.label || "Dashboard"}
+          pageTitle={breadcrumb}
           theme={theme}
           onToggleSidebar={handleToggleSidebar}
           onToggleTheme={handleToggleTheme}
