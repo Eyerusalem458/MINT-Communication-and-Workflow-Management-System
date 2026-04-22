@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import Modal from "../../components/ui/Modal";
 import Button from "../../components/ui/Button";
 import { useTasks } from "../../context/TaskContext";
-
+import Pagination from "../../components/ui/Pagination";
 const staffMembers = ["John Doe", "Sara Ali", "Jane Smith"]; // example staff
 
 const TaskManagement = () => {
@@ -12,6 +12,8 @@ const TaskManagement = () => {
   const [rejectModal, setRejectModal] = useState(false);
   const [rejectComment, setRejectComment] = useState("");
   const [taskToReject, setTaskToReject] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   
 
   // Form state for creating or editing tasks
@@ -96,6 +98,11 @@ const submitRejection = () => {
   setRejectComment("");
 };
 
+const paginatedTasks = filteredTasks.slice(
+  (currentPage - 1) * itemsPerPage,
+  currentPage * itemsPerPage,
+);
+
   const getStatusClass = (status) => {
     switch (status) {
       case "Pending":
@@ -148,7 +155,7 @@ const submitRejection = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredTasks.map((task) => {
+            {paginatedTasks.map((task) => {
               const isFinal =
                 task.status === "Approved" || task.status === "Rejected";
 
@@ -236,6 +243,17 @@ const submitRejection = () => {
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        totalItems={filteredTasks.length}
+        itemsPerPage={itemsPerPage}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+        onItemsPerPageChange={(size) => {
+          setItemsPerPage(size);
+          setCurrentPage(1); // reset page
+        }}
+      />
 
       {openModal && (
         <Modal onClose={() => setOpenModal(false)}>
