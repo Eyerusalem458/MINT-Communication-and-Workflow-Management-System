@@ -551,18 +551,59 @@
     font-size: 14px;
   }
 
+  .logo-wrapper {
+    position: static;
+    width: 100%;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .logo-card {
+    width: auto;
+    padding: 0;
+  }
+
+  .ministry-description {
+    position: static;
+    width: 100%;
+    right: auto;
+    top: auto;
+    margin: 0 0 18px;
+    animation: none;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  .description-content {
+    width: 100%;
+    padding: 18px 16px;
+    box-shadow: 0 14px 36px rgba(29, 97, 193, 0.08);
+  }
+
+  .ministry-details {
+    grid-template-columns: 1fr;
+  }
+
   .robot-wrapper {
     min-height: auto;
   }
 
   .robot-image {
-    width: 120px;
-    max-width: 60%;
+    width: 140px;
+    max-width: 100%;
     margin-bottom: 15px;
   }
 
+  .login-container {
+    align-items: stretch;
+  }
+
   .login-box {
-    width: 90%;
-    padding: 20px 15px;
+    width: 100%;
+    max-width: 420px;
+    padding: 20px 16px;
+    margin: 0 auto 20px;
   }
 }
