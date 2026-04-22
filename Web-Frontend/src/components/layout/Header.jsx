@@ -1,13 +1,14 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { NotificationContext } from "../../context/NotificationContext";
-
+import { UserContext } from "../../context/UserContext";
 import {
   BellIcon,
   HamburgerIcon,
   LanguageIcon,
   MoonIcon,
   SunIcon,
+  RefreshIcon,
 } from "../../pages/shared/icon";
 
 const Header = ({
@@ -21,12 +22,33 @@ const Header = ({
   const [langOpen, setLangOpen] = useState(false);
   const navigate = useNavigate();
   const { notifications } = useContext(NotificationContext);
-
+const { currentUser } = useContext(UserContext);
   const unseenCount = notifications.filter((n) => n.unseen).length;
+
+const fullName = currentUser
+  ? `${currentUser.firstName} ${currentUser.lastName}`
+  : "User";
+
+const role = currentUser?.role?.toUpperCase() || "STAFF";
+
+const initials = currentUser
+  ? `${currentUser.firstName?.[0] || ""}${currentUser.lastName?.[0] || ""}`
+  : "U";
 
   const handleNotificationsClick = () => {
     onOpenNotifications(); // update active tab
   };
+
+const handleProfileClick = () => {
+  const role = currentUser?.role?.toLowerCase();
+
+  if (role === "staff") {
+    navigate("/staff/profile");
+  } else {
+    navigate(`/${role}/settings`);
+  }
+};
+
   return (
     <header className="staff-topbar">
       <button
@@ -98,6 +120,31 @@ const Header = ({
               </button>
             </div>
           )}
+        </div>
+        {/* 🔄 Refresh */}
+        <button
+          className="staff-icon-btn"
+          title="refresh"
+          type="button"
+          onClick={() => {
+            window.location.href = window.location.pathname;
+          }}
+        >
+          <RefreshIcon />
+        </button>
+
+        {/* 👤 User Info */}
+        <div
+          className="staff-user-info"
+          style={{ cursor: "pointer" }}
+          onClick={handleProfileClick}
+        >
+          <div className="staff-user-avatar">{initials}</div>
+
+          <div className="staff-user-text">
+            <div className="staff-user-name">{fullName}</div>
+            <div className="staff-user-role">{role}</div>
+          </div>
         </div>
       </div>
     </header>
