@@ -93,206 +93,220 @@ export default function CreateUser() {
   };
 
   return (
-    <div className="admin-page" style={{ background: 'linear-gradient(135deg, #f4f7fb 0%, #e4edf9 100%)', minHeight: '100vh', padding: '32px 0' }}>
-      <div className="admin-top" style={{ maxWidth: 1100, margin: '0 auto 18px auto', padding: '0 16px' }}>
-        <h2 style={{ fontWeight: 700, marginBottom: 4 }}>Create User</h2>
-        <p style={{ color: '#555', fontSize: 17 }}>Enter new user details below.</p>
+    <div className="staff-card staff-card--full">
+      {/* HEADER */}
+      <div className="staff-card-header">
+        
+        <p className="staff-card-subtitle">
+          Add a new user to the system with proper role and access.
+        </p>
       </div>
-      <div className="formCard" style={{
-        maxWidth: 1100,
-        margin: '0 auto',
-        background: '#fff',
-        borderRadius: 16,
-        boxShadow: '0 4px 24px #0001',
-        padding: '36px 32px 28px 32px',
-        minHeight: 420,
-      }}>
-        <form onSubmit={handleSubmit} className="admin-form" autoComplete="off">
-          <div className="admin-form-grid" style={{ display: 'flex', gap: 40 }}>
-            <div className="admin-form-column" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 22, alignItems: 'flex-start' }}>
-              <label>Account Type</label>
+
+      <form onSubmit={handleSubmit} className="admin-form modern-form">
+        <div className="admin-form-grid">
+          {/* LEFT COLUMN */}
+          <div className="admin-form-column">
+            <h4 className="form-section-title">Personal Info</h4>
+            <div className="floating-group">
               <select
-                className="staff-input"
                 name="accountType"
                 value={formData.accountType}
                 onChange={handleChange}
                 required
-                style={{ marginBottom: 12 }}
               >
                 <option value="">Select account type</option>
                 <option value="admin">Admin</option>
                 <option value="manager">Manager</option>
                 <option value="staff">Staff</option>
               </select>
+              <label>Account Type</label>
+            </div>
 
-              <label>First Name</label>
+            <div className="floating-group">
               <input
-                className="staff-input"
                 type="text"
                 name="firstName"
-                placeholder="First Name"
                 value={formData.firstName}
                 onChange={handleChange}
                 required
-                style={{ marginBottom: 12 }}
               />
+              <label>First Name</label>
+            </div>
 
-              <label>Middle Name</label>
+            <div className="floating-group">
               <input
-                className="staff-input"
                 type="text"
                 name="middleName"
-                placeholder="Middle Name"
                 value={formData.middleName}
                 onChange={handleChange}
-                style={{ marginBottom: 12 }}
               />
+              <label>Middle Name</label>
+            </div>
 
-              <label>Last Name</label>
+            <div className="floating-group">
               <input
-                className="staff-input"
                 type="text"
                 name="lastName"
-                placeholder="Last Name"
                 value={formData.lastName}
                 onChange={handleChange}
                 required
-                style={{ marginBottom: 12 }}
               />
+              <label>Last Name</label>
+            </div>
 
-              <label>Department</label>
+            <div className="floating-group">
               <select
-                className="staff-input"
                 name="department"
                 value={formData.department}
                 onChange={handleChange}
                 required
-                style={{ marginBottom: 12 }}
               >
                 <option value="">Select department</option>
+
                 <optgroup label="Top Level">
-                  <option value="Minister's Support Staff Unit">Minister's Support Staff Unit</option>
-                  <option value="Public Relations and Communications">Public Relations and Communications</option>
+                  <option>Minister's Support Staff Unit</option>
+                  <option>Public Relations and Communications</option>
                 </optgroup>
+
                 <optgroup label="Middle Management">
-                  <option value="Innovation and Technology Sector">Innovation and Technology Sector</option>
-                  <option value="Digital Economy Sector">Digital Economy Sector</option>
+                  <option>Innovation and Technology Sector</option>
+                  <option>Digital Economy Sector</option>
                 </optgroup>
+
                 <optgroup label="Innovation & Technology Cluster">
-                  <option value="Innovation and Technology Research">Innovation and Technology Research</option>
-                  <option value="Creative Works Development">Creative Works Development</option>
-                  <option value="Technology Transfer">Technology Transfer</option>
-                  <option value="Innovation Hub Management">Innovation Hub Management</option>
-                  <option value="Standardization and Quality Control">Standardization and Quality Control</option>
+                  <option>Innovation and Technology Research</option>
+                  <option>Creative Works Development</option>
+                  <option>Technology Transfer</option>
+                  <option>Innovation Hub Management</option>
+                  <option>Standardization and Quality Control</option>
                 </optgroup>
+
                 <optgroup label="Digital Economy Cluster">
-                  <option value="Digital Infrastructure">Digital Infrastructure</option>
-                  <option value="Digital Services Development">Digital Services Development</option>
-                  <option value="Cyber Security">Cyber Security</option>
-                  <option value="E-Commerce Development">E-Commerce Development</option>
-                  <option value="Data Management and Analysis">Data Management and Analysis</option>
+                  <option>Digital Infrastructure</option>
+                  <option>Digital Services Development</option>
+                  <option>Cyber Security</option>
+                  <option>E-Commerce Development</option>
+                  <option>Data Management and Analysis</option>
                 </optgroup>
               </select>
+              <label>Department</label>
+            </div>
 
-              <label>Gender</label>
+            <div className="floating-group">
               <select
-                className="staff-input"
                 name="gender"
                 value={formData.gender}
                 onChange={handleChange}
                 required
-                style={{ marginBottom: 12 }}
               >
                 <option value="">Select gender</option>
                 <option value="male">Male</option>
                 <option value="female">Female</option>
                 <option value="other">Other</option>
               </select>
+              <label>Gender</label>
             </div>
+          </div>
 
-            <div className="admin-form-column" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 22, alignItems: 'flex-start' }}>
-              <label>Email</label>
+          {/* RIGHT COLUMN */}
+          <div className="admin-form-column">
+            <h4 className="form-section-title">Account Info</h4>
+            <div className="floating-group icon-input">
+              <span>📧</span>
               <input
-                className="staff-input"
                 type="email"
                 name="email"
-                placeholder="Enter your email"
                 value={formData.email}
                 onChange={handleChange}
                 required
-                style={{ marginBottom: 12, maxWidth: 400, width: '100%' }}
               />
-              {touched.email && formData.email && !isEmailValid(formData.email) && (
-                <div className="errorText">✖️ Please enter a valid email</div>
+              <label>Email</label>
+            </div>
+            {touched.email &&
+              formData.email &&
+              !isEmailValid(formData.email) && (
+                <div className="errorText">Invalid email</div>
               )}
 
-              <label>Phone Number</label>
+            <div className="floating-group icon-input">
+              <span>📞</span>
               <input
-                className="staff-input"
                 type="tel"
                 name="phone"
-                placeholder="+251 Enter your phone number"
                 value={formData.phone}
                 onChange={handleChange}
-                style={{ marginBottom: 12, maxWidth: 400, width: '100%' }}
               />
-
-              <label>Password</label>
-              <div className="password-wrapper" style={{ marginBottom: 0, position: 'relative' }}>
-                <input
-                  className="staff-input"
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  placeholder="Enter password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                  style={{ marginBottom: 0 }}
-                />
-                <span
-                  className="eye-icon"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  style={{ top: '50%' }}
-                >
-                  {showPassword ? "🙈" : "👁"}
-                </span>
-              </div>
-              {touched.password && formData.password && (
-                <div className="password-hint" style={{ color: passwordRules.length && passwordRules.uppercase && passwordRules.lowercase && passwordRules.number && passwordRules.symbol ? 'green' : 'red', fontSize: 13, marginTop: 4, marginBottom: 8, position: 'static', left: 'unset', top: 'unset' }}>{getPasswordMessage()}</div>
-              )}
-
-              <label>Confirm Password</label>
-              <div className="password-wrapper" style={{ position: 'relative' }}>
-                <input
-                  className="staff-input"
-                  type={showConfirmPassword ? "text" : "password"}
-                  name="confirmPassword"
-                  placeholder="Confirm password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  required
-                  style={{ marginBottom: 0 }}
-                />
-                <span
-                  className="eye-icon"
-                  onClick={() => setShowConfirmPassword((prev) => !prev)}
-                  style={{ top: '50%' }}
-                >
-                  {showConfirmPassword ? "🙈" : "👁"}
-                </span>
-              </div>
-              {touched.confirmPassword && formData.confirmPassword && formData.password !== formData.confirmPassword && (
-                <div className="errorText" style={{ color: 'red', fontSize: 13, marginTop: 4, marginBottom: 8, position: 'static', left: 'unset', top: 'unset' }}>✖️ Passwords do not match</div>
-              )}
+              <label>Phone</label>
             </div>
+
+            <div className="floating-group icon-input">
+              <span>🔒</span>
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+              <label>Password</label>
+              <div
+                className="eye-icon"
+                onClick={() => setShowPassword((prev) => !prev)}
+              >
+                {showPassword ? "🙈" : "👁"}
+              </div>
+            </div>
+
+            {touched.password && formData.password && (
+              <div
+                className="password-hint"
+                style={{
+                  color: Object.values(passwordRules).every(Boolean)
+                    ? "green"
+                    : "red",
+                }}
+              >
+                {getPasswordMessage()}
+              </div>
+            )}
+
+            <div className="floating-group icon-input">
+              <span>🔒</span>
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+              />
+              <label>Confirm Password</label>
+              <div
+                className="eye-icon"
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+              >
+                {showConfirmPassword ? "🙈" : "👁"}
+              </div>
+            </div>
+
+            {touched.confirmPassword &&
+              formData.confirmPassword &&
+              formData.password !== formData.confirmPassword && (
+                <div className="errorText">Passwords do not match</div>
+              )}
           </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 40 }}>
-            <Button type="submit" size="sm" variant="primary">
-              Create User
-            </Button>
-          </div>
-        </form>
-      </div>
+        </div>
+
+        {/* FOOTER */}
+        <div className="staff-modal-footer">
+          <Button variant="ghost" onClick={() => navigate(-1)}>
+            Cancel
+          </Button>
+
+          <Button type="submit" variant="primary">
+            Create User
+          </Button>
+        </div>
+      </form>
     </div>
   );
 }
