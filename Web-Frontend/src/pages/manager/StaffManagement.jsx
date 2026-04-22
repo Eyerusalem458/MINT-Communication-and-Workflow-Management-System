@@ -3,6 +3,7 @@ import Modal from "../../components/ui/Modal";
 import Button from "../../components/ui/Button";
 import { UserContext } from "../../context/UserContext";
 import { useTasks } from "../../context/TaskContext";
+import Pagination from "../../components/ui/Pagination";
 
 const StaffManagement = () => {
   const { users } = useContext(UserContext);
@@ -18,6 +19,8 @@ const StaffManagement = () => {
   const [viewTasksModal, setViewTasksModal] = useState(false);
   const [selectedStaffTasks, setSelectedStaffTasks] = useState([]);
   const [staffName, setStaffName] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   // ✅ ONLY STAFF
   const staffOnly = useMemo(() => {
@@ -41,6 +44,11 @@ const StaffManagement = () => {
       return matchesSearch && matchesDepartment && matchesGender;
     });
   }, [query, staffOnly, departmentFilter, genderFilter]);
+
+const paginatedStaff = filteredStaff.slice(
+  (currentPage - 1) * itemsPerPage,
+  currentPage * itemsPerPage,
+);
 
   // 👁️ View Profile
   const openStaffModal = (staff) => {
@@ -124,7 +132,7 @@ const StaffManagement = () => {
           </thead>
 
           <tbody>
-            {filteredStaff.map((staff) => (
+            {paginatedStaff.map((staff) => (
               <tr key={staff.id}>
                 <td>{staff.firstName}</td>
                 <td>{staff.middleName}</td>
@@ -169,6 +177,17 @@ const StaffManagement = () => {
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        totalItems={filteredStaff.length}
+        itemsPerPage={itemsPerPage}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+        onItemsPerPageChange={(size) => {
+          setItemsPerPage(size);
+          setCurrentPage(1);
+        }}
+      />
 
       {/* 👁️ PROFILE MODAL */}
       {openModal && (
