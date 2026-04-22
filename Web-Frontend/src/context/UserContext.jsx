@@ -1,10 +1,20 @@
-import { createContext, useState } from "react";
+import { createContext, useState,useEffect } from "react";
 import { mockStaff } from "../utils/data";
 
 export const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
   const [users, setUsers] = useState(mockStaff);
+
+  // ✅ ADD THIS (mock logged-in user for now)
+  const [currentUser, setCurrentUser] = useState(
+    JSON.parse(localStorage.getItem("user")) || mockStaff[0],
+  );
+  // later you will set this after login
+
+  useEffect(() => {
+    localStorage.setItem("user", JSON.stringify(currentUser));
+  }, [currentUser]);
 
   // ➕ Add user
   const addUser = (user) => {
@@ -24,7 +34,16 @@ export const UserProvider = ({ children }) => {
   };
 
   return (
-    <UserContext.Provider value={{ users, addUser, editUser, deleteUser }}>
+    <UserContext.Provider
+      value={{
+        users,
+        addUser,
+        editUser,
+        deleteUser,
+        currentUser,
+        setCurrentUser,
+      }}
+    >
       {children}
     </UserContext.Provider>
   );
