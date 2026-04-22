@@ -2,12 +2,15 @@ import { useState,useMemo } from "react";
 import Button from "../../components/ui/Button";
 import { showSuccessToast } from "../../utils/toast";
 import { useProjects } from "../../context/ProjectContext";
+import Pagination from "../../components/ui/Pagination";
 
 const MyProjects = () => {
   const { projects, addProject, editProject, cancelProject } = useProjects();
 
   const [openModal, setOpenModal] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
+const [currentPage, setCurrentPage] = useState(1);
+const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const [form, setForm] = useState({
     title: "",
@@ -81,6 +84,11 @@ const MyProjects = () => {
     showSuccessToast("Project cancelled");
   };
 
+const paginatedProjects = filteredProjects.slice(
+  (currentPage - 1) * itemsPerPage,
+  currentPage * itemsPerPage,
+);
+
   const getStatusClass = (status) => {
     switch (status) {
       case "Pending":
@@ -127,7 +135,7 @@ const MyProjects = () => {
           </thead>
 
           <tbody>
-            {filteredProjects.map((project) => (
+            {paginatedProjects.map((project) => (
               <tr key={project.id}>
                 <td>{project.title}</td>
                 <td>{project.description}</td>
@@ -143,7 +151,7 @@ const MyProjects = () => {
                   <div className="staff-table-actions">
                     <Button
                       size="xs"
-                      variant="ghost"
+                      variant="secondary"
                       onClick={() => handleEdit(project)}
                     >
                       Edit
@@ -164,7 +172,17 @@ const MyProjects = () => {
         </table>
       </div>
 
-      {/* MODAL */}
+      <Pagination
+        totalItems={filteredProjects.length}
+        itemsPerPage={itemsPerPage}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+        onItemsPerPageChange={(size) => {
+          setItemsPerPage(size);
+          setCurrentPage(1);
+        }}
+      />
+
       {/* MODAL */}
       {openModal && (
         <div

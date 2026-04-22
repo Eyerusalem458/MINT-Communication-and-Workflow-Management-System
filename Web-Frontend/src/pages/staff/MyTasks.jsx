@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Button from "../../components/ui/Button";
 import { showSuccessToast } from "../../utils/toast";
 import { useTasks } from "../../context/TaskContext";
+import Pagination from "../../components/ui/Pagination";
 
 const MyTasks = () => {
   const navigate = useNavigate();
@@ -15,6 +16,9 @@ const MyTasks = () => {
   const [query, setQuery] = useState("");
   const [selectedTask, setSelectedTask] = useState(null);
   const [openModal, setOpenModal] = useState(false);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const filteredTasks = useMemo(() => {
     return tasks.filter(
@@ -41,6 +45,11 @@ const MyTasks = () => {
   const handleFileClick = (taskId) => {
     fileInputRefs.current[taskId]?.click();
   };
+
+const paginatedTasks = filteredTasks.slice(
+  (currentPage - 1) * itemsPerPage,
+  currentPage * itemsPerPage,
+);
 
   // ✅ STATUS BADGE
   const getStatusClass = (status) => {
@@ -98,7 +107,7 @@ const MyTasks = () => {
           </thead>
 
           <tbody>
-            {filteredTasks.map((task) => (
+            {paginatedTasks.map((task) => (
               <tr key={task.id}>
                 <td
                   className="staff-table-title"
@@ -209,6 +218,17 @@ const MyTasks = () => {
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        totalItems={filteredTasks.length}
+        itemsPerPage={itemsPerPage}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+        onItemsPerPageChange={(size) => {
+          setItemsPerPage(size);
+          setCurrentPage(1);
+        }}
+      />
 
       {openModal && selectedTask && (
         <div
