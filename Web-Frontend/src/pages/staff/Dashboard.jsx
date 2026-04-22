@@ -12,7 +12,6 @@ const Dashboard = () => {
   return (
     <>
       <div className="staff-welcome">
-        <h1 className="staff-welcome-title">Welcome, Staff Member</h1>
         <p className="staff-welcome-subtitle">
           Track your tasks, collaborate with your team, and keep projects moving
           for MINT.
