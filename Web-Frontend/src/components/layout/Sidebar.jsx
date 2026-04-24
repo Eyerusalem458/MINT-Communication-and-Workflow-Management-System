@@ -9,6 +9,7 @@ const Sidebar = ({
   onTabChange,
   onLogout,
 }) => {
+  
   const navigate = useNavigate();
 
   const handleLogout = () => {
