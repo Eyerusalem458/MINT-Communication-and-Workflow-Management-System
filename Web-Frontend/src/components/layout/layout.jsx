@@ -81,9 +81,7 @@ const breadcrumb = `${roleLabel} / ${pageLabel}`;
     >
       <Sidebar
         tabs={tabs}
-        // activeTab={activeTab}
         isOpen={isSidebarOpen}
-        // onTabChange={setActiveTab}
         onLogout={handleLogout}
         basePath={roleBasePaths[user?.role] || "/"}
       />
