@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { LogoutIcon } from "../../pages/shared/icon";
+import logo from "../../assets/images/logo.png";
 
 const Sidebar = ({
   isOpen,
@@ -26,13 +27,10 @@ const Sidebar = ({
       }}
     >
       <div className="staff-sidebar__brand">
-        <div className="staff-logo-circle">M</div>
+        <img src={logo} alt="Logo" className="staff-logo" />
         {isOpen && (
           <div>
-            <div className="staff-brand-title">MINT Portal</div>
-            <div className="staff-brand-subtitle">
-              Ministry of Innovation & Technology
-            </div>
+            <div className="staff-brand-title">STREAMLINED COLLABORATION</div>
           </div>
         )}
       </div>
@@ -40,7 +38,6 @@ const Sidebar = ({
       <nav className="staff-nav">
         {tabs.map((item, index) => (
           <div key={item.key}>
-            {/* {index === 3 && <div className="staff-nav-divider" />} */}
             <NavLink
               to={`${basePath}${item.path}`}
               className={({ isActive }) =>
