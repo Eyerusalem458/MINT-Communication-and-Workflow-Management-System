@@ -8,15 +8,27 @@ const ProjectRequest = () => {
 
   const [selectedProject, setSelectedProject] = useState(null);
   const [openModal, setOpenModal] = useState(false);
+  const [rejectComment, setRejectComment] = useState(""); // 🔥 NEW
+  const [showRejectModal, setShowRejectModal] = useState(false); // 🔥 NEW
 
   const handleApprove = (id) => {
     approveProject(id);
     showSuccessToast("Project approved");
   };
 
-  const handleReject = (id) => {
-    rejectProject(id);
+  const handleReject = (project) => {
+    setSelectedProject(project);
+    setRejectComment(project.comment || ""); // prefill existing comment if any
+    setShowRejectModal(true); // open reject modal
+  };
+
+  const confirmReject = () => {
+    if (!selectedProject) return;
+    rejectProject(selectedProject.id, rejectComment); // pass comment to context
     showSuccessToast("Project rejected");
+    setShowRejectModal(false);
+    setSelectedProject(null);
+    setRejectComment("");
   };
 
   const openDetails = (project) => {
@@ -77,21 +89,18 @@ const ProjectRequest = () => {
                   </td>
 
                   <td>{project.createdBy || "Staff"}</td>
-<td>{project.department || "N/A"}</td>
+                  <td>{project.department || "N/A"}</td>
 
-                  {/* STATUS BADGE */}
                   <td>
                     <span className={getStatusClass(project.status)}>
                       {project.status}
                     </span>
                   </td>
- {/* FILE DISPLAY */}
+
                   <td>
                     {project.file ? (
                       <div className="file-actions">
                         <span>📎 {project.file?.name || "File attached"}</span>
-
-                        {/* Download */}
                         <a
                           href={
                             project.file instanceof File
@@ -132,7 +141,7 @@ const ProjectRequest = () => {
                       <Button
                         size="xs"
                         variant="ghost"
-                        onClick={() => handleReject(project.id)}
+                        onClick={() => handleReject(project)}
                       >
                         Reject
                       </Button>
@@ -145,7 +154,7 @@ const ProjectRequest = () => {
         </table>
       </div>
 
-      {/* MODERN MODAL */}
+      {/* DETAILS MODAL */}
       {openModal && selectedProject && (
         <div
           className="staff-modal-backdrop"
@@ -155,7 +164,6 @@ const ProjectRequest = () => {
             className="staff-modal staff-modal--clean"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* HEADER */}
             <div className="staff-modal-header">
               <h3>{selectedProject.title}</h3>
               <span
@@ -166,7 +174,6 @@ const ProjectRequest = () => {
               </span>
             </div>
 
-            {/* BODY */}
             <div className="staff-modal-body">
               <p>
                 <strong>Created By:</strong> {selectedProject.createdBy}
@@ -174,26 +181,22 @@ const ProjectRequest = () => {
               <p>
                 <strong>Department:</strong> {selectedProject.department}
               </p>
-
               <p>
                 <strong>Status:</strong>{" "}
                 <span className={getStatusClass(selectedProject.status)}>
                   {selectedProject.status}
                 </span>
               </p>
-
               <p>
                 <strong>Description:</strong>
               </p>
               <p>{selectedProject.description}</p>
-
               <p>
                 <strong>File:</strong>
               </p>
 
               {selectedProject.file ? (
                 <div>
-                  {/* 🖼 Image Preview */}
                   {selectedProject.file.type?.startsWith("image/") ? (
                     <img
                       src={URL.createObjectURL(selectedProject.file)}
@@ -203,7 +206,6 @@ const ProjectRequest = () => {
                   ) : (
                     <p>📄 {selectedProject.file?.name || "Attached file"}</p>
                   )}
- {/* ⬇️ Download */}
                   <div style={{ marginTop: "10px" }}>
                     <a
                       href={
@@ -222,7 +224,6 @@ const ProjectRequest = () => {
               )}
             </div>
 
-            {/* FOOTER */}
             <div className="staff-modal-footer">
               <Button
                 variant="primary"
@@ -233,7 +234,7 @@ const ProjectRequest = () => {
 
               <Button
                 variant="ghost"
-                onClick={() => handleReject(selectedProject.id)}
+                onClick={() => handleReject(selectedProject)}
               >
                 Reject
               </Button>
@@ -245,8 +246,53 @@ const ProjectRequest = () => {
           </div>
         </div>
       )}
+
+      {/* REJECT COMMENT MODAL */}
+      {showRejectModal && selectedProject && (
+        <div
+          className="staff-modal-backdrop"
+          onClick={() => setShowRejectModal(false)}
+        >
+          <div
+            className="staff-modal staff-modal--clean"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="staff-modal-header">
+              <h3>Reject Project: {selectedProject.title}</h3>
+              <span
+                className="staff-modal-close"
+                onClick={() => setShowRejectModal(false)}
+              >
+                ✕
+              </span>
+            </div>
+
+            <div className="staff-modal-body">
+              <p>Please enter a comment for rejecting this project:</p>
+              <textarea
+                value={rejectComment}
+                onChange={(e) => setRejectComment(e.target.value)}
+                rows={4}
+                style={{ width: "100%", padding: "8px", borderRadius: "4px" }}
+                placeholder="Enter rejection reason..."
+              />
+            </div>
+
+            <div className="staff-modal-footer">
+              <Button variant="primary" onClick={confirmReject}>
+                Confirm Reject
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => setShowRejectModal(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
-
 export default ProjectRequest;

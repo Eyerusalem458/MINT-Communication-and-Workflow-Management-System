@@ -1,274 +1,278 @@
-import { useMemo, useState } from "react";
+import { useState, useMemo } from "react";
+import { useTasks } from "../../context/TaskContext";
+import { useProjects } from "../../context/ProjectContext";
 import Button from "../../components/ui/Button";
-
-// CSV and PDF export libraries
 import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable"; // <- fixed import for modern usage
-
-const mockReports = Array.from({ length: 32 }, (_, i) => ({
-  id: i + 1,
-  title: `Weekly Progress Report ${i + 1}`,
-  staff: `Staff ${i + 1}`,
-  department: ["Innovation", "Operations", "Finance", "HR"][i % 4],
-  date: new Date(2026, 2, (i % 28) + 1),
-  status: ["Pending", "Approved", "Rejected"][i % 3],
-  content: "This is a detailed report submitted to the manager regarding weekly progress and project updates."
-}));
+import "jspdf-autotable";
 
 const Reports = () => {
-  const [reports, setReports] = useState(mockReports);
-  const [search, setSearch] = useState("");
-  const [departmentFilter, setDepartmentFilter] = useState("All");
-  const [statusFilter, setStatusFilter] = useState("All");
-  const [sortNewest, setSortNewest] = useState(true);
-  const [selectedReport, setSelectedReport] = useState(null);
-  const [page, setPage] = useState(1);
-  const pageSize = 8;
+  const { tasks } = useTasks();
+  const { projects } = useProjects();
 
-  const filteredReports = useMemo(() => {
-    let data = [...reports];
+  const [projectPage, setProjectPage] = useState(1);
+  const [taskPage, setTaskPage] = useState(1);
+  const pageSize = 5;
 
-    if (search) {
-      data = data.filter(r =>
-        r.title.toLowerCase().includes(search.toLowerCase()) ||
-        r.staff.toLowerCase().includes(search.toLowerCase())
-      );
+  const [projectFilter, setProjectFilter] = useState("");
+  const [taskFilter, setTaskFilter] = useState("");
+
+  // PROJECT STATS
+  const totalProjects = projects.length;
+  const approvedProjects = projects.filter((p) => p.status === "Approved").length;
+  const pendingProjects = projects.filter((p) => p.status === "Pending").length;
+  const rejectedProjects = projects.filter((p) => p.status === "Rejected").length;
+
+  // TASK STATS
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter((t) => t.status === "Completed").length;
+  const inProgressTasks = tasks.filter((t) => t.status === "In Progress").length;
+  const pendingTasks = tasks.filter((t) => t.status === "Pending").length;
+
+  const getStatusClass = (status) => {
+    switch (status) {
+      case "Pending": return "status-badge pending";
+      case "Approved": return "status-badge approved";
+      case "Rejected": return "status-badge rejected";
+      case "In Progress": return "status-badge in-progress";
+      case "Completed": return "status-badge completed";
+      default: return "status-badge";
     }
+  };
 
-    if (departmentFilter !== "All") {
-      data = data.filter(r => r.department === departmentFilter);
-    }
-
-    if (statusFilter !== "All") {
-      data = data.filter(r => r.status === statusFilter);
-    }
-
-    data.sort((a, b) =>
-      sortNewest
-        ? new Date(b.date) - new Date(a.date)
-        : new Date(a.date) - new Date(b.date)
-    );
-
-    return data;
-  }, [reports, search, departmentFilter, statusFilter, sortNewest]);
-
-  const totalPages = Math.ceil(filteredReports.length / pageSize);
-  const paginatedReports = filteredReports.slice(
-    (page - 1) * pageSize,
-    page * pageSize
+  // FILTERED & PAGINATED DATA
+  const filteredProjects = useMemo(
+    () =>
+      projects
+        .filter((p) => p.title.toLowerCase().includes(projectFilter.toLowerCase()))
+        .slice((projectPage - 1) * pageSize, projectPage * pageSize),
+    [projects, projectFilter, projectPage]
   );
 
-  const stats = {
-    total: reports.length,
-    pending: reports.filter(r => r.status === "Pending").length,
-    approved: reports.filter(r => r.status === "Approved").length,
-    rejected: reports.filter(r => r.status === "Rejected").length,
+  const filteredTasks = useMemo(
+    () =>
+      tasks
+        .filter((t) => t.title.toLowerCase().includes(taskFilter.toLowerCase()))
+        .slice((taskPage - 1) * pageSize, taskPage * pageSize),
+    [tasks, taskFilter, taskPage]
+  );
+
+  // EXPORT FUNCTIONS
+  const exportCSV = (data, filename) => {
+    if (!data || data.length === 0) return;
+    const headers = Object.keys(data[0]);
+    const csv = [
+      headers.join(","),
+      ...data.map((row) =>
+        headers
+          .map((h) => {
+            let val = row[h];
+            if (val === null || val === undefined) return "";
+            if (typeof val === "object") return JSON.stringify(val);
+            return val.toString();
+          })
+          .join(",")
+      ),
+    ].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    saveAs(blob, filename);
   };
 
-  const updateStatus = (id, newStatus) => {
-    setReports(prev =>
-      prev.map(r =>
-        r.id === id ? { ...r, status: newStatus } : r
-      )
-    );
-    setSelectedReport(null);
-  };
-
-  const statusClass = (status) => {
-    if (status === "Approved") return "staff-badge staff-badge--success";
-    if (status === "Rejected") return "staff-badge staff-badge--danger";
-    return "staff-badge staff-badge--warning";
-  };
-
-  // Export CSV function
-  const exportCSV = () => {
-    const headers = ["ID", "Title", "Staff", "Department", "Date", "Status"];
-    const rows = filteredReports.map(r => [
-      r.id,
-      r.title,
-      r.staff,
-      r.department,
-      r.date.toLocaleDateString(),
-      r.status
-    ]);
-
-    let csvContent = "data:text/csv;charset=utf-8," 
-      + [headers, ...rows].map(e => e.join(",")).join("\n");
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "reports.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  // Export PDF function (Fixed)
-  const exportPDF = () => {
+  // FIXED PDF EXPORT
+  const exportPDF = (data, filename, columns) => {
+    if (!data || data.length === 0) return;
     const doc = new jsPDF();
+    doc.setFontSize(10);
 
-    // Title
-    doc.setFontSize(16);
-    doc.text("Staff Reports", 14, 15);
+    // Map data to match columns
+    const body = data.map((row) =>
+      columns.map((col) => {
+        switch (col) {
+          case "Title": return row.title || "";
+          case "Department": return row.department || "";
+          case "Status": return row.status || "";
+          case "Created By": return row.createdBy || "";
+          case "Date": return row.createdAt || "";
+          case "Priority": return row.priority || "";
+          case "Due Date": return row.due || row.dueDate || "";
+          case "File": return row.file ? (row.file.name || JSON.stringify(row.file)) : "";
+          default: return "";
+        }
+      })
+    );
 
-    // Table columns
-    const tableColumn = ["ID", "Title", "Staff", "Department", "Date", "Status"];
-    const tableRows = filteredReports.map(r => [
-      r.id,
-      r.title,
-      r.staff,
-      r.department,
-      r.date.toLocaleDateString(),
-      r.status
-    ]);
-
-    // AutoTable plugin
-    autoTable(doc, {
-      head: [tableColumn],
-      body: tableRows,
+    doc.autoTable({
+      head: [columns],
+      body,
       startY: 20,
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [22, 160, 133], textColor: 255 },
-      theme: "grid"
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [41, 128, 185] },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
     });
 
-    doc.save("reports.pdf");
+    doc.save(filename);
   };
 
   return (
-    <div className="staff-card staff-card--full">
-
-      {/* Header */}
-      <div className="staff-card-header">
-        <h2>Reports Management</h2>
-        <p className="staff-card-subtitle">
-          Review, approve, and manage staff reports efficiently.
-        </p>
+    <div className="manager-card manager-card--full">
+      {/* HEADER */}
+      <div className="manager-card-header">
+        <h2>Reports</h2>
+        <p>System analytics and performance overview</p>
       </div>
 
-      {/* Summary Cards Horizontal */}
-      <div className="staff-summary-cards-container" style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
-        <div className="staff-summary-card" style={{ flex: 1, padding: "20px", borderRadius: "10px", background: "#f0f4f8", textAlign: "center", boxShadow: "0 2px 6px rgba(0,0,0,0.1)" }}>
-          <h3 style={{ fontSize: "28px", marginBottom: "5px" }}>{stats.total}</h3>
-          <p style={{ fontSize: "14px", color: "#555" }}>Total Reports</p>
-        </div>
-        <div className="staff-summary-card" style={{ flex: 1, padding: "20px", borderRadius: "10px", background: "#fffbe6", textAlign: "center", boxShadow: "0 2px 6px rgba(0,0,0,0.1)" }}>
-          <h3 style={{ fontSize: "28px", marginBottom: "5px" }}>{stats.pending}</h3>
-          <p style={{ fontSize: "14px", color: "#555" }}>Pending</p>
-        </div>
-        <div className="staff-summary-card" style={{ flex: 1, padding: "20px", borderRadius: "10px", background: "#e6ffed", textAlign: "center", boxShadow: "0 2px 6px rgba(0,0,0,0.1)" }}>
-          <h3 style={{ fontSize: "28px", marginBottom: "5px" }}>{stats.approved}</h3>
-          <p style={{ fontSize: "14px", color: "#555" }}>Approved</p>
-        </div>
-        <div className="staff-summary-card" style={{ flex: 1, padding: "20px", borderRadius: "10px", background: "#ffe6e6", textAlign: "center", boxShadow: "0 2px 6px rgba(0,0,0,0.1)" }}>
-          <h3 style={{ fontSize: "28px", marginBottom: "5px" }}>{stats.rejected}</h3>
-          <p style={{ fontSize: "14px", color: "#555" }}>Rejected</p>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="staff-toolbar">
-        <input
-          className="staff-input"
-          placeholder="Search reports..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <select
-          className="staff-input"
-          value={departmentFilter}
-          onChange={(e) => setDepartmentFilter(e.target.value)}
-        >
-          <option>All</option>
-          <option>Innovation</option>
-          <option>Operations</option>
-          <option>Finance</option>
-          <option>HR</option>
-        </select>
-        <select
-          className="staff-input"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option>All</option>
-          <option>Pending</option>
-          <option>Approved</option>
-          <option>Rejected</option>
-        </select>
-        <Button variant="ghost" onClick={() => setSortNewest(v => !v)}>
-          Sort: {sortNewest ? "Newest" : "Oldest"}
-        </Button>
-        <Button variant="secondary" onClick={exportCSV}>Export CSV</Button>
-        <Button variant="secondary" onClick={exportPDF}>Export PDF</Button>
-      </div>
-
-      {/* Reports Table */}
-      <div className="staff-table-wrapper">
-        <table className="staff-table">
-          <thead>
-            <tr>
-              <th>Report</th>
-              <th>Staff</th>
-              <th>Department</th>
-              <th>Date</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedReports.map(report => (
-              <tr key={report.id}>
-                <td>{report.title}</td>
-                <td>{report.staff}</td>
-                <td>{report.department}</td>
-                <td>{report.date.toLocaleDateString()}</td>
-                <td>
-                  <span className={statusClass(report.status)}>
-                    {report.status}
-                  </span>
-                </td>
-                <td>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setSelectedReport(report)}
-                  >
-                    View
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination */}
-      <div className="staff-pagination">
-        <Button size="sm" variant="ghost" disabled={page === 1} onClick={() => setPage(p => p - 1)}>«</Button>
-        <span>Page {page} of {totalPages}</span>
-        <Button size="sm" variant="ghost" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>»</Button>
-      </div>
-
-      {/* Report Modal */}
-      {selectedReport && (
-        <div className="staff-modal-overlay">
-          <div className="staff-modal">
-            <h3>{selectedReport.title}</h3>
-            <p><strong>Staff:</strong> {selectedReport.staff}</p>
-            <p><strong>Department:</strong> {selectedReport.department}</p>
-            <p><strong>Date:</strong> {selectedReport.date.toLocaleDateString()}</p>
-            <div className="staff-report-content">{selectedReport.content}</div>
-            <div className="staff-modal-actions">
-              <Button variant="success" onClick={() => updateStatus(selectedReport.id, "Approved")}>Approve</Button>
-              <Button variant="danger" onClick={() => updateStatus(selectedReport.id, "Rejected")}>Reject</Button>
-              <Button variant="ghost" onClick={() => setSelectedReport(null)}>Close</Button>
-            </div>
+      {/* COLORFUL CARDS */}
+      <div className="staff-grid staff-grid--cols-3">
+        <div className="staff-card staff-card--metric card-approved" style={{ background: "linear-gradient(135deg, #fef3c7, #fde68a)" }}>
+          <div className="staff-card-label">Total Projects</div>
+          <div className="staff-card-value">{totalProjects}</div>
+          <div className="staff-card-subtitle">
+            Approved: {approvedProjects} | Pending: {pendingProjects} | Rejected: {rejectedProjects}
           </div>
         </div>
-      )}
 
+        <div className="staff-card staff-card--metric card-inprogress" style={{ background: "linear-gradient(135deg, #e0f2fe, #bae6fd)" }}>
+          <div className="staff-card-label">Total Tasks</div>
+          <div className="staff-card-value">{totalTasks}</div>
+          <div className="staff-card-subtitle">
+            Completed: {completedTasks} | In Progress: {inProgressTasks} | Pending: {pendingTasks}
+          </div>
+        </div>
+
+        <div className="staff-card staff-card--metric card-completed" style={{ background: "linear-gradient(135deg, #d1fae5, #a7f3d0)" }}>
+          <div className="staff-card-label">Completion Rate</div>
+          <div className="staff-card-value">
+            {totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0}%
+          </div>
+          <div className="staff-card-subtitle">Task completion performance</div>
+        </div>
+      </div>
+
+      {/* PROJECT TABLE */}
+      <div className="staff-card staff-card--full">
+        <div className="staff-card-header">
+          <h3>Project Status Report</h3>
+          <input
+            type="text"
+            placeholder="Filter projects..."
+            value={projectFilter}
+            onChange={(e) => setProjectFilter(e.target.value)}
+          />
+          <div style={{ marginTop: "5px" }}>
+            <Button onClick={() => exportCSV(projects, "projects.csv")}>Export CSV</Button>
+            <Button
+              onClick={() =>
+                exportPDF(
+                  projects,
+                  "projects.pdf",
+                  ["Title", "Department", "Status", "Created By", "Date"]
+                )
+              }
+            >
+              Export PDF
+            </Button>
+          </div>
+        </div>
+
+        <div className="staff-table-scroll">
+          <table className="staff-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Department</th>
+                <th>Status</th>
+                <th>Created By</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredProjects.map((project) => (
+                <tr key={project.id}>
+                  <td>{project.title}</td>
+                  <td>{project.department}</td>
+                  <td>
+                    <span className={getStatusClass(project.status)}>
+                      {project.status}
+                    </span>
+                  </td>
+                  <td>{project.createdBy}</td>
+                  <td>{project.createdAt}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        <div style={{ marginTop: "10px" }}>
+          <Button onClick={() => setProjectPage(Math.max(projectPage - 1, 1))}>&lt;&lt;</Button>
+          <span style={{ margin: "0 10px" }}>Page {projectPage}</span>
+          <Button onClick={() => setProjectPage(projectPage + 1)}>&gt;&gt;</Button>
+        </div>
+      </div>
+
+      {/* TASK TABLE */}
+      <div className="staff-card staff-card--full">
+        <div className="staff-card-header">
+          <h3>Task Status Report</h3>
+          <input
+            type="text"
+            placeholder="Filter tasks..."
+            value={taskFilter}
+            onChange={(e) => setTaskFilter(e.target.value)}
+          />
+          <div style={{ marginTop: "5px" }}>
+            <Button onClick={() => exportCSV(tasks, "tasks.csv")}>Export CSV</Button>
+            <Button
+              onClick={() =>
+                exportPDF(
+                  tasks,
+                  "tasks.pdf",
+                  ["Title", "Priority", "Status", "Due Date", "File"]
+                )
+              }
+            >
+              Export PDF
+            </Button>
+          </div>
+        </div>
+
+        <div className="staff-table-scroll">
+          <table className="staff-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Due Date</th>
+                <th>File</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredTasks.map((task) => (
+                <tr key={task.id}>
+                  <td>{task.title}</td>
+                  <td>{task.priority}</td>
+                  <td>
+                    <span className={getStatusClass(task.status)}>
+                      {task.status}
+                    </span>
+                  </td>
+                  <td>{task.due || task.dueDate || "N/A"}</td>
+                  <td>{task.file ? JSON.stringify(task.file) : "N/A"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        <div style={{ marginTop: "10px" }}>
+          <Button onClick={() => setTaskPage(Math.max(taskPage - 1, 1))}>&lt;&lt;</Button>
+          <span style={{ margin: "0 10px" }}>Page {taskPage}</span>
+          <Button onClick={() => setTaskPage(taskPage + 1)}>&gt;&gt;</Button>
+        </div>
+      </div>
     </div>
   );
 };
