@@ -4,7 +4,7 @@ import { useProjects } from "../../context/ProjectContext";
 import Button from "../../components/ui/Button";
 import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 const Reports = () => {
   const { tasks } = useTasks();
@@ -116,11 +116,14 @@ const Reports = () => {
 
   // FIXED PDF EXPORT
   const exportPDF = (data, filename, columns) => {
-    if (!data || data.length === 0) return;
-    const doc = new jsPDF();
-    doc.setFontSize(10);
+    if (!data || data.length === 0) {
+      alert("No data to export");
+      return;
+    }
 
-    // Map data to match columns
+    const doc = new jsPDF();
+
+    // ✅ Map data safely
     const body = data.map((row) =>
       columns.map((col) => {
         switch (col) {
@@ -146,7 +149,8 @@ const Reports = () => {
       }),
     );
 
-    doc.autoTable({
+    // ✅ USE autoTable correctly
+    autoTable(doc, {
       head: [columns],
       body,
       startY: 20,
