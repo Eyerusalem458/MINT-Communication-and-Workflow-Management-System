@@ -128,8 +128,8 @@ const ChatPage = () => {
   const [selectedChatUser, setSelectedChatUser] = useState(null);
   // for user search
   const [userSearch, setUserSearch] = useState("");
-const [isEditingName, setIsEditingName] = useState(false);
-const [editedName, setEditedName] = useState("");
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState("");
   const [chatSearch, setChatSearch] = useState("");
   const [showChatSearch, setShowChatSearch] = useState(false);
   const [callType, setCallType] = useState(null); // "voice" | "video" | null
@@ -802,8 +802,7 @@ const [editedName, setEditedName] = useState("");
                         setMediaRecorder(recorder);
                         setIsRecording(true);
                       } catch (err) {
-                        showErrorToast;
-                        ("Microphone access is required ...");
+                        showErrorToast("Microphone access is required ...");
                       }
                     } else {
                       if (mediaRecorder) {
@@ -1053,8 +1052,8 @@ const [editedName, setEditedName] = useState("");
                   };
 
                   setChatList([newChat, ...chatList]);
-                  setActiveChat(newChat); 
-                  setIsCreatingChat(false); 
+                  setActiveChat(newChat);
+                  setIsCreatingChat(false);
                   setUserSearch("");
                 }}
               >
