@@ -2,7 +2,10 @@ import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { NotificationContext } from "../../context/NotificationContext";
 import { UserContext } from "../../context/UserContext";
+import { TAB_CONFIG } from "../../utils/Constants/tabConfig";
+import { AuthContext } from "../../context/AuthContext";
 import {
+  
   BellIcon,
   HamburgerIcon,
   LanguageIcon,
@@ -22,31 +25,43 @@ const Header = ({
   const [langOpen, setLangOpen] = useState(false);
   const navigate = useNavigate();
   const { notifications } = useContext(NotificationContext);
-const { currentUser } = useContext(UserContext);
+  const { user } = useContext(AuthContext);
+// const { currentUser } = useContext(UserContext);
   const unseenCount = notifications.filter((n) => n.unseen).length;
 
-const fullName = currentUser
-  ? `${currentUser.firstName} ${currentUser.lastName}`
-  : "User";
+const fullName =
+  user?.firstName && user?.lastName
+    ? `${user.firstName} ${user.lastName}`
+    : user?.role?.toUpperCase() || "User";;
 
-const role = currentUser?.role?.toUpperCase() || "STAFF";
+const role = user?.role?.toUpperCase() || "STAFF";
 
-const initials = currentUser
-  ? `${currentUser.firstName?.[0] || ""}${currentUser.lastName?.[0] || ""}`
-  : "U";
+const initials =
+  user?.firstName && user?.lastName
+    ? `${user.firstName[0]}${user.lastName[0]}`
+    : user?.role?.[0]?.toUpperCase() || "U";
 
   const handleNotificationsClick = () => {
     onOpenNotifications(); // update active tab
   };
 
 const handleProfileClick = () => {
-  const role = currentUser?.role?.toLowerCase();
+  const role = user?.role?.toLowerCase();
+
+  if (!role) return;
+
+  let path = "";
 
   if (role === "staff") {
-    navigate("/staff/profile");
-  } else {
-    navigate(`/${role}/settings`);
+    path = TAB_CONFIG.STAFF_PROFILE.path; // "/profile"
+  } else if (role === "manager") {
+    path = TAB_CONFIG.MANAGER_SETTINGS.path; // "/settings"
+  } else if (role === "admin") {
+    path = TAB_CONFIG.ADMIN_SETTINGS.path; // "/settings"
   }
+
+  // ✅ THIS IS THE FIX
+  navigate(`/${role}${path}`);
 };
 
   return (
