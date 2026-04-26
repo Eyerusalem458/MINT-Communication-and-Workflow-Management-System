@@ -99,7 +99,7 @@ const ProjectRequest = () => {
 
                   <td>
                     {project.file ? (
-                      <div className="file-actions">
+                      <div >
                         <span>📎 {project.file?.name || "File attached"}</span>
                         <a
                           href={
