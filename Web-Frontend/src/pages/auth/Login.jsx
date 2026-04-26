@@ -4,9 +4,13 @@ import { toast } from "react-toastify";
 import logo from "../../assets/images/logo.png";
 import robot from "../../assets/images/robot.png";
 
-import { FaEnvelope, FaLock, FaFacebookF } from "react-icons/fa";
+import { FaFacebookF } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 
+import{
+  LockIcon,
+  MailIcon,
+} from "../shared/icon"
 import "../../assets/styles/Login.css";
 import { showSuccessToast, showErrorToast } from "../../utils/toast";
 import { AuthContext } from "../../context/AuthContext";
@@ -136,7 +140,7 @@ export default function Login() {
             <form className="login-form" onSubmit={handleSignIn}>
               {/* Email */}
               <div className="input-group">
-                <FaEnvelope className="input-icon" />
+                <MailIcon className="login-input-icon" />
                 <input
                   type="email"
                   placeholder="Email"
@@ -148,7 +152,7 @@ export default function Login() {
 
               {/* Password */}
               <div className="input-group">
-                <FaLock className="input-icon" />
+                <LockIcon className="login-input-icon" />
                 <input
                   type="password"
                   placeholder="Password"
