@@ -350,3 +350,128 @@ export const RefreshIcon = () => (
     />
   </svg>
 );
+// --- Chat Sidebar Icons ---
+export const FilterIcon = () => (
+  <svg {...navIconProps}>
+    <path
+      d="M3 5h18M6 12h12M10 19h4"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+  </svg>
+);
+
+export const EditIcon = () => (
+  <svg {...navIconProps}>
+    <path
+      d="M4 20h4l10-10-4-4L4 16v4Z"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+export const PlusIcon = () => (
+  <svg {...navIconProps}>
+    <path
+      d="M12 5v14M5 12h14"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+  </svg>
+);
+export const VideoIcon = ({ size = 24, color = "currentColor" }) => {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="2" y="6" width="14" height="12" rx="2" ry="2" />
+      <polygon points="16 12 22 8 22 16 16 12" />
+    </svg>
+  );
+};
+export const PhoneIcon = ({ size = 18, color = "currentColor" }) => {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path
+        d="M22 16.92v3a2 2 0 0 1-2.18 2 
+               19.79 19.79 0 0 1-8.63-3.07 
+               19.5 19.5 0 0 1-6-6 
+               19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 
+               12.84 12.84 0 0 0 .7 2.81 
+               2 2 0 0 1-.45 2.11L8.09 9.91 
+               a16 16 0 0 0 6 6l1.27-1.27 
+               a2 2 0 0 1 2.11-.45 
+               12.84 12.84 0 0 0 2.81.7 
+               A2 2 0 0 1 22 16.92z"
+      />
+    </svg>
+  );
+};
+export const MailIcon = ({ className }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    className={className}
+    width="20"
+    height="20"
+  >
+    <path
+      d="M4 6h16v12H4z"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M4 6l8 7 8-7"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+export const LockIcon = ({ className }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    className={className}
+    width="20"
+    height="20"
+  >
+    <path
+      d="M6 10V7a6 6 0 0112 0v3"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+    <rect
+      x="5"
+      y="10"
+      width="14"
+      height="10"
+      rx="2"
+      stroke="currentColor"
+      strokeWidth="2"
+    />
+  </svg>
+);
