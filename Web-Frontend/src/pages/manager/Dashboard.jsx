@@ -10,13 +10,13 @@ const ManagerDashboard = () => {
 
   // 👥 STAFF ONLY
   const staff = useMemo(() => {
-    return users.filter((u) => u.role === "Staff");
+    return users.filter((u) => u.role === "staff");
   }, [users]);
 
   // 📊 STAFF STATS
   const totalStaff = staff.length;
   const activeStaff = staff.filter((s) => s.status === "Active").length;
-  const inactiveStaff = totalStaff - activeStaff;
+  // const inactiveStaff = totalStaff - activeStaff;
 
   // 📊 TASK STATS
   const totalTasks = tasks.length;
@@ -30,38 +30,6 @@ const ManagerDashboard = () => {
   );
 
   const highPriority = tasks.filter((t) => t.priority === "High");
-
-  const idleStaff = staff.filter(
-    (s) => !tasks.some((t) => t.assignedTo === `${s.firstName} ${s.lastName}`),
-  );
-
-  // 🥇 TOP PERFORMER
-  const topPerformer = useMemo(() => {
-    const performance = {};
-
-    tasks.forEach((t) => {
-      if (t.status === "Completed") {
-        performance[t.assignedTo] = (performance[t.assignedTo] || 0) + 1;
-      }
-    });
-
-    let top = null;
-    let max = 0;
-
-    for (let person in performance) {
-      if (performance[person] > max) {
-        max = performance[person];
-        top = person;
-      }
-    }
-
-    return { name: top, count: max };
-  }, [tasks]);
-
-  // ⏰ DEADLINE FILTERS
-  const todayTasks = tasks.filter(
-    (t) => new Date(t.due).toDateString() === new Date().toDateString(),
-  );
 
   return (
     <>
@@ -97,29 +65,17 @@ const ManagerDashboard = () => {
 
       {/* 📊 TOP METRICS */}
       <div className="staff-grid staff-grid--cols-2">
-        <div className="staff-card staff-card--metric">
-          <div className="staff-card-label">Total Staff</div>
-          <div className="staff-card-value">{totalStaff}</div>
-        </div>
-
-        <div className="staff-card staff-card--metric">
-          <div className="staff-card-label">Active Staff</div>
-          <div className="staff-card-value staff-card-value--success">
-            {activeStaff}
+        {[
+          { label: "Total Staff", value: totalStaff, cls: "" },
+          { label: "Active Staff", value: activeStaff, cls: "--success" },
+          { label: "Total Tasks", value: totalTasks, cls: "" },
+          { label: "Completed", value: completed, cls: "--success" },
+        ].map(({ label, value, cls }) => (
+          <div key={label} className="staff-card staff-card--metric">
+            <div className="staff-card-label">{label}</div>
+            <div className={`staff-card-value ${cls}`}>{value}</div>
           </div>
-        </div>
-
-        <div className="staff-card staff-card--metric">
-          <div className="staff-card-label">Total Tasks</div>
-          <div className="staff-card-value">{totalTasks}</div>
-        </div>
-
-        <div className="staff-card staff-card--metric">
-          <div className="staff-card-label">Completed</div>
-          <div className="staff-card-value staff-card-value--success">
-            {completed}
-          </div>
-        </div>
+        ))}
       </div>
 
       {/* ⚠️ SMART INSIGHTS */}
@@ -136,85 +92,61 @@ const ManagerDashboard = () => {
 
         <div className="staff-card">
           <h3>😴 Idle Staff</h3>
-          <p>{idleStaff.length} staff have no tasks</p>
-        </div>
-      </div>
-
-      {/* 📊 TASK OVERVIEW */}
-      <div className="staff-grid staff-grid--cols-2">
-        <div className="staff-card">
-          <div className="staff-card-header">
-            <h2>Task Overview</h2>
-          </div>
-
-          <div className="staff-chart">
-            {[
-              {
-                label: "Completed",
-                value: completed,
-                cls: "staff-chart-bar-fill--success",
-              },
-              {
-                label: "In Progress",
-                value: inProgress,
-                cls: "staff-chart-bar-fill--warning",
-              },
-              {
-                label: "Pending",
-                value: pending,
-                cls: "staff-chart-bar-fill--muted",
-              },
-            ].map((row) => (
-              <div className="staff-chart-row" key={row.label}>
-                <span>{row.label}</span>
-                <div className="staff-chart-bar">
-                  <div
-                    className={`staff-chart-bar-fill ${row.cls}`}
-                    style={{
-                      width: totalTasks
-                        ? `${(row.value / totalTasks) * 100}%`
-                        : "0%",
-                    }}
-                  />
-                </div>
-                <span>{row.value}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* 🥇 PERFORMANCE */}
-        <div className="staff-card">
-          <div className="staff-card-header">
-            <h2>Top Performer</h2>
-          </div>
-
           <p>
-            {topPerformer.name
-              ? `${topPerformer.name} (${topPerformer.count} completed tasks)`
-              : "No completed tasks yet"}
+            {
+              staff.filter(
+                (s) =>
+                  !tasks.some((t) => {
+                    const assignedId = t.assignedTo?._id || t.assignedTo;
+                    return assignedId?.toString() === s._id?.toString();
+                  }),
+              ).length
+            }{" "}
+            staff have no tasks
           </p>
         </div>
       </div>
 
-      {/* ⏰ DEADLINE PANEL */}
-      <div className="staff-grid staff-grid--cols-2">
-        <div className="staff-card">
-          <h2>📅 Due Today</h2>
-          <ul className="staff-list">
-            {todayTasks.map((t) => (
-              <li key={t.id}>{t.title}</li>
-            ))}
-          </ul>
+      {/* 📊 TASK OVERVIEW */}
+
+      <div className="staff-card">
+        <div className="staff-card-header">
+          <h2>Task Overview</h2>
         </div>
 
-        <div className="staff-card">
-          <h2>⚠️ Overdue Tasks</h2>
-          <ul className="staff-list">
-            {overdueTasks.map((t) => (
-              <li key={t.id}>{t.title}</li>
-            ))}
-          </ul>
+        <div className="staff-chart">
+          {[
+            {
+              label: "Completed",
+              value: completed,
+              cls: "staff-chart-bar-fill--success",
+            },
+            {
+              label: "In Progress",
+              value: inProgress,
+              cls: "staff-chart-bar-fill--warning",
+            },
+            {
+              label: "Pending",
+              value: pending,
+              cls: "staff-chart-bar-fill--muted",
+            },
+          ].map((row) => (
+            <div className="staff-chart-row" key={row.label}>
+              <span>{row.label}</span>
+              <div className="staff-chart-bar">
+                <div
+                  className={`staff-chart-bar-fill ${row.cls}`}
+                  style={{
+                    width: totalTasks
+                      ? `${(row.value / totalTasks) * 100}%`
+                      : "0%",
+                  }}
+                />
+              </div>
+              <span>{row.value}</span>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -225,28 +157,33 @@ const ManagerDashboard = () => {
         </div>
 
         <ul className="staff-list">
-          {tasks.slice(0, 5).map((task) => (
-            <li key={task.id} className="staff-list-item">
-              <div>
-                <div className="staff-list-title">{task.title}</div>
-                <div className="staff-list-meta">
-                  {task.assignedTo} · {task.due}
+          {tasks.slice(0, 5).map((task, index) => {
+            const assignee = task.assignedTo;
+            const name = assignee?.firstName
+              ? `${assignee.firstName} ${assignee.lastName}`
+              : assignee || "—";
+            return (
+              <li key={task._id} className="staff-list-item">
+                <div>
+                  <div className="staff-list-title">{task.title}</div>
+                  <div className="staff-list-meta">
+                    {name} · {task.due}
+                  </div>
                 </div>
-              </div>
-
-              <span
-                className={`staff-badge staff-badge--${
-                  task.priority === "High"
-                    ? "danger"
-                    : task.priority === "Medium"
-                      ? "warning"
-                      : "muted"
-                }`}
-              >
-                {task.priority}
-              </span>
-            </li>
-          ))}
+                <span
+                  className={`staff-badge staff-badge--${
+                    task.priority === "High"
+                      ? "danger"
+                      : task.priority === "Medium"
+                        ? "warning"
+                        : "muted"
+                  }`}
+                >
+                  {task.priority}
+                </span>
+              </li>
+            );
+          })}
         </ul>
       </div>
     </>
