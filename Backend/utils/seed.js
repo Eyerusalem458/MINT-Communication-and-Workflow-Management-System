@@ -35,8 +35,6 @@ const seed = async () => {
     console.log(`✅ Seeded ${users.length} users successfully!\n`);
     console.log("📋 Login Credentials:");
     console.log("Admin   → admin@mint.gov.et  / Admin@1234");
-    console.log("Manager → manager@mint.gov.et / Manager@1234");
-    console.log("Staff   → staff@mint.gov.et  / Staff@1234");
 
     await mongoose.disconnect();
     process.exit(0);
