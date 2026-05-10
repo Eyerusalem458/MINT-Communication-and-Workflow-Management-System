@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
-import User from "../models/User.js"; 
+import User from "../models/User.js";
 
 dotenv.config();
 
@@ -27,7 +27,7 @@ const seed = async () => {
         status: "Active",
         position: "System Administrator",
         phone: "0911000001",
-      }
+      },
     ];
 
     await User.insertMany(users);
