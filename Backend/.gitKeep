@@ -1,0 +1,9 @@
+uploads/*
+!uploads/audio/
+!uploads/audio/.gitkeep
+!uploads/files/
+!uploads/files/.gitkeep
+!uploads/media/
+!uploads/media/.gitkeep
+!uploads/misc/
+!uploads/misc/.gitkeep
