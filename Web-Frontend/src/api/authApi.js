@@ -1,23 +1,9 @@
-import axios from "axios";
+import API from "./axios";
 
-const API = axios.create({
-  baseURL: "http://localhost:5000/api/auth",
-});
-
-// Token interceptor
-API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
-  return config;
-});
-
-export const loginUser = (data) => API.post("/login", data);
+export const loginUser = (data) => API.post("/auth/login", data);
 
 export const forgotPassword = (email) =>
-  API.post("/forgot-password", { email });
+  API.post("/auth/forgot-password", { email });
 
-export const resetPassword = (data) => API.post("/reset-password", data);
+export const resetPassword = (data) => API.post("/auth/reset-password", data);
+export const getMe = () => API.get("/auth/me");

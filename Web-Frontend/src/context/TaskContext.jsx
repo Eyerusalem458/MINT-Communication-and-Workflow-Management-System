@@ -1,75 +1,98 @@
-import { createContext, useContext, useState } from "react";
-import { mockTasks } from "../utils/data";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 import { useNotifications } from "./NotificationContext";
+import {
+  getTasks,
+  createTask,
+  updateTaskStatus as apiUpdateStatus,
+  deleteTask as apiDeleteTask,
+} from "../api/taskApi";
 
 const TaskContext = createContext();
 
 export const TaskProvider = ({ children }) => {
-  const [tasks, setTasks] = useState(mockTasks);
-  const { addNotification } = useNotifications();
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const { fetchNotifications } = useNotifications();
+
+  //─── Fetch all tasks from DB
+  const fetchTasks = useCallback(async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      setLoading(true);
+      const res = await getTasks();
+      setTasks(res.data);
+    } catch (err) {
+      console.error("Fetch tasks error:", err);
+      setError(err.response?.data?.message || "Failed to load tasks");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchTasks();
+    // const interval = setInterval(fetchTasks, 15000); // refetch every 15s
+    // return () => clearInterval(interval);
+  }, [fetchTasks]);
 
   // update task status
- const updateTaskStatus = (id, status, comment = "") => {
-   setTasks((prevTasks) =>
-     prevTasks.map((task) => {
-       if (task.id !== id) return task;
+  const updateTaskStatus = useCallback(
+    async (id, status, comment = "") => {
+      await apiUpdateStatus(id, status, comment);
+      await fetchTasks(); // ✅ refetch real data from backend
+      fetchNotifications();
+    },
+    [fetchTasks, fetchNotifications],
+  );
 
-       // 🔔 Notifications
-       if (status === "In Progress") {
-         addNotification(`Task "${task.title}" submitted 🛠`, "Task");
-       }
+  // ─── 🆕 Assign task  / create a new task ────────────────────────────────────────────
+  const assignTask = useCallback(
+    async (formData) => {
+      const res = await createTask(formData);
+      await fetchTasks(); // ✅ refetch instead of prepending
+      fetchNotifications();
+      return res.data;
+    },
+    [fetchTasks, fetchNotifications],
+  );
 
-if (status === "Approved") {
-  addNotification(`Task "${task.title}" approved ✅`, "Task");
-}
-
-if (status === "Rejected") {
-  addNotification(`Task "${task.title}" rejected ❌`, "Task");
-}
-
-       if (status === "Completed") {
-         addNotification(`Task "${task.title}" completed  🎉`, "Task");
-       }
-
-       return {
-         ...task,
-         status,
-         comment: comment ? comment.trim() : task.comment,
-         completedAt:
-           status === "Completed" ? new Date().toISOString() : task.completedAt,
-       };
-     }),
-   );
- };
-
+  // ─── Delete a task ─────────────────────────────────────────────────────────
+  const deleteTask = useCallback(async (id) => {
+    await apiDeleteTask(id);
+    setTasks((prev) => prev.filter((t) => t._id !== id));
+  }, []);
 
   // submit work
-  const submitTask = (id) => {
-    updateTaskStatus(id, "Completed");
-  };
-
-  // 🆕 Assign task (for future manager use)
-  const assignTask = (task) => {
-    const newTask = {
-      id: Date.now(),
-      ...task,
-      status: "Pending",
-      createdAt: new Date().toISOString(),
-    };
-
-    setTasks((prev) => [...prev, newTask]);
-
-    addNotification({
-      type: "Task",
-      message: `New task assigned: "${task.title}" 🛠`,
-    });
-  };
+  const submitTask = useCallback(
+    (id) => updateTaskStatus(id, "Completed"),
+    [updateTaskStatus],
+  );
 
   return (
-    <TaskContext.Provider value={{ tasks, updateTaskStatus, submitTask, assignTask }}>
+    <TaskContext.Provider
+      value={{
+        tasks,
+        loading,
+        error,
+        fetchTasks,
+        updateTaskStatus,
+        assignTask,
+        deleteTask,
+        submitTask,
+      }}
+    >
       {children}
     </TaskContext.Provider>
   );
-};;
+};
 
 export const useTasks = () => useContext(TaskContext);

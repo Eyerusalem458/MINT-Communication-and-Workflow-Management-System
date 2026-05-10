@@ -1,8 +1,11 @@
-import { mockNotifications, mockTasks } from "../../utils/data";
+import { useTasks } from "../../context/TaskContext";
+import { useNotifications } from "../../context/NotificationContext";
+
+
 
 const Dashboard = () => {
-  const tasks = mockTasks;
-  const notifications = mockNotifications;
+  const { tasks } = useTasks();
+  const { notifications } = useNotifications();
 
   const totalTasks = tasks.length;
   const completed = tasks.filter((t) => t.status === "Completed").length;
@@ -96,7 +99,7 @@ const Dashboard = () => {
           </div>
 
           <ul className="staff-list">
-            {tasks.map((task) => (
+            {tasks.slice(0, 5).map((task) => (
               <li key={task.id} className="staff-list-item">
                 <div>
                   <div className="staff-list-title">{task.title}</div>
@@ -129,11 +132,20 @@ const Dashboard = () => {
           </div>
 
           <ul className="staff-list">
-            {notifications.map((n) => (
+            {notifications.slice(0, 5).map((n) => (
               <li key={n.id} className="staff-list-item">
                 <div>
                   <div className="staff-list-title">{n.message}</div>
-                  <div className="staff-list-meta">{n.time}</div>
+                  <div className="staff-list-meta">
+                    {n.createdAt
+                      ? new Date(n.createdAt).toLocaleString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : n.time}
+                  </div>
                 </div>
 
                 <span className="staff-badge staff-badge--muted">{n.type}</span>

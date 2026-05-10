@@ -1,16 +1,18 @@
-import { useState,useMemo } from "react";
+import { useState, useMemo } from "react";
 import Button from "../../components/ui/Button";
-import { showSuccessToast } from "../../utils/toast";
+import { showSuccessToast, showErrorToast } from "../../utils/toast";
 import { useProjects } from "../../context/ProjectContext";
 import Pagination from "../../components/ui/Pagination";
 
 const MyProjects = () => {
-  const { projects, addProject, editProject, cancelProject } = useProjects();
+  const { projects, addProject, editProject, cancelProject, loading } =
+    useProjects();
 
   const [openModal, setOpenModal] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
-const [currentPage, setCurrentPage] = useState(1);
-const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [busy, setBusy] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const [form, setForm] = useState({
     title: "",
@@ -22,13 +24,15 @@ const [itemsPerPage, setItemsPerPage] = useState(10);
   const [query, setQuery] = useState("");
 
   // 🔥 FILTERED PROJECTS
-  const filteredProjects = useMemo(() => {
-    return projects.filter(
-      (project) =>
-        project.title.toLowerCase().includes(query.toLowerCase()) ||
-        project.description.toLowerCase().includes(query.toLowerCase()),
-    );
-  }, [query, projects]);
+  const filteredProjects = useMemo(
+    () =>
+      projects.filter(
+        (p) =>
+          p.title?.toLowerCase().includes(query.toLowerCase()) ||
+          p.description?.toLowerCase().includes(query.toLowerCase()),
+      ),
+    [query, projects],
+  );
 
   // Open create modal
   const handleNewProject = () => {
@@ -55,39 +59,45 @@ const [itemsPerPage, setItemsPerPage] = useState(10);
   };
 
   // Save / Update project
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.title || !form.description) return;
+    setBusy(true);
 
-    if (editingProject) {
-      // EDIT
-      editProject(editingProject.id, form);
-      showSuccessToast("Project updated");
-    } else {
-      // CREATE
-      addProject({
-        id: Date.now(),
-        ...form,
-        createdBy: "Me",
-        department: "Staff",
-        status: "Pending",
-        createdAt: new Date().toISOString(),
-      });
-      showSuccessToast("Project submitted");
+    try {
+      const fd = new FormData();
+      fd.append("title", form.title);
+      fd.append("description", form.description);
+      if (form.file) fd.append("file", form.file);
+
+      if (editingProject) {
+        await editProject(editingProject._id, fd);
+        showSuccessToast("Project updated");
+      } else {
+        await addProject(fd);
+        showSuccessToast("Project submitted");
+      }
+      setOpenModal(false);
+    } catch (err) {
+      showErrorToast(err.response?.data?.message || "Failed to save project");
+    } finally {
+      setBusy(false);
     }
-
-    setOpenModal(false);
   };
 
   // Cancel project
-  const handleCancel = (id) => {
-    cancelProject(id);
-    showSuccessToast("Project cancelled");
+  const handleCancel = async (id) => {
+    try {
+      await cancelProject(id);
+      showSuccessToast("Project cancelled");
+    } catch (err) {
+      showErrorToast(err.response?.data?.message || "Failed to cancel project");
+    }
   };
 
-const paginatedProjects = filteredProjects.slice(
-  (currentPage - 1) * itemsPerPage,
-  currentPage * itemsPerPage,
-);
+  const paginatedProjects = filteredProjects.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
 
   const getStatusClass = (status) => {
     switch (status) {
@@ -97,6 +107,8 @@ const paginatedProjects = filteredProjects.slice(
         return "status-badge approved";
       case "Rejected":
         return "status-badge rejected";
+      case "Cancelled":
+        return "status-badge pending";
       default:
         return "status-badge";
     }
@@ -105,8 +117,11 @@ const paginatedProjects = filteredProjects.slice(
   return (
     <div className="staff-card staff-card--full">
       <div className="staff-card-header staff-card-header--with-actions">
+        <p className="staff-card-subtitle">
+          Submit and manage your project proposals.
+        </p>
         <Button variant="primary" onClick={handleNewProject}>
-          New Project
+          + New Project
         </Button>
       </div>
 
@@ -135,39 +150,73 @@ const paginatedProjects = filteredProjects.slice(
           </thead>
 
           <tbody>
-            {paginatedProjects.map((project) => (
-              <tr key={project.id}>
-                <td>{project.title}</td>
-                <td>{project.description}</td>
-                <td>{project.file?.name || project.file || "No file"}</td>
-                <td>
-                  <span className={getStatusClass(project.status)}>
-                    {project.status}
-                  </span>
-                </td>
-
-                <td>{project.createdAt?.slice(0, 10)}</td>
-                <td>
-                  <div className="staff-table-actions">
-                    <Button
-                      size="xs"
-                      variant="secondary"
-                      onClick={() => handleEdit(project)}
-                    >
-                      Edit
-                    </Button>
-
-                    <Button
-                      size="xs"
-                      variant="ghost"
-                      onClick={() => handleCancel(project.id)}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
+            {loading ? (
+              <tr>
+                <td colSpan="7" style={{ textAlign: "center" }}>
+                  Loading...
                 </td>
               </tr>
-            ))}
+            ) : paginatedProjects.length === 0 ? (
+              <tr>
+                <td colSpan="7" style={{ textAlign: "center" }}>
+                  No projects found
+                </td>
+              </tr>
+            ) : (
+              paginatedProjects.map((project) => (
+                <tr key={project._id}>
+                  <td>{project.title}</td>
+                  <td>{project.description}</td>
+                  <td>
+                    {project.file
+                      ? typeof project.file === "string"
+                        ? project.file.split("/").pop()
+                        : project.file.name
+                      : "No file"}
+                  </td>
+                  <td>
+                    <span className={getStatusClass(project.status)}>
+                      {project.status}
+                    </span>
+                    {/* show rejection comment below status badge */}
+                    {project.comment && (
+                      <div
+                        style={{
+                          marginTop: "5px",
+                          fontSize: "12px",
+                          color: "#555",
+                        }}
+                      >
+                        💬 {project.comment}
+                      </div>
+                    )}
+                  </td>
+                  <td>{project.createdAt?.slice(0, 10)}</td>
+                  <td>
+                    <div className="staff-table-actions">
+                      {project.status === "Pending" && (
+                        <Button
+                          size="xs"
+                          variant="secondary"
+                          onClick={() => handleEdit(project)}
+                        >
+                          Edit
+                        </Button>
+                      )}
+                      {["Pending", "Rejected"].includes(project.status) && (
+                        <Button
+                          size="xs"
+                          variant="danger"
+                          onClick={() => handleCancel(project._id)}
+                        >
+                          Cancel
+                        </Button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -244,8 +293,12 @@ const paginatedProjects = filteredProjects.slice(
                 Cancel
               </Button>
 
-              <Button variant="primary" onClick={handleSubmit}>
-                {editingProject ? "Update Project" : "Submit Project"}
+              <Button variant="primary" onClick={handleSubmit} disabled={busy}>
+                {busy
+                  ? "Saving..."
+                  : editingProject
+                    ? "Update Project"
+                    : "Submit Project"}
               </Button>
             </div>
           </div>
@@ -253,6 +306,6 @@ const paginatedProjects = filteredProjects.slice(
       )}
     </div>
   );
-};;;
+};
 
 export default MyProjects;

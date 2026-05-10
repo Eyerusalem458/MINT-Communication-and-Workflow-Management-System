@@ -17,6 +17,8 @@ import { AuthContext } from "../../context/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
+    const { login,loading } = useContext(AuthContext);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   // State for modal
@@ -24,32 +26,28 @@ export default function Login() {
   const [modalType, setModalType] = useState("privacy"); // "privacy" or "terms"
 
 
-  const handleSignIn = (e) => {
-    e.preventDefault();
-    // Simulate authentication
-    // For demo: if email contains "admin", treat as admin
-    let userRole = "staff";
-    if (email.toLowerCase().includes("admin")) {
-      userRole = "admin";
-    } else if (email.toLowerCase().includes("manager")) {
-      userRole = "manager";
-    }
-    localStorage.setItem("token", "demo-token");
-    localStorage.setItem("role", userRole);
-    const { setUser } = useContext(AuthContext);
-    setUser({ role: userRole, token: "demo-token" });
+ const handleSignIn = async (e) => {
+   e.preventDefault();
 
-    showSuccessToast("Login successfully!", () => {
-      if (userRole === "admin") {
-        navigate("/admin/dashboard");
-      } else if (userRole === "manager") {
-        navigate("/manager/dashboard");
-      } else {
-        navigate("/staff/dashboard");
-      }
-    });
-  };
+   try {
+     const user = await login({ email, password });
 
+
+     showSuccessToast("Login successful!");
+
+     if (user.role === "admin") {
+       navigate("/admin/dashboard");
+     } else if (user.role === "manager") {
+       navigate("/manager/dashboard");
+     } else {
+       navigate("/staff/dashboard");
+     }
+   } catch (err) {
+  
+
+     showErrorToast(err.response?.data?.message || "Login failed");
+   }
+ };
   // Simulate Google login (frontend-only)
   const handleGoogleLogin = () => {
     showSuccessToast("Google login successfully!", () => {
@@ -167,8 +165,8 @@ export default function Login() {
               </div>
 
               {/* Button */}
-              <button type="submit" className="btn-signin">
-                Sign In
+              <button type="submit" className="btn-signin" disabled={loading}>
+                {loading ? "Signing In..." : "Sign In"}
               </button>
             </form>
 

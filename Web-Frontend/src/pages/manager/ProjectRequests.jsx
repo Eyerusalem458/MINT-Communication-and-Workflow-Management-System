@@ -1,34 +1,50 @@
 import { useState } from "react";
 import Button from "../../components/ui/Button";
-import { showSuccessToast } from "../../utils/toast";
+import { showSuccessToast, showErrorToast } from "../../utils/toast";
 import { useProjects } from "../../context/ProjectContext";
 
 const ProjectRequest = () => {
-  const { projects, approveProject, rejectProject } = useProjects();
+  const { projects, approveProject, rejectProject, loading } = useProjects();
 
   const [selectedProject, setSelectedProject] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [rejectComment, setRejectComment] = useState(""); // 🔥 NEW
   const [showRejectModal, setShowRejectModal] = useState(false); // 🔥 NEW
+  const [busy, setBusy] = useState(false);
 
-  const handleApprove = (id) => {
-    approveProject(id);
-    showSuccessToast("Project approved");
+  const handleApprove = async (id) => {
+    setBusy(true);
+    try {
+      await approveProject(id);
+      showSuccessToast("Project approved ✅");
+      setOpenModal(false);
+    } catch (err) {
+      showErrorToast(err.response?.data?.message || "Failed to approve");
+    } finally {
+      setBusy(false);
+    }
   };
 
   const handleReject = (project) => {
     setSelectedProject(project);
-    setRejectComment(project.comment || ""); // prefill existing comment if any
+    setRejectComment(""); // prefill existing comment if any
     setShowRejectModal(true); // open reject modal
   };
 
-  const confirmReject = () => {
+  const confirmReject = async () => {
     if (!selectedProject) return;
-    rejectProject(selectedProject.id, rejectComment); // pass comment to context
-    showSuccessToast("Project rejected");
-    setShowRejectModal(false);
-    setSelectedProject(null);
-    setRejectComment("");
+    setBusy(true);
+    try {
+      await rejectProject(selectedProject._id, rejectComment);
+      showSuccessToast("Project rejected");
+      setShowRejectModal(false);
+      setSelectedProject(null);
+      setRejectComment("");
+    } catch (err) {
+      showErrorToast(err.response?.data?.message || "Failed to reject project");
+    } finally {
+      setBusy(false);
+    }
   };
 
   const openDetails = (project) => {
@@ -47,6 +63,24 @@ const ProjectRequest = () => {
       default:
         return "status-badge";
     }
+  };
+
+  //Helper to get "Created By" display from populated object or string
+  const getCreatedBy = (project) => {
+    const cb = project.createdBy;
+    if (!cb) return "Staff";
+    if (typeof cb === "object")
+      return `${cb.firstName || ""} ${cb.lastName || ""}`.trim();
+    return cb;
+  };
+
+  // File URL helper — backend stores path like /uploads/files/abc.pdf
+  const getFileUrl = (file) => {
+    if (!file) return null;
+    if (typeof file === "string" && file.startsWith("http")) return file;
+    if (typeof file === "string" && file.startsWith("/"))
+      return `http://localhost:5000${file}`;
+    return null;
   };
 
   return (
@@ -72,89 +106,91 @@ const ProjectRequest = () => {
           </thead>
 
           <tbody>
-            {projects.length === 0 ? (
+            {loading ? (
               <tr>
                 <td colSpan="7" style={{ textAlign: "center" }}>
-                  No data found
+                  Loading...
+                </td>
+              </tr>
+            ) : projects.length === 0 ? (
+              <tr>
+                <td colSpan="7" style={{ textAlign: "center" }}>
+                  No projects found
                 </td>
               </tr>
             ) : (
-              projects.map((project) => (
-                <tr key={project.id}>
-                  <td
-                    className="staff-table-title"
-                    onClick={() => openDetails(project)}
-                  >
-                    {project.title}
-                  </td>
-
-                  <td>{project.createdBy || "Staff"}</td>
-                  <td>{project.department || "N/A"}</td>
-
-                  <td>
-                    <span className={getStatusClass(project.status)}>
-                      {project.status}
-                    </span>
-                  </td>
-
-                  <td>
-                    {project.file ? (
-                      <div >
-                        <span>📎 {project.file?.name || "File attached"}</span>
+              projects.map((project) => {
+                const fileUrl = getFileUrl(project.file);
+                return (
+                  <tr key={project._id}>
+                    <td
+                      className="staff-table-title"
+                      style={{ cursor: "pointer" }}
+                      onClick={() => openDetails(project)}
+                    >
+                      {project.title}
+                    </td>
+                    <td>{getCreatedBy(project)}</td>
+                    <td>{project.department || "N/A"}</td>
+                    <td>
+                      <span className={getStatusClass(project.status)}>
+                        {project.status}
+                      </span>
+                    </td>
+                    <td>
+                      {fileUrl ? (
                         <a
-                          href={
-                            project.file instanceof File
-                              ? URL.createObjectURL(project.file)
-                              : project.file
-                          }
+                          href={fileUrl}
+                          target="_blank"
+                          rel="noreferrer"
                           download
-                          style={{ marginLeft: "8px", textDecoration: "none" }}
                         >
-                          ⬇️
+                          📎 Download
                         </a>
+                      ) : (
+                        "No file"
+                      )}
+                    </td>
+                    <td>{project.createdAt?.slice(0, 10)}</td>
+                    <td>
+                      <div className="staff-table-actions">
+                        <Button
+                          size="xs"
+                          variant="ghost"
+                          onClick={() => openDetails(project)}
+                        >
+                          View
+                        </Button>
+                        {project.status === "Pending" && (
+                          <>
+                            <Button
+                              size="xs"
+                              variant="approve"
+                              onClick={() => handleApprove(project._id)}
+                              disabled={busy}
+                            >
+                              Approve
+                            </Button>
+                            <Button
+                              size="xs"
+                              variant="reject"
+                              onClick={() => handleReject(project)}
+                            >
+                              Reject
+                            </Button>
+                          </>
+                        )}
                       </div>
-                    ) : (
-                      "No file"
-                    )}
-                  </td>
-
-                  <td>{project.createdAt?.slice(0, 10)}</td>
-
-                  <td>
-                    <div className="staff-table-actions">
-                      <Button
-                        size="xs"
-                        variant="ghost"
-                        onClick={() => openDetails(project)}
-                      >
-                        View
-                      </Button>
-
-                      <Button
-                        size="xs"
-                        variant="primary"
-                        onClick={() => handleApprove(project.id)}
-                      >
-                        Approve
-                      </Button>
-
-                      <Button
-                        size="xs"
-                        variant="ghost"
-                        onClick={() => handleReject(project)}
-                      >
-                        Reject
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
       </div>
 
-      {/* DETAILS MODAL */}
+      {/* Details modal */}
       {openModal && selectedProject && (
         <div
           className="staff-modal-backdrop"
@@ -173,10 +209,9 @@ const ProjectRequest = () => {
                 ✕
               </span>
             </div>
-
             <div className="staff-modal-body">
               <p>
-                <strong>Created By:</strong> {selectedProject.createdBy}
+                <strong>Created By:</strong> {getCreatedBy(selectedProject)}
               </p>
               <p>
                 <strong>Department:</strong> {selectedProject.department}
@@ -191,54 +226,45 @@ const ProjectRequest = () => {
                 <strong>Description:</strong>
               </p>
               <p>{selectedProject.description}</p>
+              {selectedProject.comment && (
+                <p>
+                  <strong>Comment:</strong> {selectedProject.comment}
+                </p>
+              )}
               <p>
                 <strong>File:</strong>
               </p>
-
-              {selectedProject.file ? (
-                <div>
-                  {selectedProject.file.type?.startsWith("image/") ? (
-                    <img
-                      src={URL.createObjectURL(selectedProject.file)}
-                      alt="preview"
-                      style={{ width: "200px", borderRadius: "8px" }}
-                    />
-                  ) : (
-                    <p>📄 {selectedProject.file?.name || "Attached file"}</p>
-                  )}
-                  <div style={{ marginTop: "10px" }}>
-                    <a
-                      href={
-                        selectedProject.file instanceof File
-                          ? URL.createObjectURL(selectedProject.file)
-                          : selectedProject.file
-                      }
-                      download
-                    >
-                      Download File ⬇️
-                    </a>
-                  </div>
-                </div>
+              {getFileUrl(selectedProject.file) ? (
+                <a
+                  href={getFileUrl(selectedProject.file)}
+                  target="_blank"
+                  rel="noreferrer"
+                  download
+                >
+                  📄 Download File ⬇️
+                </a>
               ) : (
                 <p>No file uploaded</p>
               )}
             </div>
-
             <div className="staff-modal-footer">
-              <Button
-                variant="primary"
-                onClick={() => handleApprove(selectedProject.id)}
-              >
-                Approve
-              </Button>
-
-              <Button
-                variant="ghost"
-                onClick={() => handleReject(selectedProject)}
-              >
-                Reject
-              </Button>
-
+              {selectedProject.status === "Pending" && (
+                <>
+                  <Button
+                    variant="approve"
+                    onClick={() => handleApprove(selectedProject._id)}
+                    disabled={busy}
+                  >
+                    Approve
+                  </Button>
+                  <Button
+                    variant="reject"
+                    onClick={() => handleReject(selectedProject)}
+                  >
+                    Reject
+                  </Button>
+                </>
+              )}
               <Button variant="ghost" onClick={() => setOpenModal(false)}>
                 Close
               </Button>
@@ -247,7 +273,7 @@ const ProjectRequest = () => {
         </div>
       )}
 
-      {/* REJECT COMMENT MODAL */}
+      {/* Reject comment modal */}
       {showRejectModal && selectedProject && (
         <div
           className="staff-modal-backdrop"
@@ -258,7 +284,7 @@ const ProjectRequest = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="staff-modal-header">
-              <h3>Reject Project: {selectedProject.title}</h3>
+              <h3>Reject: {selectedProject.title}</h3>
               <span
                 className="staff-modal-close"
                 onClick={() => setShowRejectModal(false)}
@@ -266,26 +292,30 @@ const ProjectRequest = () => {
                 ✕
               </span>
             </div>
-
             <div className="staff-modal-body">
-              <p>Please enter a comment for rejecting this project:</p>
+              <p>Please provide a reason for rejecting this project:</p>
               <textarea
                 value={rejectComment}
                 onChange={(e) => setRejectComment(e.target.value)}
                 rows={4}
-                style={{ width: "100%", padding: "8px", borderRadius: "4px" }}
+                style={{
+                  width: "100%",
+                  padding: 8,
+                  borderRadius: 4,
+                  boxSizing: "border-box",
+                }}
                 placeholder="Enter rejection reason..."
               />
             </div>
-
             <div className="staff-modal-footer">
-              <Button variant="primary" onClick={confirmReject}>
-                Confirm Reject
-              </Button>
               <Button
-                variant="ghost"
-                onClick={() => setShowRejectModal(false)}
+                variant="reject"
+                onClick={confirmReject}
+                disabled={busy || !rejectComment.trim()}
               >
+                {busy ? "Rejecting..." : "Confirm Reject"}
+              </Button>
+              <Button variant="ghost" onClick={() => setShowRejectModal(false)}>
                 Cancel
               </Button>
             </div>
@@ -295,4 +325,5 @@ const ProjectRequest = () => {
     </div>
   );
 };
+
 export default ProjectRequest;

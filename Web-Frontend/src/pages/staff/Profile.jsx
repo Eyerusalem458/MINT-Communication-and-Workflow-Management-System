@@ -1,10 +1,94 @@
-import { showSuccessToast } from "../../utils/toast";
+import { useState, useContext, useEffect } from "react";
+import { showSuccessToast, showErrorToast } from "../../utils/toast";
 import Button from "../../components/ui/Button";
+import { AuthContext } from "../../context/AuthContext";
+import { updateMyProfile, changeMyPassword } from "../../api/userApi";
+import { isEmailValid } from "../../utils/validators";
 
 const ProfilePage = () => {
-  const onSave = () => showSuccessToast("Profile updated successfully");
-  const onPasswordChange = () =>
-    showSuccessToast("Password changed successfully");
+  const { user, setUser } = useContext(AuthContext);
+
+  const [profileForm, setProfileForm] = useState({
+    firstName: user?.firstName || "",
+    lastName: user?.lastName || "",
+    middleName: user?.middleName || "",
+    position: user?.position || "",
+    department: user?.department || "",
+    phone: user?.phone || "",
+  });
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [profileBusy, setProfileBusy] = useState(false);
+
+  const [pwForm, setPwForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [pwBusy, setPwBusy] = useState(false);
+
+  // ✅ sync form when user loads from AuthContext
+  useEffect(() => {
+    if (user) {
+      setProfileForm({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        middleName: user.middleName || "",
+        position: user.position || "",
+        department: user.department || "",
+        phone: user.phone || "",
+      });
+    }
+  }, [user]);
+
+  const handleProfileSave = async () => {
+    setProfileBusy(true);
+    try {
+      const fd = new FormData();
+      Object.entries(profileForm).forEach(([k, v]) => fd.append(k, v));
+      if (avatarFile) fd.append("avatar", avatarFile);
+      const res = await updateMyProfile(fd);
+      setUser(res.data);
+      localStorage.setItem("user", JSON.stringify(res.data)); // ✅ persist to localStorage
+      showSuccessToast("Profile updated successfully");
+    } catch (err) {
+      showErrorToast(err.response?.data?.message || "Update failed");
+    } finally {
+      setProfileBusy(false);
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    if (
+      !pwForm.currentPassword ||
+      !pwForm.newPassword ||
+      !pwForm.confirmPassword
+    ) {
+      showErrorToast("Please fill all password fields");
+      return;
+    }
+    if (pwForm.newPassword !== pwForm.confirmPassword) {
+      showErrorToast("New passwords do not match");
+      return;
+    }
+    setPwBusy(true);
+    try {
+      await changeMyPassword({
+        currentPassword: pwForm.currentPassword,
+        newPassword: pwForm.newPassword,
+      });
+      showSuccessToast("Password changed successfully");
+      setPwForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (err) {
+      showErrorToast(err.response?.data?.message || "Password change failed");
+    } finally {
+      setPwBusy(false);
+    }
+  };
+
+  const initials =
+    user?.firstName && user?.lastName
+      ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
+      : "U";
 
   return (
     <div className="staff-card staff-card--full">
@@ -15,104 +99,117 @@ const ProfilePage = () => {
       </div>
 
       <div className="staff-grid staff-grid--cols-2 staff-grid--stack">
+        {/* personal Information */}
         <div className="staff-profile-block">
           <h3>Personal Information</h3>
           <div className="staff-profile-avatar">
-            <div className="staff-profile-avatar-circle">SM</div>
+            {user?.avatar ? (
+              <img
+                src={`http://localhost:5000${user.avatar}`}
+                alt="avatar"
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                }}
+              />
+            ) : (
+              <div className="staff-profile-avatar-circle">{initials}</div>
+            )}
             <label className="staff-upload staff-upload--inline">
-              <input type="file" className="staff-upload-input" />
-              <span>Upload new picture</span>
+              <input
+                type="file"
+                className="staff-upload-input"
+                accept="image/*"
+                onChange={(e) => setAvatarFile(e.target.files[0])}
+              />
+              <span>{avatarFile ? avatarFile.name : "Upload new picture"}</span>
             </label>
           </div>
-          <form
-            className="staff-form-grid"
-            onSubmit={(e) => e.preventDefault()}
-          >
-            <div className="staff-form-field">
-              <label>Full name</label>
-              <input
-                type="text"
-                className="staff-input"
-                placeholder="Enter your full name"
-              />
-            </div>
-            <div className="staff-form-field">
-              <label>Position</label>
-              <input
-                type="text"
-                className="staff-input"
-                placeholder="e.g. Innovation Officer"
-              />
-            </div>
-            <div className="staff-form-field">
-              <label>Department</label>
-              <input
-                type="text"
-                className="staff-input"
-                placeholder="e.g. Digital Transformation"
-              />
-            </div>
-            <div className="staff-form-field">
-              <label>Work email</label>
-              <input
-                type="email"
-                className="staff-input"
-                placeholder="name@mint.gov"
-              />
-            </div>
+          <div className="staff-form-grid">
+            {[
+              { label: "First Name", key: "firstName" },
+              { label: "Last Name", key: "lastName" },
+              { label: "Middle Name", key: "middleName" },
+              { label: "Position", key: "position" },
+              { label: "Department", key: "department" },
+              { label: "Phone", key: "phone" },
+            ].map(({ label, key }) => (
+              <div className="staff-form-field" key={key}>
+                <label>{label}</label>
+                <input
+                  type="text"
+                  className="staff-input"
+                  placeholder={`Enter ${label.toLowerCase()}`}
+                  value={profileForm[key]}
+                  onChange={(e) =>
+                    setProfileForm({ ...profileForm, [key]: e.target.value })
+                  }
+                />
+              </div>
+            ))}
+
             <div className="staff-form-actions">
-              <Button variant="primary" onClick={onSave}>
-                Save changes
+              <Button
+                variant="primary"
+                onClick={handleProfileSave}
+                disabled={profileBusy}
+              >
+                {profileBusy ? "Saving..." : "Save changes"}
               </Button>
             </div>
-          </form>
+          </div>
         </div>
 
+        {/* security */}
         <div className="staff-profile-block">
           <h3>Security</h3>
-          <form onSubmit={(e) => e.preventDefault()}>
-            <div className="staff-form-field">
-              <label>Current password</label>
-              <input
-                type="password"
-                className="staff-input"
-                placeholder="Enter current password"
-              />
-            </div>
-            <div className="staff-form-field">
-              <label>New password</label>
-              <input
-                type="password"
-                className="staff-input"
-                placeholder="Enter new password"
-              />
-            </div>
-            <div className="staff-form-field">
-              <label>Confirm new password</label>
-              <input
-                type="password"
-                className="staff-input"
-                placeholder="Re-enter new password"
-              />
-            </div>
+          <div
+            className="staff-form-grid"
+            style={{ gridTemplateColumns: "1fr" }}
+          >
+            {[
+              { label: "Current Password", key: "currentPassword" },
+              { label: "New Password", key: "newPassword" },
+              { label: "Confirm Password", key: "confirmPassword" },
+            ].map(({ label, key }) => (
+              <div className="staff-form-field" key={key}>
+                <label>{label}</label>
+                <input
+                  type="password"
+                  className="staff-input"
+                  placeholder={`Enter ${label.toLowerCase()}`}
+                  value={pwForm[key]}
+                  onChange={(e) =>
+                    setPwForm({ ...pwForm, [key]: e.target.value })
+                  }
+                />
+              </div>
+            ))}
             <div className="staff-form-actions">
-              <Button variant="primary" onClick={onPasswordChange}>
-                Change password
+              <Button
+                variant="primary"
+                onClick={handlePasswordChange}
+                disabled={pwBusy}
+              >
+                {pwBusy ? "Changing..." : "Change Password"}
               </Button>
             </div>
-          </form>
+          </div>
 
           <div className="staff-profile-divider" />
-
-          <h3>Account</h3>
+          <h3>Account Info</h3>
           <p className="staff-card-subtitle">
-            Keep your account information up to date to receive important
-            updates from MINT.
+            <strong>Email:</strong> {user?.email}
+            <br />
+            <strong>Role:</strong> {user?.role?.toUpperCase()}
+            <br />
+            <strong>Status:</strong> {user?.status}
           </p>
         </div>
       </div>
     </div>
   );
 };
-
 export default ProfilePage;

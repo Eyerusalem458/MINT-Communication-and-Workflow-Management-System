@@ -1,21 +1,56 @@
 import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import { resetPassword } from "../../api/authApi";
 import "../../assets/styles/login.css";
 
 const ResetPassword = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const token = searchParams.get("token");
+
   const [form, setForm] = useState({ password: "", confirm: "" });
+
+  const [busy, setBusy] = useState(false);
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (form.password !== form.confirm) {
       toast.error("Passwords do not match!");
       return;
     }
-    toast.success("Password reset successfully!");
-    // call API to reset password
+    if (!token) {
+      toast.error("Invalid or missing reset token.");
+      return;
+    }
+
+    if (busy) return;
+    setBusy(true);
+
+    try {
+      await resetPassword({
+        token,
+        password: form.password,
+      });
+
+      toast.success("Password reset successfully!");
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
+    } catch (err) {
+      console.error(err);
+      toast.error(
+        err.response?.data?.message || "Reset failed. Link may have expired.",
+      );
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -46,7 +81,9 @@ const ResetPassword = () => {
             />
             <label>Confirm Password</label>
           </div>
-          <button type="submit">Reset Password</button>
+          <button type="submit" disabled={busy}>
+            {busy ? "Resetting..." : "Reset Password"}
+          </button>
         </form>
         <div className="login-footer">
           Remembered your password? <a href="/login">Sign In</a>

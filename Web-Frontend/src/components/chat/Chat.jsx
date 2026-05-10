@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext, useCallback } from "react";
 import Button from "../../components/ui/Button";
 import {
   SearchIcon,
@@ -12,316 +12,474 @@ import {
   PhoneIcon,
 } from "../../pages/shared/icon";
 import { showErrorToast } from "../../utils/toast";
-import { formatDateTime, getRelativeTime } from "../../utils/formatDate";
+import { getRelativeTime } from "../../utils/formatDate";
 import "../../assets/styles/Chat.css";
+import { AuthContext } from "../../context/AuthContext";
+import {
+  getConversations,
+  getOrCreateDirectConversation,
+  createGroupConversation,
+  getMessages,
+  sendMessage as apiSendMessage,
+  deleteMessage as apiDeleteMessage,
+  getChatUsers,
+} from "../../api/messageApi";
+import { socket } from "../../utils/socket";
+
+const BASE_URL = "http://localhost:5000";
 
 const ChatPage = () => {
-  const initialChats = [
-    {
-      name: "Innovation Team",
-      last: "I will upload file",
-      type: "team",
-      unread: true,
-    },
-    { name: "HR Team", last: "New policy added", type: "team", unread: false },
-    {
-      name: "John Doe",
-      last: "Hey, are you free?",
-      type: "direct",
-      unread: true,
-    },
-    {
-      name: "John Doe",
-      last: "Hey, are you free?",
-      type: "direct",
-      unread: true,
-    },
-    {
-      name: "John Doe",
-      last: "Hey, are you free?",
-      type: "direct",
-      unread: true,
-    },
-    {
-      name: "John Doe",
-      last: "Hey, are you free?",
-      type: "direct",
-      unread: true,
-    },
-    {
-      name: "John Doe",
-      last: "Hey, are you free?",
-      type: "direct",
-      unread: true,
-    },
-    {
-      name: "John Doe",
-      last: "Hey, are you free?",
-      type: "direct",
-      unread: true,
-    },
-    {
-      name: "John Doe",
-      last: "Hey, are you free?",
-      type: "direct",
-      unread: true,
-    },
-    {
-      name: "John Doe",
-      last: "Hey, are you free?",
-      type: "direct",
-      unread: true,
-    },
-    {
-      name: "John Doe",
-      last: "Hey, are you free?",
-      type: "direct",
-      unread: true,
-    },
-    {
-      name: "John Doe",
-      last: "Hey, are you free?",
-      type: "direct",
-      unread: true,
-    },
-    {
-      name: "John Doe",
-      last: "Hey, are you free?",
-      type: "direct",
-      unread: true,
-    },
-    {
-      name: "John Doe",
-      last: "Hey, are you free?",
-      type: "direct",
-      unread: true,
-    },
-    {
-      name: "John Doe",
-      last: "Hey, are you free?",
-      type: "direct",
-      unread: true,
-    },
-    {
-      name: "John Doe",
-      last: "Hey, are you free?",
-      type: "direct",
-      unread: true,
-    },
-  ];
+  const { user } = useContext(AuthContext);
 
-  const users = [
-    { name: "A" },
-    { name: "Beti" },
-    { name: "Abe " },
-    { name: "Abel Hair" },
-    { name: "Abela" },
-    { name: "Kebede" },
-    { name: "Abebech" },
-    { name: "Zelalem" },
-    { name: "Kalkidan" },
-  ];
-  // for group
-  const [isCreatingGroup, setIsCreatingGroup] = useState(false);
-  const [selectedUsers, setSelectedUsers] = useState([]);
+  // conversations
+  const [conversations, setConversations] = useState([]);
+  const [activeChat, setActiveChat] = useState(null);
+  const [chatUsers, setChatUsers] = useState([]);
 
-  const [selectedChatUser, setSelectedChatUser] = useState(null);
-  // for user search
-  const [userSearch, setUserSearch] = useState("");
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [editedName, setEditedName] = useState("");
-  const [chatSearch, setChatSearch] = useState("");
-  const [showChatSearch, setShowChatSearch] = useState(false);
-  const [callType, setCallType] = useState(null); // "voice" | "video" | null
-  const [showDetails, setShowDetails] = useState(false);
+  // messages
+  const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
+  const [replyTo, setReplyTo] = useState(null);
+
+  // for group
+
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("all");
-  const [activeChat, setActiveChat] = useState(initialChats[0]);
+  const [showDetails, setShowDetails] = useState(false);
   const [showAttachments, setShowAttachments] = useState(false);
-  const [messages, setMessages] = useState([]);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showChatSearch, setShowChatSearch] = useState(false);
+  const [chatSearch, setChatSearch] = useState("");
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [callType, setCallType] = useState(null); // "voice" | "video" | null
+  const [preview, setPreview] = useState(null);
+  const [contextMenu, setContextMenu] = useState(null);
+  const [isCreatingChat, setIsCreatingChat] = useState(false);
+  const [isCreatingGroup, setIsCreatingGroup] = useState(false);
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [groupName, setGroupName] = useState("");
+  const [userSearch, setUserSearch] = useState("");
+  const [selectedChatUser, setSelectedChatUser] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
-  const [audioChunks, setAudioChunks] = useState([]);
-  const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-  // for filter
-  const [showFilterMenu, setShowFilterMenu] = useState(false);
-  // for new conversation
-  const [isCreatingChat, setIsCreatingChat] = useState(false);
-  const [newChatName, setNewChatName] = useState("");
-  const [chatList, setChatList] = useState(initialChats);
-  // for emoji
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  const [typingUser, setTypingUser] = useState(null);
+  const typingTimeoutRef = useRef(null);
+
   const fileInputRef = useRef(null);
   const imageInputRef = useRef(null);
   const audioInputRef = useRef(null);
-  const [preview, setPreview] = useState(null);
-  const [contextMenu, setContextMenu] = useState(null);
-  // { x, y, msgIndex }
+  const messagesEndRef = useRef(null);
 
-  const [replyTo, setReplyTo] = useState(null);
+  // ── Initial load ───────────────────────────────────────────────
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [convRes, usersRes] = await Promise.all([
+          getConversations(),
+          getChatUsers(),
+        ]);
+        setConversations(convRes.data);
+        setChatUsers(usersRes.data);
+        if (convRes.data.length > 0) setActiveChat(convRes.data[0]);
+      } catch {
+        /* ignore */
+      }
+    };
+    load();
+  }, []);
 
-  // DEFAULT MESSAGES (instead of hardcoded JSX)
-  const defaultMessages = [
-    {
-      text: "Please share the updated innovation grant summary before 4 PM.",
-      type: "incoming",
-    },
-    {
-      text: "Working on it now. I will upload the file.",
-      type: "outgoing",
-    },
-    {
-      text: "Thanks! Let us know if you need anything.",
-      type: "incoming",
-    },
-  ];
-  const allMessages = [...defaultMessages, ...messages];
+  // ── Load messages when active conversation changes ─────────────
+  useEffect(() => {
+    if (!activeChat?._id) return;
+    setLoadingMessages(true);
+    getMessages(activeChat._id)
+      .then((res) => setMessages(res.data))
+      .catch(() => {})
+      .finally(() => setLoadingMessages(false));
 
-  const filteredMessages = allMessages.filter((msg) => {
-    if (msg.audio) return true; // always show audio
-    return (msg.text || "").toLowerCase().includes(chatSearch.toLowerCase());
-  });
-  const filteredChats = chatList
-    .filter((c) => c.name.toLowerCase().includes(search.toLowerCase()))
+    // Join socket room for this conversation
+    socket.emit("join_conversation", activeChat._id);
+
+    return () => {
+      socket.emit("leave_conversation", activeChat._id);
+    };
+  }, [activeChat?._id]);
+
+  // ── Real-time: receive new message via socket ──────────────────
+  useEffect(() => {
+    const handleNewMessage = (msg) => {
+      // ✅ skip if this message was sent by me — already added via API response
+      const senderId = msg.sender?._id?.toString() || msg.sender?.toString();
+      const myId = user?._id?.toString();
+      console.log("senderId:", senderId);
+      console.log("myId:", myId);
+      console.log("are equal:", senderId === myId);
+
+      console.log("senderId:", senderId);
+      console.log("myId:", myId);
+      console.log("are equal:", senderId === myId);
+
+      // Update last message preview in sidebar
+      setConversations((prev) =>
+        prev.map((c) =>
+          c._id === msg.conversationId
+            ? {
+                ...c,
+                lastMessage: msg.text || "📎 file",
+                lastMessageAt: new Date(),
+              }
+            : c,
+        ),
+      );
+    };
+
+    const handleMessageDeleted = ({ messageId }) => {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m._id === messageId
+            ? { ...m, text: "This message was deleted", isDeleted: true }
+            : m,
+        ),
+      );
+    };
+
+    // Fix #12: show typing indicator
+    const handleTyping = ({ userId }) => {
+      if (userId !== user?._id) {
+        const typingPerson = activeChat?.participants?.find(
+          (p) => p._id === userId,
+        );
+        setTypingUser(
+          typingPerson
+            ? `${typingPerson.firstName} is typing…`
+            : "Someone is typing…",
+        );
+      }
+    };
+
+    const handleStopTyping = () => setTypingUser(null);
+
+    socket.on("newMessage", handleNewMessage);
+    socket.on("messageDeleted", handleMessageDeleted);
+    socket.on("typing", handleTyping);
+    socket.on("stop_typing", handleStopTyping);
+
+    return () => {
+      socket.off("newMessage", handleNewMessage);
+      socket.off("messageDeleted", handleMessageDeleted);
+      socket.off("typing", handleTyping);
+      socket.off("stop_typing", handleStopTyping);
+    };
+  }, [activeChat?._id, activeChat?.participants, user?._id]);
+
+  // ── Auto-scroll to bottom ──────────────────────────────────────
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // Fix #12: emit typing events when user types
+  const handleMessageChange = (e) => {
+    setMessage(e.target.value);
+    if (activeChat?._id) {
+      socket.emit("typing", {
+        conversationId: activeChat._id,
+        userId: user?._id,
+      });
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => {
+        socket.emit("stop_typing", {
+          conversationId: activeChat._id,
+          userId: user?._id,
+        });
+      }, 1500);
+    }
+  };
+
+  // ── Helpers ────────────────────────────────────────────────────
+  const getConversationName = (conv) => {
+    if (!conv) return "";
+    if (conv.type === "group") return conv.name || "Group";
+    const other = conv.participants?.find((p) => p._id !== user?._id);
+    return other ? `${other.firstName} ${other.lastName}` : conv.name;
+  };
+
+  const getConversationInitial = (conv) => {
+    const name = getConversationName(conv);
+    return name?.[0]?.toUpperCase() || "?";
+  };
+
+  const filteredConversations = conversations
+    .filter((c) =>
+      getConversationName(c).toLowerCase().includes(search.toLowerCase()),
+    )
     .filter((c) => {
       if (activeTab === "all") return true;
       if (activeTab === "direct") return c.type === "direct";
-      if (activeTab === "teams") return c.type === "team";
-      if (activeTab === "unread") return c.unread;
+      if (activeTab === "teams") return c.type === "group";
       return true;
     });
 
-  const filteredUsers = users.filter((user) =>
-    user.name.toLowerCase().includes(userSearch.toLowerCase()),
+  const filteredChatUsers = chatUsers.filter((u) =>
+    `${u.firstName} ${u.lastName}`
+      .toLowerCase()
+      .includes(userSearch.toLowerCase()),
   );
 
-  const handleSend = () => {
-    if (!message.trim()) return;
+  const filteredMessages = messages.filter((msg) =>
+    chatSearch
+      ? (msg.text || "").toLowerCase().includes(chatSearch.toLowerCase())
+      : true,
+  );
 
-    const newMsg = {
-      text: message,
-      type: "outgoing",
-      time: new Date(),
-      replyTo: replyTo ? replyTo.text : null,
-    };
+  // ── Send text message ──────────────────────────────────────────
+  const handleSend = useCallback(async () => {
+    if (!message.trim() || !activeChat?._id || sending) return;
+    setSending(true);
+    // Stop typing indicator on send
+    socket.emit("stop_typing", {
+      conversationId: activeChat._id,
+      userId: user?._id,
+    });
+    try {
+      const fd = new FormData();
+      fd.append("text", message);
+      if (replyTo?._id) fd.append("replyTo", replyTo._id);
+      const res = await apiSendMessage(activeChat._id, fd);
+      setMessages((prev) => [...prev, res.data]);
+      setMessage("");
+      setReplyTo(null);
+    } catch {
+      showErrorToast("Failed to send message");
+    } finally {
+      setSending(false);
+    }
+  }, [message, activeChat, replyTo, sending, user?._id]);
 
-    setMessages((prev) => [...prev, newMsg]);
-    setMessage("");
-    setReplyTo(null);
+  // ── Send file ──────────────────────────────────────────────────
+  const handleFileSend = useCallback(
+    async (file) => {
+      if (!file || !activeChat?._id) return;
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await apiSendMessage(activeChat._id, fd);
+        setMessages((prev) => [...prev, res.data]);
+      } catch {
+        showErrorToast("Failed to send file");
+      }
+    },
+    [activeChat],
+  );
+
+  // ── Delete message ─────────────────────────────────────────────
+  const handleDeleteMessage = useCallback(async (msgId) => {
+    try {
+      await apiDeleteMessage(msgId);
+      setMessages((prev) =>
+        prev.map((m) =>
+          m._id === msgId
+            ? { ...m, text: "This message was deleted", isDeleted: true }
+            : m,
+        ),
+      );
+    } catch {
+      showErrorToast("Failed to delete message");
+    }
+  }, []);
+
+  // ── Start / open direct conversation ──────────────────────────
+  const handleStartDirect = useCallback(async () => {
+    if (!selectedChatUser?._id) return;
+    try {
+      const res = await getOrCreateDirectConversation(selectedChatUser._id);
+      const conv = res.data;
+      setConversations((prev) =>
+        prev.find((c) => c._id === conv._id) ? prev : [conv, ...prev],
+      );
+      setActiveChat(conv);
+      setIsCreatingChat(false);
+      setSelectedChatUser(null);
+      setUserSearch("");
+    } catch {
+      showErrorToast("Failed to start conversation");
+    }
+  }, [selectedChatUser]);
+
+  // ── Create group ───────────────────────────────────────────────
+  const handleCreateGroup = useCallback(async () => {
+    if (selectedUsers.length < 1 || !groupName.trim()) return;
+    try {
+      const res = await createGroupConversation(
+        groupName,
+        selectedUsers.map((u) => u._id),
+      );
+      const conv = res.data;
+      setConversations((prev) => [conv, ...prev]);
+      setActiveChat(conv);
+      setIsCreatingGroup(false);
+      setSelectedUsers([]);
+      setGroupName("");
+    } catch {
+      showErrorToast("Failed to create group");
+    }
+  }, [selectedUsers, groupName]);
+
+  const toggleGroupUser = (u) => {
+    setSelectedUsers((prev) =>
+      prev.find((x) => x._id === u._id)
+        ? prev.filter((x) => x._id !== u._id)
+        : [...prev, u],
+    );
   };
 
-  const handleAttachment = (type) => {
-    setShowAttachments(false);
-
-    if (type === "document") {
-      fileInputRef.current.click();
-    }
-
-    if (type === "media") {
-      imageInputRef.current.click();
-    }
-
-    if (type === "camera") {
-      navigator.mediaDevices
-        .getUserMedia({ video: true })
-        .then((stream) => {
-          const video = document.createElement("video");
-          video.srcObject = stream;
-          video.play();
-
-          const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext("2d");
-
-          setTimeout(() => {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0);
-
-            const imageUrl = canvas.toDataURL("image/png");
-
-            setMessages((prev) => [
-              ...prev,
-              {
-                type: "outgoing",
-                media: imageUrl,
-                fileType: "image/png",
-              },
-            ]);
-
-            stream.getTracks().forEach((track) => track.stop());
-          }, 1500);
-        })
-        .catch(() => {
-          showErrorToast("Camera access denied");
-        });
-    }
-
-    if (type === "audio") {
-      audioInputRef.current.click();
-    }
-  };
-
-  const toggleUser = (user) => {
-    const exists = selectedUsers.find((u) => u.name === user.name);
-
-    if (exists) {
-      setSelectedUsers(selectedUsers.filter((u) => u.name !== user.name));
-    } else {
-      setSelectedUsers([...selectedUsers, user]);
-    }
-  };
-
+  // ── File meta helper ───────────────────────────────────────────
   const getFileMeta = (name = "") => {
     const ext = name.split(".").pop().toLowerCase();
-
-    if (ext === "pdf") {
-      return { label: "PDF", color: "#e53935" };
-    }
-    if (ext === "doc" || ext === "docx") {
-      return { label: "W", color: "#2b579a" };
-    }
-    if (ext === "ppt" || ext === "pptx") {
-      return { label: "P", color: "#d24726" };
-    }
+    if (ext === "pdf") return { label: "PDF", color: "#e53935" };
+    if (["doc", "docx"].includes(ext)) return { label: "W", color: "#2b579a" };
+    if (["ppt", "pptx"].includes(ext)) return { label: "P", color: "#d24726" };
     return { label: "FILE", color: "#6b7280" };
+  };
+
+  // ── Render a single message bubble ────────────────────────────
+  const renderMessage = (msg, i) => {
+    const isMe =
+      msg.sender?._id?.toString() === user?._id?.toString() ||
+      msg.sender?.toString() === user?._id?.toString();
+    const mediaUrl = msg.media ? `${BASE_URL}${msg.media}` : null;
+    const audioUrl = msg.audio ? `${BASE_URL}${msg.audio}` : null;
+    const fileUrl = msg.file ? `${BASE_URL}${msg.file}` : null;
+    const hasFile = fileUrl || audioUrl || mediaUrl;
+
+    return (
+      <div
+        key={msg._id || i}
+        className={`msg-bubble ${isMe ? "outgoing" : "incoming"} ${hasFile ? "no-bg" : ""}`}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          setContextMenu({ x: e.clientX, y: e.clientY, msg });
+        }}
+      >
+        {msg.replyTo && (
+          <div className="reply-preview">
+            {msg.replyTo.text?.slice(0, 60) || "📎 file"}
+          </div>
+        )}
+
+        {audioUrl ? (
+          <audio controls src={audioUrl} />
+        ) : mediaUrl ? (
+          msg.fileType?.startsWith("image") ? (
+            <img
+              src={mediaUrl}
+              alt="media"
+              className="chat-media"
+              onClick={() => setPreview(mediaUrl)}
+            />
+          ) : (
+            <video controls src={mediaUrl} className="chat-media" />
+          )
+        ) : fileUrl ? (
+          (() => {
+            const meta = getFileMeta(msg.fileName || "");
+            return (
+              <div className={`file-card ${isMe ? "me" : "other"}`}>
+                <div className="file-top">
+                  <div className="file-icon" style={{ background: meta.color }}>
+                    {meta.label}
+                  </div>
+                  <div className="file-info">
+                    <p className="file-name">{msg.fileName || "file"}</p>
+                    <span className="file-size">{msg.fileSize || ""}</span>
+                  </div>
+                  <a
+                    href={fileUrl}
+                    // download={msg.fileName || "file"}
+                    className="file-download"
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      try {
+                        const response = await fetch(fileUrl);
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = msg.fileName || "file"; // ✅ original filename
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                      } catch {
+                        window.open(fileUrl, "_blank");
+                      }
+                    }}
+                  >
+                    ⬇
+                  </a>
+                </div>
+              </div>
+            );
+          })()
+        ) : // highlight search term
+        chatSearch && msg.text ? (
+          msg.text
+            .split(new RegExp(`(${chatSearch})`, "gi"))
+            .map((part, idx) =>
+              part.toLowerCase() === chatSearch.toLowerCase() ? (
+                <span key={idx} className="highlight">
+                  {part}
+                </span>
+              ) : (
+                part
+              ),
+            )
+        ) : (
+          <span
+            style={{
+              opacity: msg.isDeleted ? 0.5 : 1,
+              fontStyle: msg.isDeleted ? "italic" : "normal",
+            }}
+          >
+            {msg.text}
+          </span>
+        )}
+
+        <div
+          style={{
+            fontSize: 10,
+            opacity: 0.5,
+            marginTop: 2,
+            textAlign: isMe ? "right" : "left",
+          }}
+        >
+          {msg.createdAt
+            ? new Date(msg.createdAt).toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : ""}
+        </div>
+      </div>
+    );
   };
 
   return (
     <div className="staff-card staff-card--full">
       <div className="staff-chat">
+        {/* hidden file inputs */}
         <input
           type="file"
           ref={fileInputRef}
           accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
           style={{ display: "none" }}
           onChange={(e) => {
-            const file = e.target.files[0];
-            if (!file) return;
+            const f = e.target.files[0];
+            if (f) handleFileSend(f);
 
-            const url = URL.createObjectURL(file);
-
-            if (file.type.startsWith("audio")) {
-              setMessages((prev) => [
-                ...prev,
-                {
-                  type: "outgoing",
-                  audio: url,
-                },
-              ]);
-            } else {
-              setMessages((prev) => [
-                ...prev,
-                {
-                  type: "outgoing",
-                  file: {
-                    name: file.name,
-                    size: (file.size / 1024).toFixed(1) + " KB",
-                    url,
-                  },
-                },
-              ]);
-            }
+            e.target.value = null; // 🔥 important (allows re-selecting same file)
           }}
         />
 
@@ -332,39 +490,18 @@ const ChatPage = () => {
           style={{ display: "none" }}
           onChange={(e) => {
             const file = e.target.files[0];
-            if (!file) return;
-
-            const url = URL.createObjectURL(file);
-
-            setMessages((prev) => [
-              ...prev,
-              {
-                type: "outgoing",
-                media: url,
-                fileType: file.type,
-              },
-            ]);
+            if (file) handleFileSend(file);
+            e.target.value = null;
           }}
         />
-
         <input
           type="file"
-          accept="audio/*"
           ref={audioInputRef}
+          accept="audio/*"
           style={{ display: "none" }}
           onChange={(e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const url = URL.createObjectURL(file);
-
-            setMessages((prev) => [
-              ...prev,
-              {
-                type: "outgoing",
-                audio: url,
-              },
-            ]);
+            const f = e.target.files[0];
+            if (f) handleFileSend(f);
           }}
         />
 
@@ -377,7 +514,6 @@ const ChatPage = () => {
             <div style={{ display: "flex", gap: 8 }}>
               <div
                 className="input-icon plus-style"
-                // variant="ghost"
                 onClick={() => {
                   setShowDetails(false);
                   setIsCreatingGroup(true);
@@ -438,29 +574,32 @@ const ChatPage = () => {
 
           {/* CHAT LIST */}
           <div className="chat-list-scroll">
-            {filteredChats.map((chat, i) => (
-              <div
-                key={i}
-                className="staff-chat-thread chat-item-fixed"
-                onClick={() => {
-                  setActiveChat(chat);
-                  setShowDetails(false);
-                }}
-              >
-                <div className="chat-avatar">
-                  {chat.avatar ? (
-                    <img src={chat.avatar} alt={chat.name} />
-                  ) : (
-                    <span>{chat.name[0]}</span>
-                  )}
+            {filteredConversations.length === 0 ? (
+              <p style={{ padding: 12, fontSize: 12, color: "#64748b" }}>
+                No conversations yet. Start one below!
+              </p>
+            ) : (
+              filteredConversations.map((conv) => (
+                <div
+                  key={conv._id}
+                  className={`staff-chat-thread chat-item-fixed ${activeChat?._id === conv._id ? "active" : ""}`}
+                  onClick={() => {
+                    setActiveChat(conv);
+                    setShowDetails(false);
+                  }}
+                >
+                  <div className="chat-avatar">
+                    <span>{getConversationInitial(conv)}</span>
+                  </div>
+                  <div className="chat-info">
+                    <p>{getConversationName(conv)}</p>
+                    <span style={{ fontSize: 11, color: "#94a3b8" }}>
+                      {conv.lastMessage || "No messages yet"}
+                    </span>
+                  </div>
                 </div>
-
-                <div className="chat-info">
-                  <p>{chat.name}</p>
-                  <span>{chat.last}</span>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
 
           {/* NEW CHAT */}
@@ -481,595 +620,948 @@ const ChatPage = () => {
         {/* MAIN */}
         <div className="staff-chat-main">
           {/* HEADER */}
-          <div className="staff-chat-header">
-            {/* LEFT */}
-            <div
-              className="chat-header-left"
-              onClick={() => setShowDetails(true)}
-            >
-              <div className="staff-avatar">
-                {activeChat?.avatar ? (
-                  <img src={activeChat.avatar} alt={activeChat.name} />
-                ) : (
+          {activeChat ? (
+            <div className="staff-chat-header">
+              {/* LEFT */}
+              <div
+                className="chat-header-left"
+                onClick={() => setShowDetails(true)}
+              >
+                <div className="staff-avatar">
                   <NavProfileIcon />
+                </div>
+                <div className="chat-header-text">
+                  <h4>{getConversationName(activeChat)}</h4>
+                  <span>
+                    {activeChat.type === "group"
+                      ? `${activeChat.participants?.length || 0} members`
+                      : activeChat.participants?.find(
+                          (p) => p._id !== user?._id,
+                        )?.role || ""}
+                  </span>
+                </div>
+              </div>
+              <div className="chat-header-actions">
+                <span onClick={() => setShowChatSearch(!showChatSearch)}>
+                  <SearchIcon />
+                </span>
+                <span onClick={() => setCallType("video")}>
+                  <VideoIcon />
+                </span>
+                <span onClick={() => setCallType("voice")}>
+                  <PhoneIcon />
+                </span>
+              </div>
+              {showChatSearch && (
+                <div className="chat-inline-search">
+                  <input
+                    placeholder="Search messages..."
+                    className="staff-input"
+                    value={chatSearch}
+                    onChange={(e) => setChatSearch(e.target.value)}
+                  />
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="staff-chat-header">
+              <p style={{ padding: 12, color: "#64748b" }}>
+                Select a conversation or start a new one
+              </p>
+            </div>
+          )}
+
+          {/* Messages */}
+          <div className="staff-chat-messages staff-chat-messages--scroll">
+            {!activeChat ? (
+              <div
+                style={{ padding: 24, textAlign: "center", color: "#94a3b8" }}
+              >
+                <p>No conversation selected</p>
+              </div>
+            ) : loadingMessages ? (
+              <div
+                style={{ padding: 24, textAlign: "center", color: "#94a3b8" }}
+              >
+                Loading...
+              </div>
+            ) : (
+              <>
+                <div className="chat-date">{getRelativeTime(new Date())}</div>
+                {filteredMessages.map(renderMessage)}
+                {typingUser && (
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: "#94a3b8",
+                      padding: "4px 12px",
+                      fontStyle: "italic",
+                    }}
+                  >
+                    {typingUser}
+                  </div>
                 )}
-              </div>
-
-              <div className="chat-header-text">
-                <h4>{activeChat?.name}</h4>
-                <span>{activeChat?.members || "8 members"}</span>
-              </div>
-            </div>
-
-            {/* RIGHT */}
-            <div className="chat-header-actions">
-              <span onClick={() => setShowChatSearch(!showChatSearch)}>
-                <SearchIcon />
-              </span>
-
-              <span onClick={() => setCallType("video")}>
-                <VideoIcon />
-              </span>
-
-              <span onClick={() => setCallType("voice")}>
-                <PhoneIcon />
-              </span>
-            </div>
-            {showChatSearch && (
-              <div className="chat-inline-search">
-                <input
-                  placeholder="Search messages..."
-                  className="staff-input"
-                  value={chatSearch}
-                  onChange={(e) => setChatSearch(e.target.value)}
-                />
-              </div>
+                <div ref={messagesEndRef} />
+              </>
             )}
           </div>
 
-          {/* MESSAGES */}
-          <div className="staff-chat-messages staff-chat-messages--scroll">
-            <div className="chat-date">{getRelativeTime(new Date())}</div>
-
-            {(chatSearch ? filteredMessages : allMessages).map((msg, i) => (
-              <div
-                key={i}
-                className={`msg-bubble
-                   ${msg.type === "outgoing" ? "outgoing" : "incoming"}
-                 ${msg.media || msg.audio || msg.file ? "no-bg" : ""}`}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-
-                  setContextMenu({
-                    x: e.clientX,
-                    y: e.clientY,
-                    msgIndex: i,
-                  });
-                }}
-              >
-                {msg.replyTo && (
-                  <div className="reply-preview">{msg.replyTo}</div>
-                )}
-
-                {msg.audio ? (
-                  <audio controls src={msg.audio} />
-                ) : msg.media ? (
-                  msg.fileType.startsWith("image") ? (
-                    <img
-                      src={msg.media}
-                      alt="media"
-                      className="chat-media"
-                      onClick={() => setPreview(msg.media)}
-                    />
-                  ) : (
-                    <video controls src={msg.media} className="chat-media" />
-                  )
-                ) : msg.file ? (
-                  (() => {
-                    const meta = getFileMeta(msg.file.name);
-                    const isMe = msg.type === "outgoing";
-
-                    return (
-                      <div className={`file-card ${isMe ? "me" : "other"}`}>
-                        {/* TOP */}
-                        <div className="file-top">
-                          <div
-                            className="file-icon"
-                            style={{ background: meta.color }}
-                          >
-                            {meta.label}
-                          </div>
-
-                          <div className="file-info">
-                            <p className="file-name">{msg.file.name}</p>
-                            <span className="file-size">
-                              {meta.label} • {msg.file.size}
-                            </span>
-                          </div>
-
-                          {/* Receiver gets download icon */}
-                          {!isMe && (
-                            <div
-                              className="file-download"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                window.open(msg.file.url);
-                              }}
-                            >
-                              ⬇
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Sender gets actions */}
-                        {isMe && (
-                          <div className="file-actions">
-                            {/* OPEN */}
-                            <span onClick={() => window.open(msg.file.url)}>
-                              Open
-                            </span>
-
-                            {/* SAVE AS (REAL DOWNLOAD) */}
-                            <a
-                              href={msg.file.url}
-                              download={msg.file.name} // 👈 THIS sets filename automatically
-                              className="download-link"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              Save as…
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })()
-                ) : chatSearch ? (
-                  msg.text
-                    .split(new RegExp(`(${chatSearch})`, "gi"))
-                    .map((part, index) =>
-                      part.toLowerCase() === chatSearch.toLowerCase() ? (
-                        <span key={index} className="highlight">
-                          {part}
-                        </span>
-                      ) : (
-                        part
-                      ),
-                    )
-                ) : (
-                  msg.text
-                )}
-              </div>
-            ))}
-          </div>
-
+          {/* Context menu */}
           {contextMenu && (
             <div
               className="context-menu"
-              style={{
-                top: contextMenu.y,
-                left: contextMenu.x,
-              }}
+              style={{ top: contextMenu.y, left: contextMenu.x }}
               onMouseLeave={() => setContextMenu(null)}
             >
               <div
                 onClick={() => {
-                  const msg = allMessages[contextMenu.msgIndex];
-                  if (msg.text) {
-                    navigator.clipboard.writeText(msg.text);
-                  }
+                  if (contextMenu.msg.text)
+                    navigator.clipboard.writeText(contextMenu.msg.text);
                   setContextMenu(null);
                 }}
               >
                 📋 Copy
               </div>
-
               <div
                 onClick={() => {
-                  const msg = allMessages[contextMenu.msgIndex];
-                  setReplyTo(msg);
+                  setReplyTo(contextMenu.msg);
                   setContextMenu(null);
                 }}
               >
                 ↩ Reply
               </div>
-
-              <div
-                onClick={() => {
-                  const updated = [...messages];
-                  const realIndex =
-                    contextMenu.msgIndex - defaultMessages.length;
-
-                  if (realIndex >= 0) {
-                    updated.splice(realIndex, 1);
-                    setMessages(updated);
-                  }
-
-                  setContextMenu(null);
-                }}
-              >
-                🗑 Delete
-              </div>
-
-              <div
-                onClick={() => {
-                  alert("Forward feature (mock)");
-                  setContextMenu(null);
-                }}
-              >
-                📤 Forward
-              </div>
+              {contextMenu.msg.sender?._id === user?._id && (
+                <div
+                  onClick={() => {
+                    handleDeleteMessage(contextMenu.msg._id);
+                    setContextMenu(null);
+                  }}
+                >
+                  🗑 Delete
+                </div>
+              )}
             </div>
           )}
 
+          {/* Reply box */}
           {replyTo && (
             <div className="reply-box">
-              <span>{replyTo.text?.slice(0, 50)}</span>
+              <span>{replyTo.text?.slice(0, 50) || "📎 file"}</span>
               <button className="reply-close" onClick={() => setReplyTo(null)}>
                 ✕
               </button>
             </div>
           )}
 
-          {/* INPUT */}
-          <form
-            className="staff-chat-input-row"
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSend();
-            }}
-          >
-            <div className="input-box">
-              {/* LEFT ICONS */}
-              <div className="input-left">
-                <div
-                  className="input-icon"
-                  onClick={() => {
-                    setShowAttachments(!showAttachments);
-                    setShowEmojiPicker(false);
-                  }}
-                >
-                  <PlusIcon />
-                </div>
-
-                {/* Emoji button (simple fix without extra library) */}
-                <div
-                  className="input-icon"
-                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                >
-                  😊
-                </div>
-
-                {showEmojiPicker && (
-                  <div className="emoji-picker">
-                    {["😀", "😂", "😍", "👍", "🔥", "🎉", "😎", "😭"].map(
-                      (emoji) => (
-                        <span
-                          key={emoji}
-                          onClick={() => {
-                            setMessage((prev) => prev + emoji);
-                            setShowEmojiPicker(false);
-                          }}
-                        >
-                          {emoji}
-                        </span>
-                      ),
-                    )}
+          {/* Input row */}
+          {activeChat && (
+            <form
+              className="staff-chat-input-row"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSend();
+              }}
+            >
+              <div className="input-box">
+                <div className="input-left">
+                  <div
+                    className="input-icon"
+                    onClick={() => {
+                      setShowAttachments(!showAttachments);
+                      setShowEmojiPicker(false);
+                    }}
+                  >
+                    <PlusIcon />
                   </div>
-                )}
-
-                <div
-                  className={`input-icon ${isRecording ? "recording" : ""}`}
-                  onClick={async () => {
-                    if (!isRecording) {
-                      // 🎤 START RECORDING
-                      try {
-                        const stream =
-                          await navigator.mediaDevices.getUserMedia({
-                            audio: true,
-                          });
-
-                        const recorder = new MediaRecorder(stream);
-                        let chunks = [];
-
-                        recorder.ondataavailable = (e) => {
-                          if (e.data.size > 0) {
-                            chunks.push(e.data);
-                          }
-                        };
-
-                        recorder.onstop = () => {
-                          try {
-                            const audioBlob = new Blob(chunks, {
+                  <div
+                    className="input-icon"
+                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  >
+                    😊
+                  </div>
+                  {showEmojiPicker && (
+                    <div className="emoji-picker">
+                      {[
+                        {
+                          label: "😊 Smileys",
+                          emojis: [
+                            "😀",
+                            "😃",
+                            "😄",
+                            "😁",
+                            "😆",
+                            "🥹",
+                            "😅",
+                            "😂",
+                            "🤣",
+                            "🥲",
+                            "☺️",
+                            "😊",
+                            "😇",
+                            "🙂",
+                            "🙃",
+                            "😉",
+                            "😌",
+                            "😍",
+                            "🥰",
+                            "😘",
+                            "😗",
+                            "😙",
+                            "😚",
+                            "😋",
+                            "😛",
+                            "😝",
+                            "😜",
+                            "🤪",
+                            "🤨",
+                            "🧐",
+                            "🤓",
+                            "😎",
+                            "🥸",
+                            "🤩",
+                            "🥳",
+                            "😏",
+                            "😒",
+                            "😞",
+                            "😔",
+                            "😟",
+                            "😕",
+                            "🙁",
+                            "☹️",
+                            "😣",
+                            "😖",
+                            "😫",
+                            "😩",
+                            "🥺",
+                            "😢",
+                            "😭",
+                            "😤",
+                            "😠",
+                            "😡",
+                            "🤬",
+                            "🤯",
+                            "😳",
+                            "🥵",
+                            "🥶",
+                            "😱",
+                            "😨",
+                            "😰",
+                            "😥",
+                            "🤗",
+                            "🤔",
+                            "🫣",
+                            "🤭",
+                            "🫢",
+                            "🫡",
+                            "🤫",
+                            "🫠",
+                            "🤥",
+                            "😶",
+                            "🫥",
+                            "😐",
+                            "🫤",
+                            "😑",
+                            "🫨",
+                            "😬",
+                            "🙄",
+                            "😯",
+                            "😦",
+                            "😧",
+                            "😲",
+                            "🥱",
+                            "😴",
+                            "🤤",
+                            "😪",
+                            "😵",
+                            "😵‍💫",
+                            "🤐",
+                            "🥴",
+                            "🤢",
+                            "🤮",
+                            "🤧",
+                            "😷",
+                            "🤒",
+                            "🤕",
+                            "🤑",
+                            "🤠",
+                            "😈",
+                            "👿",
+                            "👹",
+                            "👺",
+                            "🤡",
+                            "💩",
+                            "👻",
+                            "💀",
+                            "☠️",
+                            "👽",
+                            "👾",
+                            "🤖",
+                            "🎃",
+                            "😺",
+                            "😸",
+                            "😹",
+                            "😻",
+                            "😼",
+                            "😽",
+                            "🙀",
+                            "😿",
+                            "😾",
+                          ],
+                        },
+                        {
+                          label: "👋 Gestures & Body",
+                          emojis: [
+                            "🫶",
+                            "🤲",
+                            "👐",
+                            "🙌",
+                            "👏",
+                            "🤝",
+                            "👍",
+                            "👎",
+                            "👊",
+                            "✊",
+                            "🤛",
+                            "🤜",
+                            "🫷",
+                            "🫸",
+                            "🤞",
+                            "✌️",
+                            "🫰",
+                            "🤟",
+                            "🤘",
+                            "👌",
+                            "🤌",
+                            "🤏",
+                            "🫳",
+                            "🫴",
+                            "👈",
+                            "👉",
+                            "👆",
+                            "👇",
+                            "☝️",
+                            "✋",
+                            "🤚",
+                            "🖐️",
+                            "🖖",
+                            "👋",
+                            "🤙",
+                            "🫲",
+                            "🫱",
+                            "💪",
+                            "🦾",
+                            "🖕",
+                            "✍️",
+                            "🙏",
+                            "🫵",
+                            "🦶",
+                            "🦵",
+                            "🦿",
+                            "💄",
+                            "💋",
+                            "👄",
+                            "🫦",
+                            "🦷",
+                            "👅",
+                            "👂",
+                            "🦻",
+                            "👃",
+                            "🫆",
+                            "👣",
+                            "👁️",
+                            "👀",
+                            "🫀",
+                            "🫁",
+                            "🧠",
+                            "🗣️",
+                            "👤",
+                            "👥",
+                            "🫂",
+                          ],
+                        },
+                        {
+                          label: "👶 People",
+                          emojis: [
+                            "👶",
+                            "👧",
+                            "🧒",
+                            "👦",
+                            "👩",
+                            "🧑",
+                            "👨",
+                            "👩‍🦱",
+                            "🧑‍🦱",
+                            "👨‍🦱",
+                            "👩‍🦰",
+                            "🧑‍🦰",
+                            "👨‍🦰",
+                            "👱‍♀️",
+                            "👱",
+                            "👱‍♂️",
+                            "👩‍🦳",
+                            "🧑‍🦳",
+                            "👨‍🦳",
+                            "👩‍🦲",
+                            "🧑‍🦲",
+                            "👨‍🦲",
+                            "🧔‍♀️",
+                            "🧔",
+                            "🧔‍♂️",
+                            "👵",
+                            "🧓",
+                            "👴",
+                            "👲",
+                            "👳‍♀️",
+                            "👳",
+                            "👳‍♂️",
+                            "🧕",
+                          ],
+                        },
+                        {
+                          label: "👗 Clothing",
+                          emojis: [
+                            "🌂",
+                            "🥽",
+                            "🕶️",
+                            "👓",
+                            "🧳",
+                            "🎒",
+                            "💼",
+                            "👜",
+                            "🧤",
+                            "🧣",
+                            "🎩",
+                            "🧢",
+                            "👒",
+                            "🎓",
+                            "⛑️",
+                            "🪖",
+                            "👑",
+                            "💍",
+                            "👝",
+                            "👛",
+                            "🧦",
+                            "🥾",
+                            "👟",
+                            "👞",
+                            "👢",
+                            "👡",
+                            "👠",
+                            "🥿",
+                            "🩴",
+                            "🥻",
+                            "👘",
+                            "🩱",
+                            "🪡",
+                            "🧥",
+                            "🥼",
+                            "🦺",
+                            "👚",
+                            "👕",
+                            "👖",
+                            "🩲",
+                            "🩳",
+                            "👔",
+                            "👗",
+                            "👙",
+                            "🧵",
+                            "🧶",
+                            "🪢",
+                          ],
+                        },
+                        {
+                          label: "❤️ Hearts",
+                          emojis: [
+                            "❤️",
+                            "🧡",
+                            "💛",
+                            "💚",
+                            "💙",
+                            "💜",
+                            "🖤",
+                            "🤍",
+                            "🤎",
+                            "💔",
+                            "❣️",
+                            "💕",
+                            "💞",
+                            "💓",
+                            "💗",
+                            "💖",
+                            "💘",
+                            "💝",
+                            "💟",
+                            "☮️",
+                            "✨",
+                            "💫",
+                            "⭐",
+                            "🌟",
+                            "🔥",
+                            "💯",
+                            "🎉",
+                            "🎊",
+                            "🎈",
+                            "🏆",
+                            "🥇",
+                            "🎯",
+                            "🚀",
+                            "💡",
+                          ],
+                        },
+                        {
+                          label: "🍕 Food",
+                          emojis: [
+                            "🍕",
+                            "🍔",
+                            "🍟",
+                            "🌮",
+                            "🌯",
+                            "🍜",
+                            "🍝",
+                            "🍣",
+                            "🍱",
+                            "🍩",
+                            "🍪",
+                            "🎂",
+                            "🍰",
+                            "☕",
+                            "🍵",
+                            "🧃",
+                            "🥤",
+                            "🍺",
+                            "🥂",
+                            "🍾",
+                            "🍇",
+                            "🍓",
+                            "🍑",
+                            "🍍",
+                            "🥭",
+                            "🍆",
+                            "🥦",
+                            "🥕",
+                            "🌽",
+                            "🍄",
+                          ],
+                        },
+                        {
+                          label: "🐶 Animals",
+                          emojis: [
+                            "🐶",
+                            "🐱",
+                            "🐭",
+                            "🐹",
+                            "🐰",
+                            "🦊",
+                            "🐻",
+                            "🐼",
+                            "🐨",
+                            "🐯",
+                            "🦁",
+                            "🐮",
+                            "🐷",
+                            "🐸",
+                            "🐵",
+                            "🙈",
+                            "🙉",
+                            "🙊",
+                            "🐔",
+                            "🐧",
+                            "🐦",
+                            "🦆",
+                            "🦅",
+                            "🦉",
+                            "🦇",
+                            "🐺",
+                            "🐗",
+                            "🐴",
+                            "🦄",
+                            "🐝",
+                          ],
+                        },
+                        {
+                          label: "⚽ Activities",
+                          emojis: [
+                            "⚽",
+                            "🏀",
+                            "🏈",
+                            "⚾",
+                            "🥎",
+                            "🎾",
+                            "🏐",
+                            "🏉",
+                            "🥏",
+                            "🎱",
+                            "🏓",
+                            "🏸",
+                            "🥊",
+                            "🥋",
+                            "🎯",
+                            "🎮",
+                            "🎲",
+                            "🧩",
+                            "🎭",
+                            "🎨",
+                            "🎬",
+                            "🎤",
+                            "🎧",
+                            "🎼",
+                            "🎹",
+                            "🥁",
+                            "🎷",
+                            "🎺",
+                            "🎸",
+                            "🪗",
+                          ],
+                        },
+                        {
+                          label: "✈️ Travel",
+                          emojis: [
+                            "✈️",
+                            "🚀",
+                            "🛸",
+                            "🚁",
+                            "🛺",
+                            "🚗",
+                            "🚕",
+                            "🚙",
+                            "🚌",
+                            "🚎",
+                            "🏎️",
+                            "🚓",
+                            "🚑",
+                            "🚒",
+                            "🚐",
+                            "🛻",
+                            "🚚",
+                            "🚛",
+                            "🚜",
+                            "🏍️",
+                            "🛵",
+                            "🚲",
+                            "🛴",
+                            "🛹",
+                            "🛼",
+                            "🚏",
+                            "🛣️",
+                            "🗺️",
+                            "🧭",
+                            "🌍",
+                          ],
+                        },
+                      ].map((category) => (
+                        <div key={category.label}>
+                          <div className="emoji-category-label">
+                            {category.label}
+                          </div>
+                          <div className="emoji-grid">
+                            {category.emojis.map((e) => (
+                              <span
+                                key={e}
+                                onClick={() => {
+                                  setMessage((p) => p + e);
+                                  setShowEmojiPicker(false);
+                                }}
+                              >
+                                {e}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div
+                    className={`input-icon ${isRecording ? "recording" : ""}`}
+                    onClick={async () => {
+                      if (!isRecording) {
+                        try {
+                          const stream =
+                            await navigator.mediaDevices.getUserMedia({
+                              audio: true,
+                            });
+                          const recorder = new MediaRecorder(stream);
+                          let chunks = [];
+                          recorder.ondataavailable = (e) => {
+                            if (e.data.size > 0) chunks.push(e.data);
+                          };
+                          recorder.onstop = async () => {
+                            const blob = new Blob(chunks, {
                               type: "audio/webm",
                             });
-                            const audioUrl = URL.createObjectURL(audioBlob);
-
-                            setMessages((prev) => [
-                              ...prev,
-                              {
-                                type: "outgoing",
-                                audio: audioUrl,
-                              },
-                            ]);
-
-                            chunks = []; // reset
-                          } catch (err) {
-                            console.error("Audio processing error:", err);
-                          }
-                        };
-
-                        recorder.start();
-                        setMediaRecorder(recorder);
-                        setIsRecording(true);
-                      } catch (err) {
-                        showErrorToast("Microphone access is required ...");
+                            const file = new File(
+                              [blob],
+                              "voice-message.webm",
+                              { type: "audio/webm" },
+                            );
+                            await handleFileSend(file);
+                            chunks = [];
+                          };
+                          recorder.start();
+                          setMediaRecorder(recorder);
+                          setIsRecording(true);
+                        } catch {
+                          showErrorToast("Microphone access required");
+                        }
+                      } else {
+                        mediaRecorder?.stop();
+                        setIsRecording(false);
                       }
-                    } else {
-                      if (mediaRecorder) {
-                        mediaRecorder.stop();
-                      }
-                      setIsRecording(false);
-                    }
-                  }}
-                >
-                  <MicIcon />
+                    }}
+                  >
+                    <MicIcon />
+                  </div>
                 </div>
+                <input
+                  className="chat-input-field"
+                  placeholder="Type a message..."
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                />
+                <button type="submit" className="send-btn" disabled={sending}>
+                  <SendIcon />
+                </button>
               </div>
-
-              {/* INPUT */}
-              <input
-                className="chat-input-field"
-                placeholder="Type a message..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-              />
-
-              {/* SEND */}
-              <button type="submit" className="send-btn">
-                <SendIcon />
-              </button>
-            </div>
-          </form>
+            </form>
+          )}
         </div>
 
-        {/* RIGHT PANEL */}
-        {showDetails && (
-          <div className={`chat-details-panel ${showDetails ? "open" : ""}`}>
-            {/* HEADER */}
+        {/* ── RIGHT PANEL ── */}
+        {showDetails && activeChat && (
+          <div className="chat-details-panel open">
             <div className="details-header">
               <h4>
-                {activeChat.type === "direct" ? "Contact Info" : "Group Info"}
+                {activeChat.type === "group" ? "Group Info" : "Contact Info"}
               </h4>
-
               <span className="close-btn" onClick={() => setShowDetails(false)}>
                 ✕
               </span>
             </div>
-
-            {/* BODY */}
             <div className="details-body">
-              {/* TOP PROFILE */}
-              <div className="team">
-                <div className="staff-avatar large">
-                  <NavProfileIcon />
-                </div>
-
-                <div className="team-name-row">
-                  <h3>{activeChat.name}</h3>
-
-                  <span
-                    className="edit-icon"
-                    onClick={() => {
-                      setEditedName(activeChat.name); // preload current name
-                      setIsEditingName(true);
-                    }}
-                  >
-                    <EditIcon />
-                  </span>
-                </div>
-
-                {isEditingName && (
-                  <div className="edit-name-box">
-                    <input
-                      className="staff-input"
-                      value={editedName}
-                      onChange={(e) => setEditedName(e.target.value)}
-                      placeholder="Enter new name"
-                    />
-
-                    <button
-                      onClick={() => {
-                        if (!editedName.trim()) return;
-
-                        const updatedList = chatList.map((c) =>
-                          c === activeChat ? { ...c, name: editedName } : c,
-                        );
-
-                        setChatList(updatedList);
-                        setActiveChat({ ...activeChat, name: editedName });
-
-                        setIsEditingName(false);
-                        setEditedName("");
-                      }}
-                    >
-                      Save
-                    </button>
-                  </div>
-                )}
-
-                {/* ONLY show members count for groups */}
-                {activeChat.type === "team" && <p>8 Members</p>}
-
-                <div className="details-actions">
-                  <PhoneIcon />
-                  <VideoIcon />
-                </div>
+              <div className="staff-avatar large">
+                <NavProfileIcon />
               </div>
-
-              <hr />
-
-              {/* DESCRIPTION (only for group) */}
-              {activeChat.type === "team" && (
-                <>
-                  <div className="staff-section">
-                    <h5>Description</h5>
-                    <p>This channel is dedicated to innovation discussions.</p>
-                  </div>
-                  <hr />
-                </>
-              )}
-
-              {/* MEMBERS (ONLY GROUP) */}
-              {activeChat.type === "team" && (
-                <>
-                  <div className="staff-section">
-                    <h5>Members</h5>
-
-                    <div className="member">
-                      <div className="staff-avatar small" />
+              <h3 style={{ marginTop: 8 }}>
+                {getConversationName(activeChat)}
+              </h3>
+              {activeChat.type === "group" && (
+                <div className="section">
+                  <h5>Members ({activeChat.participants?.length})</h5>
+                  {activeChat.participants?.map((p) => (
+                    <div key={p._id} className="member">
+                      <div className="staff-avatar small">
+                        <NavProfileIcon />
+                      </div>
                       <div>
-                        <p>James Anderson</p>
-                        <span>Manager</span>
+                        <p>
+                          {p.firstName} {p.lastName}
+                        </p>
+                        <span>{p.role}</span>
                       </div>
                     </div>
-
-                    <div className="member">
-                      <div className="staff-avatar small" />
-                      <div>
-                        <p>Emily Davis</p>
-                        <span>Project Lead</span>
-                      </div>
-                    </div>
-
-                    <p className="more-members">+4 more</p>
-                  </div>
-
-                  <hr />
-                </>
+                  ))}
+                </div>
               )}
-
-              {/* SHARED (FOR BOTH) */}
-              <div className="staff-section">
-                <h5>Shared Files</h5>
-                <p>Project_Guidelines.pdf</p>
-              </div>
-
-              <div className="staff-section">
-                <h5>Shared Media</h5>
-                <p>Images, Videos...</p>
-              </div>
-
-              <div className="staff-section">
-                <h5>Shared Links</h5>
-                <p>https://example.com</p>
-              </div>
             </div>
           </div>
         )}
+
+        {/* Attachment menu */}
         {showAttachments && (
           <div className="attachment-menu">
-            <div onClick={() => handleAttachment("document")}>📄 Document</div>
-            <div onClick={() => handleAttachment("media")}>
+            <div
+              onClick={() => {
+                setShowAttachments(false);
+                fileInputRef.current?.click();
+              }}
+            >
+              📄 Document
+            </div>
+            <div
+              onClick={() => {
+                setShowAttachments(false);
+                imageInputRef.current?.click();
+              }}
+            >
               🖼 Photo & Video
             </div>
-            <div onClick={() => handleAttachment("camera")}>📷 Camera</div>
-            <div onClick={() => handleAttachment("audio")}>🎵 Audio</div>
+            <div
+              onClick={() => {
+                setShowAttachments(false);
+                audioInputRef.current?.click();
+              }}
+            >
+              🎵 Audio
+            </div>
           </div>
         )}
 
+        {/* Filter menu */}
         {showFilterMenu && (
           <div className="filter-menu">
-            {["all", "direct", "teams", "unread"].map((type) => (
+            {["all", "direct", "teams"].map((t) => (
               <div
-                key={type}
+                key={t}
                 onClick={() => {
-                  setActiveTab(type);
+                  setActiveTab(t);
                   setShowFilterMenu(false);
                 }}
               >
-                {type.toUpperCase()}
+                {t.toUpperCase()}
               </div>
             ))}
           </div>
         )}
 
+        {/* New conversation panel */}
         {isCreatingChat && (
-          <div className="chat-create-panel open">
-            {/* HEADER */}
+          <div className="chat-details-panel open">
             <div className="details-header">
               <h4>New Conversation</h4>
-
               <span
                 className="close-btn"
-                onClick={() => setIsCreatingChat(false)}
+                onClick={() => {
+                  setIsCreatingChat(false);
+                  setSelectedChatUser(null);
+                }}
               >
                 ✕
               </span>
             </div>
-
-            {/* BODY */}
             <div className="details-body">
               <input
                 className="staff-input"
-                placeholder="Search name or number"
+                placeholder="Search users..."
                 value={userSearch}
                 onChange={(e) => setUserSearch(e.target.value)}
               />
-
-              {/* USER LIST */}
               <div className="group-user-list">
-                {filteredUsers.map((user, i) => {
-                  const selected = selectedChatUser?.name === user.name;
-
+                {filteredChatUsers.map((u) => {
+                  const selected = selectedChatUser?._id === u._id;
                   return (
                     <div
-                      key={i}
+                      key={u._id}
                       className={`group-user ${selected ? "selected" : ""}`}
-                      onClick={() => setSelectedChatUser(user)}
+                      onClick={() => setSelectedChatUser(u)}
                     >
                       <div className="chat-avatar">
-                        <span>{user.name[0]}</span>
+                        <span>{u.firstName?.[0]}</span>
                       </div>
-
-                      <span>{user.name}</span>
-
+                      <div>
+                        <span>
+                          {u.firstName} {u.lastName}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: 11,
+                            color: "#94a3b8",
+                            display: "block",
+                          }}
+                        >
+                          {u.role} • {u.department}
+                        </span>
+                      </div>
                       {selected && <span className="check">✔</span>}
                     </div>
                   );
                 })}
               </div>
-
               <button
                 className="create-btn"
-                onClick={() => {
-                  if (!selectedChatUser) return;
-
-                  const newChat = {
-                    name: selectedChatUser.name,
-                    last: "Start chatting...",
-                    type: "direct",
-                    unread: false,
-                  };
-
-                  setChatList([newChat, ...chatList]);
-                  setActiveChat(newChat);
-                  setIsCreatingChat(false);
-                  setUserSearch("");
+                onClick={handleStartDirect}
+                disabled={!selectedChatUser}
+                style={{
+                  marginTop: 12,
+                  width: "100%",
+                  padding: "10px",
+                  background: "#0b63ce",
+                  color: "#fff",
+                  borderRadius: 8,
+                  border: "none",
+                  cursor: "pointer",
                 }}
               >
-                Create Chat
+                Start Chat
               </button>
             </div>
           </div>
         )}
 
+        {/* New group panel */}
+        {isCreatingGroup && (
+          <div className="chat-details-panel open">
+            <div className="details-header">
+              <h4>New Group</h4>
+              <span
+                className="close-btn"
+                onClick={() => {
+                  setIsCreatingGroup(false);
+                  setSelectedUsers([]);
+                }}
+              >
+                ✕
+              </span>
+            </div>
+            <div className="details-body">
+              <input
+                className="staff-input"
+                placeholder="Group name"
+                style={{ marginBottom: 10 }}
+                value={groupName}
+                onChange={(e) => setGroupName(e.target.value)}
+              />
+              <input
+                className="staff-input"
+                placeholder="Search members..."
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+              />
+              <div className="group-user-list">
+                {filteredChatUsers.map((u) => {
+                  const selected = selectedUsers.find((x) => x._id === u._id);
+                  return (
+                    <div
+                      key={u._id}
+                      className={`group-user ${selected ? "selected" : ""}`}
+                      onClick={() => toggleGroupUser(u)}
+                    >
+                      <div className="chat-avatar">
+                        <span>{u.firstName?.[0]}</span>
+                      </div>
+                      <span>
+                        {u.firstName} {u.lastName}
+                      </span>
+                      {selected && <span className="check">✔</span>}
+                    </div>
+                  );
+                })}
+              </div>
+              <button
+                className="create-btn"
+                onClick={handleCreateGroup}
+                disabled={selectedUsers.length < 1 || !groupName.trim()}
+                style={{
+                  marginTop: 12,
+                  width: "100%",
+                  padding: "10px",
+                  background: "#0b63ce",
+                  color: "#fff",
+                  borderRadius: 8,
+                  border: "none",
+                  cursor: "pointer",
+                }}
+              >
+                Create Group ({selectedUsers.length} members)
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Call overlay */}
         {callType && (
           <div className="call-overlay">
             <div className="call-box">
               <h3>{callType === "video" ? "Video Call" : "Voice Call"}</h3>
-
-              <p>Calling {activeChat?.name}...</p>
-
+              <p>Calling {getConversationName(activeChat)}...</p>
               <div className="call-actions">
                 <button onClick={() => setCallType(null)}>End Call</button>
               </div>
@@ -1077,83 +1569,10 @@ const ChatPage = () => {
           </div>
         )}
 
+        {/* Image preview */}
         {preview && (
           <div className="preview-overlay" onClick={() => setPreview(null)}>
-            <img src={preview} className="preview-image" />
-          </div>
-        )}
-
-        {isCreatingGroup && (
-          <div className="chat-create-panel open">
-            {/* HEADER */}
-            <div className="details-header">
-              <h4>Add group members</h4>
-
-              <span
-                className="close-btn"
-                onClick={() => setIsCreatingGroup(false)}
-              >
-                ✕
-              </span>
-            </div>
-
-            {/* SEARCH */}
-            <div className="details-body">
-              <input
-                className="staff-input"
-                placeholder="Search name or number"
-                value={userSearch}
-                onChange={(e) => setUserSearch(e.target.value)}
-              />
-
-              {/* USER LIST */}
-              <div className="group-user-list">
-                {filteredUsers.map((user, i) => {
-                  const selected = selectedUsers.find(
-                    (u) => u.name === user.name,
-                  );
-
-                  return (
-                    <div
-                      key={i}
-                      className={`group-user ${selected ? "selected" : ""}`}
-                      onClick={() => toggleUser(user)}
-                    >
-                      <div className="chat-avatar">
-                        <span>{user.name[0]}</span>
-                      </div>
-
-                      <span>{user.name}</span>
-
-                      {selected && <span className="check">✔</span>}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* CREATE BUTTON */}
-              <button
-                className="create-btn"
-                onClick={() => {
-                  if (selectedUsers.length === 0) return;
-
-                  const newGroup = {
-                    name: "New Group",
-                    last: "Group created",
-                    type: "team",
-                    members: selectedUsers.length + " members",
-                  };
-
-                  setChatList([newGroup, ...chatList]);
-                  setActiveChat(newGroup);
-
-                  setIsCreatingGroup(false);
-                  setSelectedUsers([]);
-                }}
-              >
-                Create Group
-              </button>
-            </div>
+            <img src={preview} className="preview-image" alt="preview" />
           </div>
         )}
       </div>
