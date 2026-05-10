@@ -5,20 +5,45 @@ import { showSuccessToast, showErrorToast } from "../../utils/toast";
 import { createUser } from "../../api/userApi";
 
 const DEPARTMENTS = [
-  "Minister's Support Staff Unit",
-  "Public Relations and Communications",
-  "Innovation and Technology Sector",
-  "Digital Economy Sector",
-  "Innovation and Technology Research",
-  "Creative Works Development",
-  "Technology Transfer",
-  "Innovation Hub Management",
-  "Standardization and Quality Control",
-  "Digital Infrastructure",
-  "Digital Services Development",
-  "Cyber Security",
-  "E-Commerce Development",
-  "Data Management and Analysis",
+  "Minister's Office (ሚኒስትር ፅህፈት ቤት)",
+  "Legal Affairs (ህግ ጉዳዮች)",
+  "Public Relations and Communications (የህዝብ ግንኙነትና ኮሙኒኬሽን)",
+  "Audit Service (ኦዲት አገልግሎት)",
+  "Ethics and Anti-Corruption (ስነምግባርና ፀረሙስና)",
+  "Strategy Affairs (ትራቴጂ ጉዳዮች)",
+  "Procurement and Finance (ግዥና ፋይናንስ)",
+  "Human Resource Administration (የቃትና ሰው ሃብት አስተዳደር)",
+  "Basic Services (ሰረታዊ አገልግሎት)",
+  "ICT and Digital Economy Sector (አይሲቲ እና ዲጂታል ኢኮኖሚ ዘርፍ)",
+  "Innovation and Research Sector (ኢኖቬሽንና ምርምር ዘርፍ)",
+  "National Research and Development (ሀገራዊ የምርምር ልማት)",
+  "Technology Transfer and Development (የቴክኖሎጂ ሽግግርና ልማት)",
+  "Innovation and Startup Development (የኢኖቬሽንና ስታርትአፕ ልማት)",
+  "Government ICT Infrastructure (የመንግስት አይሲቲ መሰረተልማት ግንባታ እና አስተዳደር)",
+  "Digital Economy Development (የዲጂታል ኢኮኖሚ ልማት)",
+  "E-Government Development (ኤሌክትሮኒክስ መንግስት ልማት)",
+  "Digital Infrastructure (ዲጂታል መሰረተልማት ግንባታ)",
+  "Digital Standards and Regulation (ዲጂታል ስታንዳርድ እና ሬጉሌሽን)",
+  "Innovation and Technology Data Management (የኢኖቬሽንና ቴክኖሎጂ መረጃ ልማትና አስተዳደር)",
+  "Innovation Development (ኢኖቬሽን ልማት)",
+  "National Research Infrastructure (የሀገራዊ ምርምር መሰረተልማት ግንባታ)",
+  "Technology Transfer and Linkage (የቴክኖሎጂ ሽግግርና ትስስር)",
+  "Indigenous Technology Development (ሀገር በቀል ቴክኖሎጂ ልማት)",
+  "Innovation Infrastructure (ኢኖቬሽን መሰረተልማት)",
+  "National E-Government Plan Coordination (የብሄራዊ የኤ-መንግስት ዕቅድ ማስተባበሪያ)",
+  "Government Digital Services Development (መንግስታዊ ዲጂታል አገልግሎቶች ልማት እና አስተዳደር)",
+  "National Data Resource Development (ብሄራዊ ዳታ ሃብት ልማት ቅንጅት)",
+  "Data Center Administration (የዳታ ማዕክል አስተዳደር)",
+  "Quality and Security Management (የጥራት እና ደህንነት አስተዳደር)",
+  "Digital Community Development (የዲጂታል ማሕበረስብ ልማት)",
+  "Digital Industry Development (የዲጂታል ኢንዱስትሪ ልማት)",
+  "Startup and Innovative Enterprise Development (የስታርፕ እና ኢኖቫቲቭ ኢንተርፕራይዝ ልማት)",
+  "National Research Ethics and Science Culture (ሀገራዊ የምርምር ስነምግባርና የሳይንስ ባህል ግንባታ)",
+  "International Relations and Cooperation (የዓለም አቀፍ ግንኙነትና ትብብር)",
+  "Regional and Council Affairs (የክልሎች እና ካውንስል ጉዳዮች)",
+  "Private Sector (የግል ዘርፍ)",
+  "Innovation Fund Office (የኢኖቬሽን ፈንድ ፅህፈት ቤት)",
+  "Collaboration and Partnership (የትብብር እና ትስስር)",
 ];
 
 const passwordValidator = (password) => {
@@ -53,7 +78,7 @@ export default function CreateUser() {
   const pwRules = passwordValidator(formData.password);
   const [touched, setTouched] = useState({});
 
-const allPwOk = Object.values(pwRules).every(Boolean);
+  const allPwOk = Object.values(pwRules).every(Boolean);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -290,4 +315,3 @@ const allPwOk = Object.values(pwRules).every(Boolean);
     </div>
   );
 }
-

@@ -6,23 +6,6 @@ import { useTasks } from "../../context/TaskContext";
 import Pagination from "../../components/ui/Pagination";
 import { AuthContext } from "../../context/AuthContext";
 
-const DEPARTMENTS = [
-  "Minister's Support Staff Unit",
-  "Public Relations and Communications",
-  "Innovation and Technology Sector",
-  "Digital Economy Sector",
-  "Innovation and Technology Research",
-  "Creative Works Development",
-  "Technology Transfer",
-  "Innovation Hub Management",
-  "Standardization and Quality Control",
-  "Digital Infrastructure",
-  "Digital Services Development",
-  "Cyber Security",
-  "E-Commerce Development",
-  "Data Management and Analysis",
-];
-
 const StaffManagement = () => {
   const { users, loading } = useContext(UserContext);
   const { user: currentUser } = useContext(AuthContext);
