@@ -24,10 +24,10 @@ const Header = ({
 }) => {
   const [langOpen, setLangOpen] = useState(false);
   const navigate = useNavigate();
-  const { notifications } = useContext(NotificationContext);
+  const { notifications,unseenCount } = useContext(NotificationContext);
   const { user } = useContext(AuthContext);
-// const { currentUser } = useContext(UserContext);
-  const unseenCount = notifications.filter((n) => n.unseen).length;
+
+
 
 const fullName =
   user?.firstName && user?.lastName
@@ -83,7 +83,7 @@ const handleProfileClick = () => {
           className="staff-icon-btn"
           title="notifications"
           type="button"
-          onClick={handleNotificationsClick}
+          onClick={onOpenNotifications}
           style={{ position: "relative" }}
         >
           <BellIcon />
@@ -136,6 +136,7 @@ const handleProfileClick = () => {
             </div>
           )}
         </div>
+
         {/* 🔄 Refresh */}
         <button
           className="staff-icon-btn"
@@ -154,8 +155,13 @@ const handleProfileClick = () => {
           style={{ cursor: "pointer" }}
           onClick={handleProfileClick}
         >
+          {user?.avatar ? (
+            <img src={`http://localhost:5000${user.avatar}`} alt="avatar"
+              style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover" }} />
+          ) : (
           <div className="staff-user-avatar">{initials}</div>
-
+          )}
+          
           <div className="staff-user-text">
             <div className="staff-user-name">{fullName}</div>
             <div className="staff-user-role">{role}</div>
