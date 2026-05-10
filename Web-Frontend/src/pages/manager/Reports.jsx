@@ -1,14 +1,17 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useContext } from "react";
 import { useTasks } from "../../context/TaskContext";
 import { useProjects } from "../../context/ProjectContext";
 import Button from "../../components/ui/Button";
 import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { showErrorToast } from "../../utils/toast";
+import { AuthContext } from "../../context/AuthContext";
 
 const Reports = () => {
   const { tasks } = useTasks();
   const { projects } = useProjects();
+  const { user: currentUser } = useContext(AuthContext); // ← add this
 
   const [projectPage, setProjectPage] = useState(1);
   const [taskPage, setTaskPage] = useState(1);
@@ -16,7 +19,6 @@ const Reports = () => {
 
   const [projectFilter, setProjectFilter] = useState("");
   const [taskFilter, setTaskFilter] = useState("");
-  const [projectDepartment, setProjectDepartment] = useState("");
   const [projectStatus, setProjectStatus] = useState("");
 
   const [taskStatusFilter, setTaskStatusFilter] = useState("");
@@ -57,41 +59,50 @@ const Reports = () => {
     }
   };
 
+  // Fix #10: helper to render createdBy as a name string
+  const getCreatedBy = (project) => {
+    const cb = project.createdBy;
+    if (!cb) return "—";
+    if (typeof cb === "object")
+      return `${cb.firstName || ""} ${cb.lastName || ""}`.trim();
+    return cb;
+  };
+
   // FILTERED & PAGINATED DATA
- const filteredProjects = useMemo(() => {
-   return projects
-     .filter((p) => {
-       const matchesSearch = p.title
-         .toLowerCase()
-         .includes(projectFilter.toLowerCase());
+  const filteredProjects = useMemo(() => {
+    return projects
+      .filter((p) => {
+        const matchesSearch = p.title
+          .toLowerCase()
+          .includes(projectFilter.toLowerCase());
 
-       const matchesDepartment =
-         projectDepartment === "" || p.department === projectDepartment;
+        const matchesDepartment = p.department === currentUser?.department;
 
-       const matchesStatus = projectStatus === "" || p.status === projectStatus;
+        const matchesStatus =
+          projectStatus === "" || p.status === projectStatus;
 
-       return matchesSearch && matchesDepartment && matchesStatus;
-     })
-     .slice((projectPage - 1) * pageSize, projectPage * pageSize);
- }, [projects, projectFilter, projectDepartment, projectStatus, projectPage]);
+        return matchesSearch && matchesDepartment && matchesStatus;
+      })
+      .slice((projectPage - 1) * pageSize, projectPage * pageSize);
+  }, [projects, projectFilter, currentUser, projectStatus, projectPage]);
 
- const filteredTasks = useMemo(() => {
-   return tasks
-     .filter((t) => {
-       const matchesSearch = t.title
-         .toLowerCase()
-         .includes(taskFilter.toLowerCase());
+  const filteredTasks = useMemo(() => {
+    return tasks
+      .filter((t) => {
+        const matchesSearch = t.title
+          .toLowerCase()
+          .includes(taskFilter.toLowerCase());
 
-       const matchesStatus =
-         taskStatusFilter === "" || t.status === taskStatusFilter;
+        const matchesStatus =
+          taskStatusFilter === "" || t.status === taskStatusFilter;
 
-       const matchesPriority =
-         taskPriorityFilter === "" || t.priority === taskPriorityFilter;
+        const matchesPriority =
+          taskPriorityFilter === "" || t.priority === taskPriorityFilter;
 
-       return matchesSearch && matchesStatus && matchesPriority;
-     })
-     .slice((taskPage - 1) * pageSize, taskPage * pageSize);
- }, [tasks, taskFilter, taskStatusFilter, taskPriorityFilter, taskPage]);
+        return matchesSearch && matchesStatus && matchesPriority;
+      })
+      .slice((taskPage - 1) * pageSize, taskPage * pageSize);
+  }, [tasks, taskFilter, taskStatusFilter, taskPriorityFilter, taskPage]);
 
   // EXPORT FUNCTIONS
   const exportCSV = (data, filename) => {
@@ -117,7 +128,7 @@ const Reports = () => {
   // FIXED PDF EXPORT
   const exportPDF = (data, filename, columns) => {
     if (!data || data.length === 0) {
-      alert("No data to export");
+      showErrorToast("No data to export");
       return;
     }
 
@@ -225,17 +236,6 @@ const Reports = () => {
 
             <select
               className="staff-input"
-              value={projectDepartment}
-              onChange={(e) => setProjectDepartment(e.target.value)}
-            >
-              <option value="">All Departments</option>
-              <option value="IT">IT</option>
-              <option value="HR">HR</option>
-              <option value="Finance">Finance</option>
-            </select>
-
-            <select
-              className="staff-input"
               value={projectStatus}
               onChange={(e) => setProjectStatus(e.target.value)}
             >
@@ -278,7 +278,7 @@ const Reports = () => {
             </thead>
             <tbody>
               {filteredProjects.map((project) => (
-                <tr key={project.id}>
+                <tr key={project._id}>
                   <td>{project.title}</td>
                   <td>{project.department}</td>
                   <td>
@@ -286,8 +286,8 @@ const Reports = () => {
                       {project.status}
                     </span>
                   </td>
-                  <td>{project.createdBy}</td>
-                  <td>{project.createdAt}</td>
+                  <td>{getCreatedBy(project)}</td>
+                  <td>{project.createdAt?.slice(0, 10)}</td>
                 </tr>
               ))}
             </tbody>
@@ -372,12 +372,11 @@ const Reports = () => {
                 <th>Priority</th>
                 <th>Status</th>
                 <th>Due Date</th>
-                <th>File</th>
               </tr>
             </thead>
             <tbody>
               {filteredTasks.map((task) => (
-                <tr key={task.id}>
+                <tr key={task._id}>
                   <td>{task.title}</td>
                   <td>{task.priority}</td>
                   <td>
@@ -386,7 +385,6 @@ const Reports = () => {
                     </span>
                   </td>
                   <td>{task.due || task.dueDate || "N/A"}</td>
-                  <td>{task.file ? JSON.stringify(task.file) : "N/A"}</td>
                 </tr>
               ))}
             </tbody>
