@@ -1,6 +1,7 @@
 // src/context/AuthContext.jsx
 import { createContext, useState, useEffect } from "react";
-import { loginUser } from "../api/authApi";
+import { loginUser, getMe } from "../api/authApi";
+import { connectSocket, disconnectSocket } from "../utils/socket";
 
 export const AuthContext = createContext();
 
@@ -11,42 +12,52 @@ export const AuthProvider = ({ children }) => {
   // Initialize user from localStorage on mount
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
-
-    if (token && role) {
-      setUser({ token, role }); // we only need role and token for tabs
-    }
-
-    setLoading(false); // finished loading
-  }, []);
-
-  const login = async (data) => {
-    setLoading(true);
-    try {
-      const res = await loginUser(data);
-      const { user: loggedUser, token } = res.data;
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("role", loggedUser.role);
-
-      setUser(loggedUser);
-
-      return loggedUser;
-    } catch (error) {
-      throw error;
-    } finally {
+    if (token) {
+      getMe()
+        .then((res) => {
+          setUser(res.data);
+            localStorage.setItem("user", JSON.stringify(res.data));
+          // Fix #2: reconnect socket on page refresh
+          connectSocket(res.data._id);
+        })
+        .catch(() => {
+          localStorage.removeItem("token");
+          localStorage.removeItem("role"); 
+            localStorage.removeItem("user");// Fix #1: clean up role too
+        })
+        .finally(() => setLoading(false));
+    } else {
       setLoading(false);
     }
+  }, []);
+
+  const login = async (credentials) => {
+    const res = await loginUser(credentials);
+    const { token, user } = res.data;
+
+    localStorage.setItem("token", token);
+    localStorage.setItem("role", user.role);
+     localStorage.setItem("user", JSON.stringify(user));
+
+    setUser(user);
+
+    // Fix #2: connect socket immediately after login
+    connectSocket(user._id);
+
+    return user;
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
+    // localStorage.removeItem("token");
+    // localStorage.removeItem("role");
+    // localStorage.removeItem("user");
+    localStorage.clear(); // Clear all localStorage data on logout
     setUser(null);
+    disconnectSocket();
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, setUser, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
