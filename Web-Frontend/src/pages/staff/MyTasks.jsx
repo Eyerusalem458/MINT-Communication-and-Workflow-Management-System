@@ -2,15 +2,17 @@ import { useMemo, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Button from "../../components/ui/Button";
-import { showSuccessToast } from "../../utils/toast";
+import { showSuccessToast, showErrorToast } from "../../utils/toast";
 import { useTasks } from "../../context/TaskContext";
 import Pagination from "../../components/ui/Pagination";
+import { updateTask } from "../../api/taskApi"; // ✅ add this back
 
 const MyTasks = () => {
   const navigate = useNavigate();
 
-  const { tasks, updateTaskStatus } = useTasks();
+  const { tasks, updateTaskStatus, fetchTasks } = useTasks();
   const [files, setFiles] = useState({});
+  const [busy, setBusy] = useState({});
   const fileInputRefs = useRef({});
 
   const [query, setQuery] = useState("");
@@ -20,13 +22,15 @@ const MyTasks = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const filteredTasks = useMemo(() => {
-    return tasks.filter(
-      (task) =>
-        task.title.toLowerCase().includes(query.toLowerCase()) ||
-        task.project.toLowerCase().includes(query.toLowerCase()),
-    );
-  }, [query, tasks]);
+  const filteredTasks = useMemo(
+    () =>
+      tasks.filter(
+        (t) =>
+          t.title?.toLowerCase().includes(query.toLowerCase()) ||
+          (t.project || "").toLowerCase().includes(query.toLowerCase()),
+      ),
+    [query, tasks],
+  );
 
   const openTask = (task) => {
     setSelectedTask(task);
@@ -46,10 +50,44 @@ const MyTasks = () => {
     fileInputRefs.current[taskId]?.click();
   };
 
-const paginatedTasks = filteredTasks.slice(
-  (currentPage - 1) * itemsPerPage,
-  currentPage * itemsPerPage,
-);
+  const paginatedTasks = filteredTasks.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
+
+  const handleSubmitWork = async (task) => {
+    setBusy((p) => ({ ...p, [task._id]: true }));
+    try {
+      const fd = new FormData();
+      fd.append("status", "In Progress");
+      if (files[task._id]) fd.append("file", files[task._id]);
+      await updateTask(task._id, fd);
+      await fetchTasks();
+      showSuccessToast(
+        task.status === "Rejected"
+          ? `Resubmitted "${task.title}"`
+          : `Submitted "${task.title}"`,
+      );
+    } catch (err) {
+      console.error("Submit error:", err.response?.data);
+      showErrorToast(err.response?.data?.message || "Submission failed");
+    } finally {
+      setBusy((p) => ({ ...p, [task._id]: false }));
+    }
+  };
+
+  const handleMarkCompleted = async (task) => {
+    if (task.status !== "Approved") {
+      showErrorToast("Task must be approved by manager first");
+      return;
+    }
+    try {
+      await updateTaskStatus(task._id, "Completed");
+      showSuccessToast(`"${task.title}" marked as completed`);
+    } catch (err) {
+      showErrorToast(err.response?.data?.message || "Failed");
+    }
+  };
 
   // ✅ STATUS BADGE
   const getStatusClass = (status) => {
@@ -108,7 +146,7 @@ const paginatedTasks = filteredTasks.slice(
 
           <tbody>
             {paginatedTasks.map((task) => (
-              <tr key={task.id}>
+              <tr key={task._id}>
                 <td
                   className="staff-table-title"
                   onClick={() => openTask(task)}
@@ -117,7 +155,7 @@ const paginatedTasks = filteredTasks.slice(
                   {task.title}
                 </td>
 
-                <td>{task.project}</td>
+                <td>{task.project || "—"}</td>
                 <td>{task.due}</td>
 
                 {/* ✅ STATUS BADGE ONLY */}
@@ -145,23 +183,23 @@ const paginatedTasks = filteredTasks.slice(
                   <div className="file-upload-wrapper">
                     <input
                       type="file"
-                      ref={(el) => (fileInputRefs.current[task.id] = el)}
+                      ref={(el) => (fileInputRefs.current[task._id] = el)}
                       style={{ display: "none" }}
                       onChange={(e) =>
-                        handleFileChange(task.id, e.target.files[0])
+                        handleFileChange(task._id, e.target.files[0])
                       }
                     />
 
                     <Button
                       size="xs"
                       variant="ghost"
-                      onClick={() => handleFileClick(task.id)}
+                      onClick={() => handleFileClick(task._id)}
                     >
                       📎 Choose File
                     </Button>
 
-                    {files[task.id] && (
-                      <div className="file-name">{files[task.id].name}</div>
+                    {files[task._id] && (
+                      <div className="file-name">{files[task._id].name}</div>
                     )}
                   </div>
                 </td>
@@ -171,14 +209,12 @@ const paginatedTasks = filteredTasks.slice(
                     <Button
                       size="xs"
                       variant="primary"
-                      onClick={() => {
-                        updateTaskStatus(task.id, "In Progress");
-                        showSuccessToast(
-                          task.status === "Rejected"
-                            ? `Resubmitted ${task.title}`
-                            : `Submitted ${task.title}`,
-                        );
-                      }}
+                      onClick={() => handleSubmitWork(task)}
+                      disabled={
+                        busy[task._id] ||
+                        task.status === "Completed" ||
+                        task.status === "Approved"
+                      }
                     >
                       {task.status === "Rejected" ? "Resubmit" : "Submit Work"}
                     </Button>
@@ -186,31 +222,11 @@ const paginatedTasks = filteredTasks.slice(
                     <Button
                       size="xs"
                       variant="ghost"
-                      onClick={() => {
-                        if (task.status !== "Approved") {
-                          showSuccessToast("Task must be approved first");
-                          return;
-                        }
-
-                        updateTaskStatus(task.id, "Completed");
-                        showSuccessToast(`${task.title} marked completed`);
-                      }}
+                      onClick={() => handleMarkCompleted(task)}
+                      disabled={task.status !== "Approved"}
                     >
-                      Mark completed
+                      Mark Completed
                     </Button>
-
-                    {task.status === "Rejected" && (
-                      <Button
-                        size="xs"
-                        variant="secondary"
-                        onClick={() => {
-                          updateTaskStatus(task.id, "In Progress");
-                          showSuccessToast(`Resubmitted ${task.title}`);
-                        }}
-                      >
-                        Resubmit
-                      </Button>
-                    )}
                   </div>
                 </td>
               </tr>
@@ -254,6 +270,12 @@ const paginatedTasks = filteredTasks.slice(
             </p>
 
             <p>{selectedTask.description || "No description available."}</p>
+
+            {selectedTask.comment && (
+              <p>
+                💬 <strong>Manager comment:</strong> {selectedTask.comment}
+              </p>
+            )}
 
             <Button variant="primary" onClick={() => setOpenModal(false)}>
               Close
