@@ -7,47 +7,41 @@ import robot from "../../assets/images/robot.png";
 import { FaFacebookF } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 
-import{
-  LockIcon,
-  MailIcon,
-} from "../shared/icon"
+import { LockIcon, MailIcon } from "../shared/icon";
 import "../../assets/styles/Login.css";
 import { showSuccessToast, showErrorToast } from "../../utils/toast";
 import { AuthContext } from "../../context/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();
-    const { login,loading } = useContext(AuthContext);
+  const { login, loading } = useContext(AuthContext);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   // State for modal
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState("privacy"); // "privacy" or "terms"
+  const [showPassword, setShowPassword] = useState(false);
 
+  const handleSignIn = async (e) => {
+    e.preventDefault();
 
- const handleSignIn = async (e) => {
-   e.preventDefault();
+    try {
+      const user = await login({ email, password });
 
-   try {
-     const user = await login({ email, password });
+      showSuccessToast("Login successful!");
 
-
-     showSuccessToast("Login successful!");
-
-     if (user.role === "admin") {
-       navigate("/admin/dashboard");
-     } else if (user.role === "manager") {
-       navigate("/manager/dashboard");
-     } else {
-       navigate("/staff/dashboard");
-     }
-   } catch (err) {
-  
-
-     showErrorToast(err.response?.data?.message || "Login failed");
-   }
- };
+      if (user.role === "admin") {
+        navigate("/admin/dashboard");
+      } else if (user.role === "manager") {
+        navigate("/manager/dashboard");
+      } else {
+        navigate("/staff/dashboard");
+      }
+    } catch (err) {
+      showErrorToast(err.response?.data?.message || "Login failed");
+    }
+  };
   // Simulate Google login (frontend-only)
   const handleGoogleLogin = () => {
     showSuccessToast("Google login successfully!", () => {
@@ -149,15 +143,31 @@ export default function Login() {
               </div>
 
               {/* Password */}
-              <div className="input-group">
+              {/* Password */}
+              <div className="input-group" style={{ position: "relative" }}>
                 <LockIcon className="login-input-icon" />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
+                <span
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  style={{
+                    position: "absolute",
+                    right: 12,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    cursor: "pointer",
+                    fontSize: 18,
+                    userSelect: "none",
+                    color: "#64748b",
+                  }}
+                >
+                  {showPassword ? "🙈" : "👁"}
+                </span>
               </div>
               {/* Forgot Password */}
               <div className="forgot-link">
