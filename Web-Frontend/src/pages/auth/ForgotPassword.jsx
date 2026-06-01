@@ -1,14 +1,32 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
+import { forgotPassword } from "../../api/authApi";
 import "../../assets/styles/forgetpassword.css";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
+const [busy, setBusy] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    toast.success(`Password reset link sent to ${email}`);
-    // call API
+
+    if (busy) return; // prevent double click
+    setBusy(true);
+
+    try {
+      await forgotPassword(email);
+
+      toast.success(
+        "If that email exists, a reset link was sent to your inbox.",
+      );
+
+      setEmail(""); // optional reset
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Failed to send reset email");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -30,7 +48,9 @@ const ForgotPassword = () => {
             />
             <label>Email address</label>
           </div>
-          <button type="submit">Send Reset Link</button>
+          <button type="submit" disabled={busy}>
+            {busy ? "Sending..." : "Send Reset Link"}
+          </button>
         </form>
 
         <div className="signin-link">
@@ -38,7 +58,6 @@ const ForgotPassword = () => {
         </div>
       </div>
 
-      {/* reuse same footer as login page; social icons added as placeholders */}
     </div>
   );
 };

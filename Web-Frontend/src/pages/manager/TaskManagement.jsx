@@ -1,100 +1,132 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useContext } from "react";
 import Modal from "../../components/ui/Modal";
 import Button from "../../components/ui/Button";
 import { useTasks } from "../../context/TaskContext";
-
-const staffMembers = ["John Doe", "Sara Ali", "Jane Smith"]; // example staff
+import { UserContext } from "../../context/UserContext";
+import Pagination from "../../components/ui/Pagination";
+import { showSuccessToast, showErrorToast } from "../../utils/toast";
+import { AuthContext } from "../../context/AuthContext";
 
 const TaskManagement = () => {
-  const { tasks, updateTaskStatus } = useTasks();
+  const { tasks, assignTask, updateTaskStatus, deleteTask } = useTasks();
+  const { users, loading } = useContext(UserContext);
+  // const staffList = users;
+  const { user: currentUser } = useContext(AuthContext);
+
   const [openModal, setOpenModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [rejectModal, setRejectModal] = useState(false);
   const [rejectComment, setRejectComment] = useState("");
   const [taskToReject, setTaskToReject] = useState(null);
-  
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [query, setQuery] = useState("");
+  const [busy, setBusy] = useState(false);
 
   // Form state for creating or editing tasks
   const [taskForm, setTaskForm] = useState({
-    id: null,
     title: "",
     description: "",
     assignedTo: "",
     due: "",
     priority: "Medium",
-    status: "Pending",
+    project: "",
   });
 
-  const [query, setQuery] = useState("");
+  // ✅ only staff in the same department as the logged-in manager
+  const staffList = useMemo(
+    () =>
+      users.filter(
+        (u) => u.role === "staff" && u.department === currentUser?.department,
+      ),
+    [users, currentUser],
+  );
 
   // Filter tasks based on search query
-  const filteredTasks = useMemo(() => {
-    return tasks.filter(
-      (task) =>
-        task.title.toLowerCase().includes(query.toLowerCase()) ||
-        task.assignedTo.toLowerCase().includes(query.toLowerCase())
-    );
-  }, [query, tasks]);
+  const filteredTasks = useMemo(
+    () =>
+      tasks.filter(
+        (task) =>
+          task.title?.toLowerCase().includes(query.toLowerCase()) ||
+          (task.assignedTo?.firstName || " ")
+            .toLowerCase()
+            .includes(query.toLowerCase()),
+      ),
+    [query, tasks],
+  );
 
-  // Open modal to create or edit task
-  const openTaskModal = (task = null) => {
-    if (task) {
-      setTaskForm({ ...task });
-      setSelectedTask(task);
-    } else {
-      setTaskForm({
-        id: null,
-        title: "",
-        description: "",
-        assignedTo: "",
-        due: "",
-        priority: "Medium",
-        status: "Pending",
-      });
-      setSelectedTask(null);
-    }
+  const openCreate = () => {
+    setSelectedTask(null);
+    setTaskForm({
+      title: "",
+      description: "",
+      assignedTo: "",
+      due: "",
+      priority: "Medium",
+      project: "",
+    });
     setOpenModal(true);
   };
 
-  // Handle form changes
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setTaskForm((prev) => ({ ...prev, [name]: value }));
-  };
-
   // Save or update task
-  const handleSaveTask = () => {
-    if (!taskForm.title || !taskForm.assignedTo || !taskForm.due) return;
-
-    if (taskForm.id) {
-      // Update existing task
-      updateTaskStatus(taskForm.id, taskForm.status, taskForm.description);
-    } else {
-      // Create new task
-      const newTask = {
-        ...taskForm,
-        id: tasks.length + 1,
-        completedAt: null,
-      };
-      tasks.push(newTask); // For simplicity using array push
+  const handleSaveTask = async () => {
+    if (!taskForm.title || !taskForm.assignedTo || !taskForm.due) {
+      showErrorToast("Title, assignee, and due date are required.");
+      return;
     }
 
-    setOpenModal(false);
+    setBusy(true);
+    try {
+      await assignTask(taskForm);
+      showSuccessToast("Task created and assigned!");
+      setOpenModal(false);
+    } catch (err) {
+      showErrorToast(err.response?.data?.message || "Failed to create task");
+    } finally {
+      setBusy(false);
+    }
   };
 
-const handleReject = (task) => {
-  setTaskToReject(task);
-  setRejectModal(true);
-};
+  const handleReject = (task) => {
+    setTaskToReject(task);
+    setRejectModal(true);
+  };
 
-const submitRejection = () => {
-  if (!rejectComment) return;
+  const submitRejection = async () => {
+    if (!rejectComment) return;
 
-  updateTaskStatus(taskToReject.id, "Rejected", rejectComment);
+    try {
+      await updateTaskStatus(taskToReject._id, "Rejected", rejectComment);
+      showSuccessToast("Task rejected");
+      setRejectModal(false);
+      setRejectComment("");
+    } catch (err) {
+      showErrorToast(err.response?.data?.message || "Failed");
+    }
+  };
 
-  setRejectModal(false);
-  setRejectComment("");
-};
+  const handleApprove = async (taskId) => {
+    try {
+      await updateTaskStatus(taskId, "Approved");
+      showSuccessToast("Task approved ✅");
+    } catch (err) {
+      showErrorToast(err.response?.data?.message || "Failed");
+    }
+  };
+
+  const handleCancel = async (taskId) => {
+    try {
+      await updateTaskStatus(taskId, "Cancelled");
+      showSuccessToast("Task cancelled");
+    } catch (err) {
+      showErrorToast(err.response?.data?.message || "Failed");
+    }
+  };
+
+  const paginatedTasks = filteredTasks.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
 
   const getStatusClass = (status) => {
     switch (status) {
@@ -119,7 +151,7 @@ const submitRejection = () => {
         <p className="staff-card-subtitle">
           Create, assign, and monitor tasks for your team.
         </p>
-        <Button variant="primary" onClick={() => openTaskModal()}>
+        <Button variant="primary" onClick={openCreate}>
           + New Task
         </Button>
       </div>
@@ -148,87 +180,79 @@ const submitRejection = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredTasks.map((task) => {
-              const isFinal =
-                task.status === "Approved" || task.status === "Rejected";
+            {paginatedTasks.map((task) => {
+              const isFinal = ["Approved", "Rejected", "Cancelled"].includes(
+                task.status,
+              );
+              const canAct = task.status === "In Progress";
+              const assignee = task.assignedTo;
+              const name = assignee?.firstName
+                ? `${assignee.firstName} ${assignee.lastName}`
+                : "—";
 
               return (
-                <tr key={task.id}>
+                <tr key={task._id}>
                   <td
                     className="staff-table-title"
                     style={{ cursor: "pointer" }}
-                    onClick={() => openTaskModal(task)}
+                    onClick={() => {
+                      setSelectedTask(task);
+                      setOpenModal(true);
+                    }}
                   >
                     {task.title}
                   </td>
-
-                  <td>{task.assignedTo}</td>
+                  <td>{name}</td>
                   <td>{task.due}</td>
                   <td>{task.priority}</td>
-
                   <td>
                     <span className={getStatusClass(task.status)}>
                       {task.status}
                     </span>
                   </td>
 
-                  {/* FILE DOWNLOAD */}
                   <td>
                     {task.file ? (
+                      <a
+                        href={`http://localhost:5000${task.file}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        📎 View File
+                      </a>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
+                  <td>
+                    <div className="staff-table-actions">
+                      <Button
+                        size="xs"
+                        variant="approve"
+                        onClick={() => handleApprove(task._id)}
+                        disabled={isFinal || !canAct}
+                      >
+                        Approve
+                      </Button>
+
+                      <Button
+                        size="xs"
+                        variant="reject"
+                        onClick={() => handleReject(task)}
+                        disabled={isFinal || !canAct}
+                      >
+                        Reject
+                      </Button>
+
                       <Button
                         size="xs"
                         variant="ghost"
-                        onClick={() => window.open(task.file, "_blank")}
+                        onClick={() => handleCancel(task._id)}
+                        disabled={isFinal}
                       >
-                        📥 Download
+                        Cancel
                       </Button>
-                    ) : (
-                      <span style={{ fontSize: "12px", color: "#999" }}>
-                        No file
-                      </span>
-                    )}
-                  </td>
-
-                  {/* ACTIONS */}
-                  <td>
-                    {/* View */}
-                    <Button
-                      size="xs"
-                      variant="ghost"
-                      onClick={() => openTaskModal(task)}
-                    >
-                      View
-                    </Button>
-
-                    {/* Approve */}
-                    <Button
-                      size="xs"
-                      variant="approve"
-                      onClick={() => updateTaskStatus(task.id, "Approved")}
-                      disabled={isFinal || task.status !== "In Progress"}
-                    >
-                      Approve
-                    </Button>
-
-                    {/* Reject */}
-                    <Button
-                      size="xs"
-                      variant="reject"
-                      onClick={() => handleReject(task)}
-                      disabled={isFinal || task.status !== "In Progress"}
-                    >
-                      Reject
-                    </Button>
-
-                    {/* Cancel */}
-                    <Button
-                      size="xs"
-                      variant="secondary"
-                      onClick={() => updateTaskStatus(task.id, "Cancelled")}
-                      disabled={isFinal}
-                    >
-                      Cancel
-                    </Button>
+                    </div>
                   </td>
                 </tr>
               );
@@ -237,97 +261,158 @@ const submitRejection = () => {
         </table>
       </div>
 
+      <Pagination
+        totalItems={filteredTasks.length}
+        itemsPerPage={itemsPerPage}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+        onItemsPerPageChange={(size) => {
+          setItemsPerPage(size);
+          setCurrentPage(1); // reset page
+        }}
+      />
+
       {openModal && (
         <Modal onClose={() => setOpenModal(false)}>
-          <h3>{selectedTask ? "Edit Task" : "New Task"}</h3>
-
-          <div className="staff-form-group">
-            <label>Title</label>
-            <input
-              type="text"
-              name="title"
-              className="staff-input"
-              value={taskForm.title}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="staff-form-group">
-            <label>Description</label>
-            <textarea
-              name="description"
-              className="staff-input"
-              value={taskForm.description}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="staff-form-group">
-            <label>Assign To</label>
-            <select
-              name="assignedTo"
-              className="staff-input"
-              value={taskForm.assignedTo}
-              onChange={handleChange}
-            >
-              <option value="">Select Staff</option>
-              {staffMembers.map((staff) => (
-                <option key={staff} value={staff}>
-                  {staff}
-                </option>
+          <h3>{selectedTask ? "Task Details" : "New Task"}</h3>
+          {!selectedTask && (
+            <>
+              {[
+                { label: "Title", name: "title", type: "text" },
+                { label: "Description", name: "description", type: "textarea" },
+                { label: "Due Date", name: "due", type: "date" },
+              ].map(({ label, name, type }) => (
+                <div className="staff-form-group" key={name}>
+                  <label>{label}</label>
+                  {type === "textarea" ? (
+                    <textarea
+                      name={name}
+                      className="staff-input"
+                      value={taskForm[name]}
+                      onChange={(e) =>
+                        setTaskForm({ ...taskForm, [name]: e.target.value })
+                      }
+                    />
+                  ) : (
+                    <input
+                      type={type}
+                      name={name}
+                      className="staff-input"
+                      value={taskForm[name]}
+                      onChange={(e) =>
+                        setTaskForm({ ...taskForm, [name]: e.target.value })
+                      }
+                    />
+                  )}
+                </div>
               ))}
-            </select>
-          </div>
 
-          <div className="staff-form-group">
-            <label>Deadline</label>
-            <input
-              type="date"
-              name="due"
-              className="staff-input"
-              value={taskForm.due}
-              onChange={handleChange}
-            />
-          </div>
+              <div className="staff-form-group">
+                <label>Project</label>
+                <input
+                  type="text"
+                  name="project"
+                  className="staff-input"
+                  value={taskForm.project}
+                  onChange={(e) =>
+                    setTaskForm({ ...taskForm, project: e.target.value })
+                  }
+                />
+              </div>
 
-          <div className="staff-form-group">
-            <label>Priority</label>
-            <select
-              name="priority"
-              className="staff-input"
-              value={taskForm.priority}
-              onChange={handleChange}
-            >
-              <option>Low</option>
-              <option>Medium</option>
-              <option>High</option>
-            </select>
-          </div>
+              <div className="staff-form-group">
+                <label>Assign To</label>
+                <select
+                  name="assignedTo"
+                  className="staff-input"
+                  value={taskForm.assignedTo}
+                  onChange={(e) =>
+                    setTaskForm({ ...taskForm, assignedTo: e.target.value })
+                  }
+                >
+                  <option value="">
+                    {" "}
+                    {users.length === 0 ? "Loading staff..." : "Select Staff"}
+                  </option>
+                  {staffList.map((s) => (
+                    <option key={s._id} value={s._id}>
+                      {s.firstName} {s.lastName} — {s.department}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="staff-form-group">
+                <label>Priority</label>
+                <select
+                  name="priority"
+                  className="staff-input"
+                  value={taskForm.priority}
+                  onChange={(e) =>
+                    setTaskForm({ ...taskForm, priority: e.target.value })
+                  }
+                >
+                  <option>Low</option>
+                  <option>Medium</option>
+                  <option>High</option>
+                </select>
+              </div>
+            </>
+          )}
+          {selectedTask && (
+            <>
+              <p>
+                <strong>Title:</strong> {selectedTask.title}
+              </p>
+              <p>
+                <strong>Description:</strong> {selectedTask.description || "—"}
+              </p>
+              <p>
+                <strong>Due:</strong> {selectedTask.due}
+              </p>
+              <p>
+                <strong>Status:</strong>{" "}
+                <span className={getStatusClass(selectedTask.status)}>
+                  {selectedTask.status}
+                </span>
+              </p>
+              {selectedTask.comment && (
+                <p>
+                  💬 <strong>Comment:</strong> {selectedTask.comment}
+                </p>
+              )}
 
-          <div className="staff-form-group">
-            <label>Status</label>
-            <select
-              name="status"
-              className="staff-input"
-              value={taskForm.status}
-              onChange={handleChange}
-            >
-              <option>Pending</option>
-              <option>In Progress</option>
-              <option>Completed</option>
-            </select>
-          </div>
+              {selectedTask.file && (
+                <p>
+                  📎 <strong>Submitted File:</strong>{" "}
+                  <a
+                    href={`http://localhost:5000${selectedTask.file}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    View File
+                  </a>
+                </p>
+              )}
+            </>
+          )}
 
           <div className="staff-modal-footer">
             <Button variant="ghost" onClick={() => setOpenModal(false)}>
-              Cancel
+              {selectedTask ? "Close" : "Cancel"}
             </Button>
-            <Button variant="primary" onClick={handleSaveTask}>
-              {selectedTask ? "Update Task" : "Create Task"}
-            </Button>
+            {!selectedTask && (
+              <Button
+                variant="primary"
+                onClick={handleSaveTask}
+                disabled={busy}
+              >
+                {busy ? "Creating..." : "Create Task"}
+              </Button>
+            )}
           </div>
         </Modal>
       )}
+
       {rejectModal && (
         <Modal onClose={() => setRejectModal(false)}>
           <h3>Reject Task</h3>
@@ -344,7 +429,7 @@ const submitRejection = () => {
               Cancel
             </Button>
 
-            <Button variant="secondary" onClick={submitRejection}>
+            <Button variant="reject" onClick={submitRejection}>
               Submit Rejection
             </Button>
           </div>
@@ -352,5 +437,5 @@ const submitRejection = () => {
       )}
     </div>
   );
-};
+};;
 export default TaskManagement;

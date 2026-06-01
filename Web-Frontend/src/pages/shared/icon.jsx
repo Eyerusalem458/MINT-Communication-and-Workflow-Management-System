@@ -170,11 +170,18 @@ export const LanguageIcon = () => (
 );
 // --- Navigation Icons ---
 export const NavHomeIcon = () => (
-  <svg {...navIconProps}>
-    <path
-      d="M4 10.5L12 4l8 6.5V20a1 1 0 01-1 1h-5v-6H10v6H5a1 1 0 01-1-1v-9.5Z"
-      fill="currentColor"
-    />
+  <svg
+    {...navIconProps}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <rect width="7" height="9" x="3" y="3" rx="1" />
+    <rect width="7" height="5" x="14" y="3" rx="1" />
+    <rect width="7" height="9" x="14" y="12" rx="1" />
+    <rect width="7" height="5" x="3" y="16" rx="1" />
   </svg>
 );
 
@@ -196,14 +203,15 @@ export const NavTasksIcon = () => (
 );
 
 export const NavChatIcon = () => (
-  <svg {...navIconProps}>
-    <path
-      d="M5 6.5A2.5 2.5 0 017.5 4h9A2.5 2.5 0 0119 6.5v6A2.5 2.5 0 0116.5 15H10l-3.5 3V15H7.5A2.5 2.5 0 015 12.5v-6Z"
-      fill="currentColor"
-    />
-    <circle cx="9" cy="9.5" r="1" fill="#0b3f91" />
-    <circle cx="12" cy="9.5" r="1" fill="#0b3f91" />
-    <circle cx="15" cy="9.5" r="1" fill="#0b3f91" />
+  <svg
+    {...navIconProps}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" />
   </svg>
 );
 
@@ -273,15 +281,15 @@ export const NavReportsIcon = () => (
 );
 
 export const NavSettingsIcon = () => (
-  <svg {...navIconProps}>
-    <circle cx="12" cy="12" r="3" fill="currentColor" />
-    <path
-      d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H12a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V12a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1Z"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
+  <svg
+    {...navIconProps}
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" />
+    <circle cx="12" cy="12" r="3" />
   </svg>
 );
 
@@ -327,6 +335,143 @@ export const NavProjectRequestIcon = () => (
       stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
+    />
+  </svg>
+);
+
+export const RefreshIcon = () => (
+  <svg {...iconProps}>
+    <path
+      d="M20 12a8 8 0 10-2.34 5.66M20 4v6h-6"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+// --- Chat Sidebar Icons ---
+export const FilterIcon = () => (
+  <svg {...navIconProps}>
+    <path
+      d="M3 5h18M6 12h12M10 19h4"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+  </svg>
+);
+
+export const EditIcon = () => (
+  <svg {...navIconProps}>
+    <path
+      d="M4 20h4l10-10-4-4L4 16v4Z"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+export const PlusIcon = () => (
+  <svg {...navIconProps}>
+    <path
+      d="M12 5v14M5 12h14"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+  </svg>
+);
+export const VideoIcon = ({ size = 24, color = "currentColor" }) => {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="2" y="6" width="14" height="12" rx="2" ry="2" />
+      <polygon points="16 12 22 8 22 16 16 12" />
+    </svg>
+  );
+};
+export const PhoneIcon = ({ size = 18, color = "currentColor" }) => {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path
+        d="M22 16.92v3a2 2 0 0 1-2.18 2 
+               19.79 19.79 0 0 1-8.63-3.07 
+               19.5 19.5 0 0 1-6-6 
+               19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 
+               12.84 12.84 0 0 0 .7 2.81 
+               2 2 0 0 1-.45 2.11L8.09 9.91 
+               a16 16 0 0 0 6 6l1.27-1.27 
+               a2 2 0 0 1 2.11-.45 
+               12.84 12.84 0 0 0 2.81.7 
+               A2 2 0 0 1 22 16.92z"
+      />
+    </svg>
+  );
+};
+export const MailIcon = ({ className }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    className={className}
+    width="20"
+    height="20"
+  >
+    <path
+      d="M4 6h16v12H4z"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M4 6l8 7 8-7"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+export const LockIcon = ({ className }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    className={className}
+    width="20"
+    height="20"
+  >
+    <path
+      d="M6 10V7a6 6 0 0112 0v3"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+    <rect
+      x="5"
+      y="10"
+      width="14"
+      height="10"
+      rx="2"
+      stroke="currentColor"
+      strokeWidth="2"
     />
   </svg>
 );

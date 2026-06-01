@@ -1,9 +1,5 @@
-import React from 'react'
+import Chat from "../../components/chat/Chat";
 
-function Chat() {
-  return (
-    <div>Welcome adminChat</div>
-  )
+export default function AdminChat() {
+  return <Chat userRole="Admin" />;
 }
-
-export default Chat

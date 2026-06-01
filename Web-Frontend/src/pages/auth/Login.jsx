@@ -62,6 +62,8 @@ const SLIDE_DURATION = 3500;
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login, loading } = useContext(AuthContext);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -246,7 +248,7 @@ export default function Login() {
             <form className="login-form" onSubmit={handleSignIn}>
               {/* Email */}
               <div className="input-group">
-                <FaEnvelope className="input-icon" />
+                <MailIcon className="login-input-icon" />
                 <input
                   type="email"
                   placeholder="Email"
@@ -260,7 +262,7 @@ export default function Login() {
               <div className="input-group" style={{ position: "relative" }}>
                 <LockIcon className="login-input-icon" />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -291,8 +293,8 @@ export default function Login() {
               </div>
 
               {/* Button */}
-              <button type="submit" className="btn-signin">
-                Sign In
+              <button type="submit" className="btn-signin" disabled={loading}>
+                {loading ? "Signing In..." : "Sign In"}
               </button>
             </form>
           </div>

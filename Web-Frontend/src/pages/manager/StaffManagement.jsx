@@ -3,13 +3,15 @@ import Modal from "../../components/ui/Modal";
 import Button from "../../components/ui/Button";
 import { UserContext } from "../../context/UserContext";
 import { useTasks } from "../../context/TaskContext";
+import Pagination from "../../components/ui/Pagination";
+import { AuthContext } from "../../context/AuthContext";
 
 const StaffManagement = () => {
-  const { users } = useContext(UserContext);
+  const { users, loading } = useContext(UserContext);
+  const { user: currentUser } = useContext(AuthContext);
   const { tasks } = useTasks();
 
   const [query, setQuery] = useState("");
-  const [departmentFilter, setDepartmentFilter] = useState("");
   const [genderFilter, setGenderFilter] = useState("");
 
   const [openModal, setOpenModal] = useState(false);
@@ -18,11 +20,18 @@ const StaffManagement = () => {
   const [viewTasksModal, setViewTasksModal] = useState(false);
   const [selectedStaffTasks, setSelectedStaffTasks] = useState([]);
   const [staffName, setStaffName] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   // ✅ ONLY STAFF
-  const staffOnly = useMemo(() => {
-    return users.filter((user) => user.role === "Staff");
-  }, [users]);
+  const staffOnly = useMemo(
+    () =>
+      users.filter(
+        (user) =>
+          user.role === "staff" && user.department === currentUser?.department,
+      ),
+    [users, currentUser],
+  );
 
   // 🔍 FILTER (Search + Department + Gender)
   const filteredStaff = useMemo(() => {
@@ -33,14 +42,16 @@ const StaffManagement = () => {
         fullName.toLowerCase().includes(query.toLowerCase()) ||
         (user.email || "").toLowerCase().includes(query.toLowerCase());
 
-      const matchesDepartment =
-        departmentFilter === "" || user.department === departmentFilter;
-
       const matchesGender = genderFilter === "" || user.gender === genderFilter;
 
-      return matchesSearch && matchesDepartment && matchesGender;
+      return matchesSearch && matchesGender;
     });
-  }, [query, staffOnly, departmentFilter, genderFilter]);
+  }, [query, staffOnly, genderFilter]);
+
+  const paginatedStaff = filteredStaff.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
 
   // 👁️ View Profile
   const openStaffModal = (staff) => {
@@ -50,12 +61,13 @@ const StaffManagement = () => {
 
   // 📌 VIEW TASKS
   const handleViewTasks = (staff) => {
-    const fullName = `${staff.firstName} ${staff.middleName} ${staff.lastName}`;
-
-    const staffTasks = tasks.filter((task) => task.assignedTo === fullName);
-
+    // Match by MongoDB _id (assignedTo is a populated object from backend)
+    const staffTasks = tasks.filter((task) => {
+      const assignedId = task.assignedTo?._id || task.assignedTo;
+      return assignedId?.toString() === staff._id?.toString();
+    });
     setSelectedStaffTasks(staffTasks);
-    setStaffName(fullName);
+    setStaffName(`${staff.firstName} ${staff.lastName}`);
     setViewTasksModal(true);
   };
 
@@ -81,18 +93,6 @@ const StaffManagement = () => {
           onChange={(e) => setQuery(e.target.value)}
         />
 
-        {/* Department Filter */}
-        <select
-          className="staff-input"
-          value={departmentFilter}
-          onChange={(e) => setDepartmentFilter(e.target.value)}
-        >
-          <option value="">All Departments</option>
-          <option value="IT">IT</option>
-          <option value="HR">HR</option>
-          <option value="Finance">Finance</option>
-        </select>
-
         {/* Gender Filter */}
         <select
           className="staff-input"
@@ -100,8 +100,8 @@ const StaffManagement = () => {
           onChange={(e) => setGenderFilter(e.target.value)}
         >
           <option value="">All Gender</option>
-          <option value="Male">Male</option>
-          <option value="Female">Female</option>
+          <option>Male</option>
+          <option>Female</option>
         </select>
       </div>
 
@@ -117,91 +117,114 @@ const StaffManagement = () => {
               <th>Email</th>
               <th>Department</th>
               <th>Gender</th>
-              <th>Role</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
 
           <tbody>
-            {filteredStaff.map((staff) => (
-              <tr key={staff.id}>
-                <td>{staff.firstName}</td>
-                <td>{staff.middleName}</td>
-                <td>{staff.lastName}</td>
-                <td>{staff.phone}</td>
-                <td>{staff.email}</td>
-                <td>{staff.department}</td>
-                <td>{staff.gender}</td>
-                <td>{staff.role}</td>
-
-                <td>
-                  <span
-                    className={
-                      staff.status === "Active"
-                        ? "status-badge completed"
-                        : "status-badge pending"
-                    }
-                  >
-                    {staff.status}
-                  </span>
-                </td>
-
-                <td>
-                  <Button
-                    size="xs"
-                    variant="ghost"
-                    onClick={() => openStaffModal(staff)}
-                  >
-                    View Profile
-                  </Button>
-
-                  <Button
-                    size="xs"
-                    variant="secondary"
-                    onClick={() => handleViewTasks(staff)}
-                  >
-                    View Tasks
-                  </Button>
+            {loading ? (
+              <tr>
+                <td colSpan="9" style={{ textAlign: "center" }}>
+                  Loading...
                 </td>
               </tr>
-            ))}
+            ) : paginatedStaff.length === 0 ? (
+              <tr>
+                <td colSpan="9" style={{ textAlign: "center" }}>
+                  No staff found
+                </td>
+              </tr>
+            ) : (
+              paginatedStaff.map((staff) => (
+                <tr key={staff._id}>
+                  <td>{staff.firstName}</td>
+                  <td>{staff.middleName}</td>
+                  <td>{staff.lastName}</td>
+                  <td>{staff.phone || "—"}</td>
+                  <td>{staff.email}</td>
+                  <td>{staff.department}</td>
+                  <td>{staff.gender}</td>
+
+                  <td>
+                    <span
+                      className={
+                        staff.status === "Active"
+                          ? "status-badge completed"
+                          : "status-badge pending"
+                      }
+                    >
+                      {staff.status}
+                    </span>
+                  </td>
+
+                  <td>
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      onClick={() => openStaffModal(staff)}
+                    >
+                      View Profile
+                    </Button>
+
+                    <Button
+                      size="xs"
+                      variant="secondary"
+                      onClick={() => handleViewTasks(staff)}
+                    >
+                      View Tasks
+                    </Button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
+      <Pagination
+        totalItems={filteredStaff.length}
+        itemsPerPage={itemsPerPage}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+        onItemsPerPageChange={(size) => {
+          setItemsPerPage(size);
+          setCurrentPage(1);
+        }}
+      />
+
       {/* 👁️ PROFILE MODAL */}
-      {openModal && (
+      {openModal && selectedStaff && (
         <Modal onClose={() => setOpenModal(false)}>
           <h3>Staff Profile</h3>
 
           <p>
-            <strong>Name:</strong> {selectedStaff?.firstName}{" "}
-            {selectedStaff?.middleName} {selectedStaff?.lastName}
+            <strong>Name:</strong> {selectedStaff.firstName}
+            {selectedStaff.middleName} {selectedStaff.lastName}
           </p>
 
           <p>
-            <strong>Phone:</strong> {selectedStaff?.phone}
+            <strong>Phone:</strong> {selectedStaff.phone || "—"}
           </p>
 
           <p>
-            <strong>Email:</strong> {selectedStaff?.email}
+            <strong>Email:</strong> {selectedStaff.email}
           </p>
 
           <p>
-            <strong>Department:</strong> {selectedStaff?.department}
+            <strong>Department:</strong> {selectedStaff.department}
           </p>
 
           <p>
-            <strong>Gender:</strong> {selectedStaff?.gender}
+            <strong>Gender:</strong> {selectedStaff.gender}
           </p>
 
           <p>
-            <strong>Role:</strong> {selectedStaff?.role}
+            <strong>Position:</strong> {selectedStaff.position || "—"}
           </p>
 
           <p>
-            <strong>Status:</strong> {selectedStaff?.status}
+            <strong>Status:</strong> {selectedStaff.status}
           </p>
 
           <div className="staff-modal-footer">
@@ -218,10 +241,10 @@ const StaffManagement = () => {
           <h3>📌 Tasks for: {staffName}</h3>
 
           {selectedStaffTasks.length === 0 ? (
-            <p>No tasks assigned to this staff.</p>
+            <p>No tasks assigned to this staff member.</p>
           ) : (
             selectedStaffTasks.map((task) => (
-              <div key={task.id} style={{ marginBottom: "10px" }}>
+              <div key={task._id} style={{ marginBottom: "10px" }}>
                 <strong>{task.title}</strong>
                 <p>{task.description}</p>
                 <p>📅 Due: {task.due}</p>

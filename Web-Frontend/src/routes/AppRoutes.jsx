@@ -56,6 +56,7 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         >
+          <Route index element={<ManagerDashboard />} />
           <Route path="dashboard" element={<ManagerDashboard />} />
           <Route path="staffManagement" element={<StaffManagement />} />
           <Route path="taskManagement" element={<TaskManagement />} />
@@ -70,19 +71,19 @@ const AppRoutes = () => {
 
         {/* Staff Routes with Layout */}
         <Route
-          path="/staff/"
+          path="/staff"
           element={
             <ProtectedRoute role="staff">
               <Layout />
             </ProtectedRoute>
           }
         >
+          <Route index element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="tasks" element={<MyTasks />} />
           <Route path="projects" element={<MyProjects />} />
           <Route path="chat" element={<StaffChat />} />
           <Route path="profile" element={<Profile />} />
-         
           {/* shared pages for staff */}
           <Route path="notifications" element={<Notifications />} />
           <Route path="activity" element={<ActivityLog />} />
@@ -92,13 +93,14 @@ const AppRoutes = () => {
 
         {/* Admin Routes with Layout */}
         <Route
-          path="/admin/"
+          path="/admin"
           element={
             <ProtectedRoute role="admin">
               <Layout />
             </ProtectedRoute>
           }
         >
+          <Route index element={<AdminDashboard />} />
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="users" element={<UserManagement />} />
           <Route path="create-user" element={<CreateUser />} />
