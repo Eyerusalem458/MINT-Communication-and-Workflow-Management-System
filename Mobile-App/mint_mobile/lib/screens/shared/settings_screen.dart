@@ -183,13 +183,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       showSnack(context, 'Avatar updated successfully');
     } catch (e) {
-      print('AVATAR ERROR TYPE: ${e.runtimeType}');
-      print('AVATAR ERROR: $e');
+      debugPrint('AVATAR ERROR TYPE: ${e.runtimeType}');
+      debugPrint('AVATAR ERROR: $e');
 
       if (e is DioException) {
-        print('STATUS CODE: ${e.response?.statusCode}');
-        print('RESPONSE DATA: ${e.response?.data}');
-        print('REQUEST PATH: ${e.requestOptions.path}');
+        debugPrint('STATUS CODE: ${e.response?.statusCode}');
+        debugPrint('RESPONSE DATA: ${e.response?.data}');
+        debugPrint('REQUEST PATH: ${e.requestOptions.path}');
       }
 
       if (!mounted) return;
@@ -234,7 +234,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     initials: initials,
                     size: 80,
                   ),
-
                   Positioned(
                     right: 0,
                     bottom: 0,
@@ -296,12 +295,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _phone,
                     keyboard: TextInputType.phone,
                   ),
-
                   const SizedBox(height: 12),
-
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.accent),
                       onPressed: _profileBusy ? null : _saveProfile,
                       child: _profileBusy
                           ? const SizedBox(
@@ -335,7 +334,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       _showCurrent = !_showCurrent;
                     }),
                   ),
-
                   _buildPasswordField(
                     'New Password',
                     _newPw,
@@ -344,7 +342,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       _showNew = !_showNew;
                     }),
                   ),
-
                   _buildPasswordField(
                     'Confirm Password',
                     _confirmPw,
@@ -353,12 +350,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       _showConfirm = !_showConfirm;
                     }),
                   ),
-
                   const SizedBox(height: 12),
-
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.accent),
                       onPressed: _pwBusy ? null : _changePassword,
                       child: _pwBusy
                           ? const SizedBox(
@@ -423,7 +420,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onPressed: () async {
                   await context.read<AuthProvider>().logout();
 
-                  if (!context.mounted) return;
+                  if (!mounted) return;
 
                   Navigator.pushNamedAndRemoveUntil(
                     context,
@@ -460,9 +457,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               color: AppColors.textMuted,
             ),
           ),
-
           const SizedBox(height: 4),
-
           TextField(
             controller: ctrl,
             keyboardType: keyboard,
@@ -519,9 +514,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               color: AppColors.textMuted,
             ),
           ),
-
           const SizedBox(height: 4),
-
           TextField(
             controller: ctrl,
             obscureText: !show,
@@ -583,7 +576,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
           ),
-
           Expanded(
             child: Text(
               value,

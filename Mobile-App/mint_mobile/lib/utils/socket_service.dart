@@ -1,13 +1,14 @@
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart' as io;
+import 'package:flutter/foundation.dart';
 import 'constants.dart';
 
 class SocketService {
-  static IO.Socket? _socket;
+  static io.Socket? _socket;
 
-  static IO.Socket get socket {
-    _socket ??= IO.io(
+  static io.Socket get socket {
+    _socket ??= io.io(
       kSocketUrl,
-      IO.OptionBuilder()
+      io.OptionBuilder()
           .setTransports(['websocket'])
           .disableAutoConnect()
           .setReconnectionAttempts(10)
@@ -27,15 +28,15 @@ class SocketService {
     socket.off('connect');
     socket.on('connect', (_) {
       socket.emit('join_user', userId);
-      print('✅ Socket connected: $userId');
+      debugPrint('✅ Socket connected: $userId');
     });
 
     socket.on('disconnect', (_) {
-      print('❌ Socket disconnected');
+      debugPrint('❌ Socket disconnected');
     });
 
     socket.on('connect_error', (err) {
-      print('⚠️ Socket connection error: $err');
+      debugPrint('⚠️ Socket connection error: $err');
     });
   }
 

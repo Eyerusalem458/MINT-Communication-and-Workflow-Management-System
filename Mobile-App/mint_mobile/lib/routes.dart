@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'screens/auth/splash_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/welcome_screen.dart'; // 👈 ADD THIS
+import 'screens/auth/forgot_password_screen.dart';
+import 'screens/auth/reset_password_screen.dart';
 import 'screens/staff/staff_shell.dart';
 import 'screens/manager/manager_shell.dart';
 import 'screens/admin/admin_shell.dart';
@@ -17,6 +19,13 @@ class AppRoutes {
 
       case '/login':
         return _fade(const LoginScreen());
+
+      case '/forgot-password':
+        return _fade(const ForgotPasswordScreen());
+
+      case '/reset-password':
+        final token = settings.arguments as String;
+        return _fade(ResetPasswordScreen(token: token));
 
       case '/staff':
         return _fade(const StaffShell());

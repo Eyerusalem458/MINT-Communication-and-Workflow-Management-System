@@ -19,9 +19,11 @@ import '../../models/conversation_model.dart';
 import '../../utils/constants.dart';
 import '../../widgets/app_widgets.dart';
 import '../../api/user_api.dart';
+import '../../api/message_api.dart';
+import 'package:dio/dio.dart';
 import 'chat_screen.dart';
 
-const String _agoraAppId = 'YOUR_AGORA_APP_ID';
+const String _agoraAppId = '0218fc6197cd4b24981e5fbad21a653c';
 const int _maxFileSizeBytes = 25 * 1024 * 1024; // 25 MB
 
 void _showSnack(BuildContext context, String message, {bool isError = false}) {
@@ -70,6 +72,11 @@ class _ConversationScreenState extends State<ConversationScreen> {
   int? _remoteUid;
   bool _micMuted = false;
   bool _camOff = false;
+  bool _remoteJoined = false;
+  DateTime? _callStartTime;
+
+  // FIX: declare _callConversationId as a proper field
+  String? _callConversationId;
 
   @override
   void initState() {
@@ -139,6 +146,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
   Future<void> _uploadFile(String path, String name) async {
     final file = File(path);
     final size = await file.length();
+    if (!mounted) return;
     if (!_validateFileSize(size, name)) return;
 
     setState(() => _uploadingFile = true);
@@ -436,11 +444,6 @@ class _ConversationScreenState extends State<ConversationScreen> {
 
   // ── Voice Recording ───────────────────────────────────────────────────────
   Future<void> _startRecording() async {
-    if (kIsWeb) {
-      _showSnack(context, 'Voice notes are currently unavailable on web');
-      return;
-    }
-
     if (_isRecording) return;
 
     final granted =
@@ -448,6 +451,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
     if (!granted) return;
 
     final hasPermission = await _recorder.hasPermission();
+    if (!mounted) return;
     if (!hasPermission) {
       _showSnack(context, 'Microphone permission denied.');
       return;
@@ -553,22 +557,31 @@ class _ConversationScreenState extends State<ConversationScreen> {
     }
 
     try {
+      final micOk =
+          await _requestPermission(Permission.microphone, 'Microphone');
+      if (!micOk) return;
+      if (video) {
+        final camOk = await _requestPermission(Permission.camera, 'Camera');
+        if (!camOk) return;
+      }
+
       final engine = createAgoraRtcEngine();
       await engine.initialize(RtcEngineContext(appId: _agoraAppId));
+
       engine.registerEventHandler(RtcEngineEventHandler(
         onUserJoined: (conn, uid, elapsed) {
-          if (mounted) setState(() => _remoteUid = uid);
+          if (mounted) {
+            setState(() {
+              _remoteUid = uid;
+              _remoteJoined = true;
+            });
+          }
         },
         onUserOffline: (conn, uid, reason) {
           if (mounted) setState(() => _remoteUid = null);
         },
         onLeaveChannel: (conn, stats) {
-          if (mounted) {
-            setState(() {
-              _inCall = false;
-              _remoteUid = null;
-            });
-          }
+          if (mounted) setState(() => _inCall = false);
         },
         onError: (err, msg) {
           if (mounted) {
@@ -577,42 +590,111 @@ class _ConversationScreenState extends State<ConversationScreen> {
           }
         },
       ));
-      if (video) await engine.enableVideo();
-      final conv = context.read<ChatProvider>().activeConversation;
-      final channelName = conv?.id ?? 'mint_channel';
-      await engine.joinChannel(
-        token: '',
-        channelId: channelName,
-        uid: 0,
-        options: ChannelMediaOptions(
-          clientRoleType: ClientRoleType.clientRoleBroadcaster,
-          channelProfile: ChannelProfileType.channelProfileCommunication,
-        ),
-      );
+
+      final channelId =
+          context.read<ChatProvider>().activeConversation?.id ?? '';
+      _callConversationId = channelId;
+
+      // Set call state early so UI shows immediately
+      _callStartTime = DateTime.now();
       setState(() {
         _agoraEngine = engine;
         _inCall = true;
         _callIsVideo = video;
+        _remoteJoined = false;
       });
+
+      if (video) {
+        try {
+          await engine.enableVideo();
+          await engine.enableLocalVideo(true);
+          await engine.startPreview();
+        } catch (_) {}
+      }
+
+      if (channelId.isNotEmpty) {
+        try {
+          await engine.joinChannel(
+            token: '',
+            channelId: channelId,
+            uid: 0,
+            options: const ChannelMediaOptions(),
+          );
+        } catch (_) {}
+      }
+
+      if (!video) {
+        try {
+          await engine.enableLocalAudio(true);
+        } catch (_) {}
+      }
     } catch (e) {
       if (mounted) {
-        _showSnack(context, 'Call failed: $e', isError: true);
+        setState(() => _inCall = false);
+        _showSnack(context, 'Could not start call: $e', isError: true);
       }
     }
   }
 
+  // FIX: Reset state FIRST so End button always works, then clean up engine
   Future<void> _endCall() async {
-    await _agoraEngine?.leaveChannel();
-    await _agoraEngine?.release();
+    if (!_inCall) return;
+
+    final started = _callStartTime;
+    final duration =
+        started == null ? null : DateTime.now().difference(started);
+    final durText = duration != null ? _formatDuration(duration) : null;
+
+    final summary = _remoteJoined
+        ? (_callIsVideo
+            ? 'Video call ended${durText != null ? ' ($durText)' : ''}'
+            : 'Voice call ended${durText != null ? ' ($durText)' : ''}')
+        : (_callIsVideo ? 'Missed video call' : 'Missed voice call');
+
+    final savedConvId = _callConversationId;
+
+    // FIX: Reset UI state immediately so button always responds
     if (mounted) {
       setState(() {
-        _agoraEngine = null;
         _inCall = false;
         _remoteUid = null;
         _micMuted = false;
         _camOff = false;
+        _remoteJoined = false;
+        _callStartTime = null;
+        _callConversationId = null;
       });
     }
+
+    // Clean up Agora engine after UI is already updated
+    if (_agoraEngine != null) {
+      try {
+        await _agoraEngine!.stopPreview();
+      } catch (_) {}
+      try {
+        await _agoraEngine!.leaveChannel();
+      } catch (_) {}
+      try {
+        await _agoraEngine!.release();
+      } catch (_) {}
+      if (mounted) setState(() => _agoraEngine = null);
+    }
+
+    // Send summary message to conversation
+    try {
+      final chat = context.read<ChatProvider>();
+      final targetId = savedConvId ?? chat.activeConversation?.id;
+      if (targetId == null) return;
+
+      if (chat.activeConversation?.id == targetId) {
+        await chat.sendTextMessage(summary);
+      } else {
+        try {
+          final fd = FormData.fromMap({'text': summary});
+          await MessageApi.sendMessage(targetId, fd);
+        } catch (_) {}
+      }
+    } catch (_) {}
   }
 
   void _toggleMic() {
@@ -985,6 +1067,25 @@ class _ConversationScreenState extends State<ConversationScreen> {
                       ],
                     ),
                   ),
+                  // Call icons beside the name for direct conversations
+                  if (conv.type == 'direct') ...[
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () => _startCall(video: false),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 6.0),
+                        child: Icon(Icons.phone_outlined, color: Colors.white),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => _startCall(video: true),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 6.0),
+                        child:
+                            Icon(Icons.videocam_outlined, color: Colors.white),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -1196,7 +1297,63 @@ class _ConversationScreenState extends State<ConversationScreen> {
   }
 
   Widget _buildCallOverlay() {
-    if (_agoraEngine == null) return const SizedBox.shrink();
+    if (_agoraEngine == null) {
+      // FIX: show a fallback UI even if engine is null (e.g. still initializing)
+      return Container(
+        color: const Color(0xFF0D1117),
+        width: double.infinity,
+        child: SafeArea(
+          child: Stack(
+            children: [
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      _callIsVideo ? Icons.videocam : Icons.call,
+                      color: Colors.white54,
+                      size: 64,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      _callIsVideo
+                          ? 'Starting video call…'
+                          : 'Starting voice call…',
+                      style:
+                          const TextStyle(color: Colors.white70, fontSize: 16),
+                    ),
+                  ],
+                ),
+              ),
+              Positioned(
+                bottom: 40,
+                left: 0,
+                right: 0,
+                child: Column(
+                  children: [
+                    const Text('Tap red button to end call',
+                        style: TextStyle(color: Colors.white38, fontSize: 11)),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _CallBtn(
+                          icon: Icons.call_end,
+                          color: Colors.red,
+                          onTap: _endCall,
+                          size: 64,
+                          tooltip: 'End Call',
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Container(
       color: const Color(0xFF0D1117),
@@ -1221,7 +1378,11 @@ class _ConversationScreenState extends State<ConversationScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.call, color: Colors.white54, size: 64),
+                    Icon(
+                      _callIsVideo ? Icons.videocam : Icons.call,
+                      color: Colors.white54,
+                      size: 64,
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       _callIsVideo
@@ -1484,6 +1645,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
                         if (currentConv != null) {
                           await chat.selectConversation(currentConv);
                         }
+                        if (!mounted) return;
                         if (mounted) {
                           _showSnack(context,
                               'Forwarded to ${conv.getDisplayName(myId)}');
@@ -1610,7 +1772,88 @@ class _ConversationScreenState extends State<ConversationScreen> {
                   style: const TextStyle(color: AppColors.textMuted)),
           ]),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
+
+        // ── Call buttons ──
+        if (isDirect) ...[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Column(children: [
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    _startCall(video: false);
+                  },
+                  child: Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.3)),
+                    ),
+                    child: const Icon(Icons.phone_outlined,
+                        color: AppColors.primary, size: 24),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text('Voice Call',
+                    style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
+              ]),
+              const SizedBox(width: 32),
+              Column(children: [
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    _startCall(video: true);
+                  },
+                  child: Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.3)),
+                    ),
+                    child: const Icon(Icons.videocam_outlined,
+                        color: AppColors.primary, size: 24),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text('Video Call',
+                    style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
+              ]),
+              const SizedBox(width: 32),
+              Column(children: [
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: AppColors.accent.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                          color: AppColors.accent.withValues(alpha: 0.3)),
+                    ),
+                    child: Icon(Icons.chat_outlined,
+                        color: AppColors.accent, size: 24),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text('Message',
+                    style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
+              ]),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Divider(),
+        ],
+
+        const SizedBox(height: 16),
         if (isDirect && otherUser != null && otherUser.isNotEmpty) ...[
           _InfoTile(
             icon: Icons.person_outline,
@@ -1687,6 +1930,14 @@ class _ConversationScreenState extends State<ConversationScreen> {
             final dept = map?['department'] ?? map?['dept'] ?? '';
             final email = map?['email'] ?? '';
             return ListTile(
+              trailing: GestureDetector(
+                onTap: _toggleSearch,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                  child: Icon(Icons.search,
+                      color: _isDark ? Colors.white : AppColors.textMuted),
+                ),
+              ),
               leading: UserAvatar(
                   initials: name.isNotEmpty ? name[0].toUpperCase() : '?',
                   size: 38),
@@ -1717,7 +1968,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Stateless widget classes (they were missing – re-added below)
+// Stateless widget classes
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _PulsingDot extends StatefulWidget {

@@ -5,6 +5,7 @@ import '../../providers/notification_provider.dart';
 import '../../api/user_api.dart';
 import '../../utils/constants.dart';
 import '../../widgets/app_widgets.dart';
+
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
   @override
@@ -24,8 +25,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   void initState() {
     super.initState();
     _loadStats();
-    WidgetsBinding.instance.addPostFrameCallback((_) =>
-        context.read<NotificationProvider>().fetchNotifications());
+    WidgetsBinding.instance.addPostFrameCallback(
+        (_) => context.read<NotificationProvider>().fetchNotifications());
   }
 
   Future<void> _loadStats() async {
@@ -81,7 +82,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   const SizedBox(height: 4),
                   Text('Overview of admin activity and user statistics',
                       style: TextStyle(
-                          color: Colors.white.withOpacity(0.8), fontSize: 12)),
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontSize: 12)),
                   const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -112,8 +114,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             // ── Metric cards ───────────────────────────────────────────────────
             _loading
                 ? const Center(
-                    child:
-                        CircularProgressIndicator(color: AppColors.primary))
+                    child: CircularProgressIndicator(color: AppColors.primary))
                 : GridView.count(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -158,31 +159,35 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       message: 'No notifications',
                       icon: Icons.notifications_none)
                   : Column(
-                      children: notifs.notifications.take(5).map((n) =>
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 6),
-                          child: Row(children: [
-                            Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                  color: AppColors.primary.withOpacity(0.1),
-                                  shape: BoxShape.circle),
-                              child: Center(
-                                  child: Text(_typeEmoji(n.type),
-                                      style:
-                                          const TextStyle(fontSize: 14))),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                                child: Text(n.message,
-                                    style: const TextStyle(fontSize: 12),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis)),
-                            const SizedBox(width: 8),
-                            StatusBadge(n.type),
-                          ]),
-                        )).toList(),
+                      children: notifs.notifications
+                          .take(5)
+                          .map((n) => Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 6),
+                                child: Row(children: [
+                                  Container(
+                                    width: 32,
+                                    height: 32,
+                                    decoration: BoxDecoration(
+                                        color: AppColors.primary
+                                            .withValues(alpha: 0.1),
+                                        shape: BoxShape.circle),
+                                    child: Center(
+                                        child: Text(_typeEmoji(n.type),
+                                            style:
+                                                const TextStyle(fontSize: 14))),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                      child: Text(n.message,
+                                          style: const TextStyle(fontSize: 12),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis)),
+                                  const SizedBox(width: 8),
+                                  StatusBadge(n.type),
+                                ]),
+                              ))
+                          .toList(),
                     ),
             ),
           ],
@@ -193,10 +198,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   String _typeEmoji(String type) {
     switch (type.toLowerCase()) {
-      case 'task':    return '✅';
-      case 'project': return '📁';
-      case 'system':  return '⚙️';
-      default:        return '🔔';
+      case 'task':
+        return '✅';
+      case 'project':
+        return '📁';
+      case 'system':
+        return '⚙️';
+      default:
+        return '🔔';
     }
   }
 }
@@ -216,11 +225,8 @@ class _BannerStat extends StatelessWidget {
       const SizedBox(height: 4),
       Text(value,
           style: const TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w700)),
-      Text(label,
-          style: const TextStyle(color: Colors.white70, fontSize: 10)),
+              color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700)),
+      Text(label, style: const TextStyle(color: Colors.white70, fontSize: 10)),
     ]);
   }
 }
@@ -245,7 +251,7 @@ class _ColoredMetricCard extends StatelessWidget {
           border: Border.all(color: AppColors.border),
           boxShadow: [
             BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 8,
                 offset: const Offset(0, 2))
           ]),

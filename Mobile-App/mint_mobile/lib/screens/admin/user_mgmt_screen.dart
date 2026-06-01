@@ -124,11 +124,13 @@ class _UserMgmtScreenState extends State<UserMgmtScreen> {
           child: Row(children: [
             _chip('Total', prov.users.length, AppColors.primary),
             const SizedBox(width: 8),
-            _chip('Active',
+            _chip(
+                'Active',
                 prov.users.where((u) => u.status == 'Active').length,
                 AppColors.success),
             const SizedBox(width: 8),
-            _chip('Inactive',
+            _chip(
+                'Inactive',
                 prov.users.where((u) => u.status == 'Inactive').length,
                 AppColors.danger),
           ]),
@@ -142,15 +144,13 @@ class _UserMgmtScreenState extends State<UserMgmtScreen> {
                   child: CircularProgressIndicator(color: AppColors.primary))
               : users.isEmpty
                   ? const EmptyState(
-                      message: 'No users found',
-                      icon: Icons.people_outline)
+                      message: 'No users found', icon: Icons.people_outline)
                   : RefreshIndicator(
                       onRefresh: () => prov.fetchUsers('admin'),
                       child: ListView.separated(
                         padding: const EdgeInsets.all(12),
                         itemCount: users.length,
-                        separatorBuilder: (_, __) =>
-                            const SizedBox(height: 10),
+                        separatorBuilder: (_, __) => const SizedBox(height: 10),
                         itemBuilder: (_, i) => _UserCard(
                           user: users[i],
                           onEdit: () => _showEditSheet(context, users[i]),
@@ -164,21 +164,17 @@ class _UserMgmtScreenState extends State<UserMgmtScreen> {
   }
 
   Widget _chip(String label, int value, Color color) => Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8)),
         child: Row(children: [
           Text('$value',
               style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
-                  color: color)),
+                  fontWeight: FontWeight.w700, fontSize: 15, color: color)),
           const SizedBox(width: 4),
           Text(label,
-              style: const TextStyle(
-                  fontSize: 12, color: AppColors.textMuted)),
+              style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
         ]),
       );
 
@@ -232,16 +228,15 @@ class _UserCard extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(user.fullName,
-                style: const TextStyle(
-                    fontSize: 14, fontWeight: FontWeight.w600)),
+                style:
+                    const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             const SizedBox(height: 2),
             Text(user.email,
-                style: const TextStyle(
-                    fontSize: 11, color: AppColors.textMuted),
+                style:
+                    const TextStyle(fontSize: 11, color: AppColors.textMuted),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis),
             const SizedBox(height: 4),
@@ -249,10 +244,9 @@ class _UserCard extends StatelessWidget {
               StatusBadge(user.status),
               const SizedBox(width: 6),
               Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
+                    color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(999)),
                 child: Text(user.role.toUpperCase(),
                     style: const TextStyle(
@@ -264,8 +258,8 @@ class _UserCard extends StatelessWidget {
             if (user.department.isNotEmpty) ...[
               const SizedBox(height: 3),
               Text(user.department,
-                  style: const TextStyle(
-                      fontSize: 10, color: AppColors.textLight),
+                  style:
+                      const TextStyle(fontSize: 10, color: AppColors.textLight),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis),
             ],
@@ -280,12 +274,11 @@ class _UserCard extends StatelessWidget {
           GestureDetector(
             onTap: onToggle,
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                   color: user.status == 'Active'
-                      ? AppColors.danger.withOpacity(0.1)
-                      : AppColors.success.withOpacity(0.1),
+                      ? AppColors.danger.withValues(alpha: 0.1)
+                      : AppColors.success.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6)),
               child: Text(
                 user.status == 'Active' ? 'Deactivate' : 'Activate',
@@ -377,87 +370,85 @@ class _EditUserSheetState extends State<_EditUserSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-          Row(children: [
-            const Expanded(
-                child: Text('Edit User',
-                    style: TextStyle(
-                        fontSize: 17, fontWeight: FontWeight.w700))),
-            IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.close)),
-          ]),
-          const SizedBox(height: 12),
+              Row(children: [
+                const Expanded(
+                    child: Text('Edit User',
+                        style: TextStyle(
+                            fontSize: 17, fontWeight: FontWeight.w700))),
+                IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close)),
+              ]),
+              const SizedBox(height: 12),
 
-          _field('First Name *', _firstName),
-          _field('Last Name *', _lastName),
-          _field('Email *', _email,
-              keyboard: TextInputType.emailAddress),
-          _field('Phone', _phone,
-              keyboard: TextInputType.phone),
-          const SizedBox(height: 4),
+              _field('First Name *', _firstName),
+              _field('Last Name *', _lastName),
+              _field('Email *', _email, keyboard: TextInputType.emailAddress),
+              _field('Phone', _phone, keyboard: TextInputType.phone),
+              const SizedBox(height: 4),
 
-          // Role
-          _drop<String>(
-            label: 'Role',
-            value: _role,
-            items: const ['admin', 'manager', 'staff'],
-            labels: const ['Admin', 'Manager', 'Staff'],
-            onChanged: (v) => setState(() => _role = v ?? _role),
-          ),
-          const SizedBox(height: 12),
+              // Role
+              _drop<String>(
+                label: 'Role',
+                value: _role,
+                items: const ['admin', 'manager', 'staff'],
+                labels: const ['Admin', 'Manager', 'Staff'],
+                onChanged: (v) => setState(() => _role = v ?? _role),
+              ),
+              const SizedBox(height: 12),
 
-          // Gender
-          _drop<String>(
-            label: 'Gender',
-            value: _gender.isNotEmpty ? _gender : null,
-            items: const ['Male', 'Female'],
-            labels: const ['Male', 'Female'],
-            onChanged: (v) => setState(() => _gender = v ?? ''),
-          ),
-          const SizedBox(height: 12),
+              // Gender
+              _drop<String>(
+                label: 'Gender',
+                value: _gender.isNotEmpty ? _gender : null,
+                items: const ['Male', 'Female'],
+                labels: const ['Male', 'Female'],
+                onChanged: (v) => setState(() => _gender = v ?? ''),
+              ),
+              const SizedBox(height: 12),
 
-          // Status
-          _drop<String>(
-            label: 'Status',
-            value: _status,
-            items: const ['Active', 'Inactive'],
-            labels: const ['Active', 'Inactive'],
-            onChanged: (v) => setState(() => _status = v ?? _status),
-          ),
-          const SizedBox(height: 12),
+              // Status
+              _drop<String>(
+                label: 'Status',
+                value: _status,
+                items: const ['Active', 'Inactive'],
+                labels: const ['Active', 'Inactive'],
+                onChanged: (v) => setState(() => _status = v ?? _status),
+              ),
+              const SizedBox(height: 12),
 
-          // Department
-          DropdownButtonFormField<String>(
-            value: _department.isNotEmpty ? _department : null,
-            decoration: const InputDecoration(labelText: 'Department'),
-            isExpanded: true,
-            items: kDepartments
-                .map((d) => DropdownMenuItem(
-                    value: d,
-                    child: Text(d,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 12))))
-                .toList(),
-            onChanged: (v) =>
-                setState(() => _department = v ?? _department),
-          ),
-          const SizedBox(height: 20),
+              // Department
+              DropdownButtonFormField<String>(
+                value: _department.isNotEmpty ? _department : null,
+                decoration: const InputDecoration(labelText: 'Department'),
+                isExpanded: true,
+                items: kDepartments
+                    .map((d) => DropdownMenuItem(
+                        value: d,
+                        child: Text(d,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 12))))
+                    .toList(),
+                onChanged: (v) =>
+                    setState(() => _department = v ?? _department),
+              ),
+              const SizedBox(height: 20),
 
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton(
-              onPressed: _busy ? null : _save,
-              child: _busy
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                          color: Colors.white, strokeWidth: 2))
-                  : const Text('Update User'),
-            ),
-          ),
-        ]),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: _busy ? null : _save,
+                  child: _busy
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2))
+                      : const Text('Update User'),
+                ),
+              ),
+            ]),
       ),
     );
   }
@@ -511,8 +502,7 @@ class _DropFilter extends StatelessWidget {
     return DropdownButtonFormField<String>(
       value: value,
       decoration: InputDecoration(
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: const BorderSide(color: AppColors.border)),
@@ -523,7 +513,8 @@ class _DropFilter extends StatelessWidget {
       items: List.generate(
           items.length,
           (i) => DropdownMenuItem(
-              value: items[i], child: Text(labels[i], style: const TextStyle(fontSize: 12)))),
+              value: items[i],
+              child: Text(labels[i], style: const TextStyle(fontSize: 12)))),
       onChanged: (v) => onChanged(v ?? ''),
     );
   }

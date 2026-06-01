@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:mint_mobile/models/user_model.dart';
@@ -45,9 +44,8 @@ class ChatProvider extends ChangeNotifier {
       _conversations = (results[0].data as List)
           .map((c) => ConversationModel.fromJson(c))
           .toList();
-      _chatUsers = (results[1].data as List)
-          .map((u) => UserModel.fromJson(u))
-          .toList();
+      _chatUsers =
+          (results[1].data as List).map((u) => UserModel.fromJson(u)).toList();
     } catch (e) {
       _lastError = e.toString();
     }
@@ -94,8 +92,7 @@ class ChatProvider extends ChangeNotifier {
         }
       }
 
-      final idx =
-          _conversations.indexWhere((c) => c.id == msg.conversationId);
+      final idx = _conversations.indexWhere((c) => c.id == msg.conversationId);
       if (idx != -1) {
         final c = _conversations[idx];
         _conversations[idx] = ConversationModel(
@@ -194,7 +191,7 @@ class ChatProvider extends ChangeNotifier {
       conversationId: _activeConversation!.id,
       sender: null, // will be filled by socket response
       text: '',
-      file: filePath,       // show local path while uploading
+      file: filePath, // show local path while uploading
       fileName: fileName,
       createdAt: DateTime.now(),
     );
@@ -207,9 +204,7 @@ class ChatProvider extends ChangeNotifier {
         filename: fileName,
         // Dio infers content-type from extension by default;
         // pass mimeType explicitly if you have it (e.g. 'image/jpeg')
-        contentType: mimeType != null
-            ? DioMediaType.parse(mimeType)
-            : null,
+        contentType: mimeType != null ? DioMediaType.parse(mimeType) : null,
       );
 
       final fd = FormData.fromMap({'file': multipartFile});
@@ -226,8 +221,7 @@ class ChatProvider extends ChangeNotifier {
       // But if your backend doesn't emit back to sender, remove placeholder
       // and reload messages as a fallback after a short delay.
       await Future.delayed(const Duration(seconds: 3), () {
-        final stillHasPlaceholder =
-            _messages.any((m) => m.id == tempId);
+        final stillHasPlaceholder = _messages.any((m) => m.id == tempId);
         if (stillHasPlaceholder) {
           _messages.removeWhere((m) => m.id == tempId);
           // Re-fetch to get the real message from server
@@ -324,7 +318,8 @@ class ChatProvider extends ChangeNotifier {
       _messages.removeWhere((m) => m.id == tempId);
       String msg = 'Upload failed';
       if (e.response != null) {
-        msg = 'Server error ${e.response!.statusCode}: ${e.response!.data ?? e.message}';
+        msg =
+            'Server error ${e.response!.statusCode}: ${e.response!.data ?? e.message}';
       } else if (e.type == DioExceptionType.connectionTimeout ||
           e.type == DioExceptionType.receiveTimeout) {
         msg = 'Upload timed out — check your connection';
@@ -406,8 +401,7 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
-  Future<ConversationModel?> createGroup(
-      String name, List<String> ids) async {
+  Future<ConversationModel?> createGroup(String name, List<String> ids) async {
     try {
       final res = await MessageApi.createGroup(name, ids);
       final conv = ConversationModel.fromJson(res.data);

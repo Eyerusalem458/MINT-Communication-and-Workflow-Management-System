@@ -260,7 +260,7 @@ class _AppDrawer extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(role,
@@ -286,7 +286,7 @@ class _AppDrawer extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                   child: Material(
                     color: isActive
-                        ? AppColors.primary.withOpacity(0.1)
+                        ? AppColors.primary.withValues(alpha: 0.1)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
                     child: InkWell(
