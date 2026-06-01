@@ -8,8 +8,7 @@ import '../../widgets/app_widgets.dart';
 class ProjectRequestsScreen extends StatefulWidget {
   const ProjectRequestsScreen({super.key});
   @override
-  State<ProjectRequestsScreen> createState() =>
-      _ProjectRequestsScreenState();
+  State<ProjectRequestsScreen> createState() => _ProjectRequestsScreenState();
 }
 
 class _ProjectRequestsScreenState extends State<ProjectRequestsScreen> {
@@ -18,8 +17,8 @@ class _ProjectRequestsScreenState extends State<ProjectRequestsScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) =>
-        context.read<ProjectProvider>().fetchProjects());
+    WidgetsBinding.instance.addPostFrameCallback(
+        (_) => context.read<ProjectProvider>().fetchProjects());
   }
 
   @override
@@ -31,7 +30,6 @@ class _ProjectRequestsScreenState extends State<ProjectRequestsScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.bgLight,
-      appBar: AppBar(title: const Text('Project Requests')),
       body: Column(children: [
         // Status filter chips
         SizedBox(
@@ -39,8 +37,8 @@ class _ProjectRequestsScreenState extends State<ProjectRequestsScreen> {
           child: ListView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            children: ['', 'Pending', 'Approved', 'Rejected', 'Cancelled']
-                .map((s) {
+            children:
+                ['', 'Pending', 'Approved', 'Rejected', 'Cancelled'].map((s) {
               final label = s.isEmpty ? 'All' : s;
               final active = _statusFilter == s;
               return Padding(
@@ -48,24 +46,21 @@ class _ProjectRequestsScreenState extends State<ProjectRequestsScreen> {
                 child: GestureDetector(
                   onTap: () => setState(() => _statusFilter = s),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                     decoration: BoxDecoration(
                       color: active
-                          ? AppColors.primary.withOpacity(0.12)
+                          ? AppColors.primary.withValues(alpha: 0.12)
                           : AppColors.surface,
                       borderRadius: BorderRadius.circular(999),
                       border: Border.all(
-                          color: active
-                              ? AppColors.primary
-                              : AppColors.border),
+                          color: active ? AppColors.primary : AppColors.border),
                     ),
                     child: Text(label,
                         style: TextStyle(
                             fontSize: 12,
-                            fontWeight: active
-                                ? FontWeight.w600
-                                : FontWeight.normal,
+                            fontWeight:
+                                active ? FontWeight.w600 : FontWeight.normal,
                             color: active
                                 ? AppColors.primary
                                 : AppColors.textMuted)),
@@ -82,15 +77,13 @@ class _ProjectRequestsScreenState extends State<ProjectRequestsScreen> {
                   child: CircularProgressIndicator(color: AppColors.primary))
               : projects.isEmpty
                   ? const EmptyState(
-                      message: 'No projects found',
-                      icon: Icons.folder_outlined)
+                      message: 'No projects found', icon: Icons.folder_outlined)
                   : RefreshIndicator(
                       onRefresh: () => prov.fetchProjects(),
                       child: ListView.separated(
                         padding: const EdgeInsets.all(12),
                         itemCount: projects.length,
-                        separatorBuilder: (_, __) =>
-                            const SizedBox(height: 10),
+                        separatorBuilder: (_, __) => const SizedBox(height: 10),
                         itemBuilder: (_, i) {
                           final p = projects[i];
                           return _ProjectCard(
@@ -136,11 +129,9 @@ class _ProjectRequestsScreenState extends State<ProjectRequestsScreen> {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel')),
+              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           ElevatedButton(
-            style:
-                ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () async {
               if (ctrl.text.trim().isEmpty) return;
               Navigator.pop(ctx);
@@ -175,10 +166,11 @@ class _ProjectRequestsScreenState extends State<ProjectRequestsScreen> {
         builder: (_, ctrl) => SingleChildScrollView(
           controller: ctrl,
           padding: const EdgeInsets.all(20),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(p.title,
-                style: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.w700)),
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
             const SizedBox(height: 14),
             _row('Created By', p.createdByName),
             _row('Department', p.department),
@@ -186,17 +178,15 @@ class _ProjectRequestsScreenState extends State<ProjectRequestsScreen> {
               const SizedBox(
                   width: 110,
                   child: Text('Status',
-                      style: TextStyle(
-                          color: AppColors.textMuted, fontSize: 13))),
+                      style:
+                          TextStyle(color: AppColors.textMuted, fontSize: 13))),
               StatusBadge(p.status),
             ]),
-            _row('Date',
-                p.createdAt?.toString().substring(0, 10) ?? ''),
+            _row('Date', p.createdAt?.toString().substring(0, 10) ?? ''),
             if (p.description.isNotEmpty) ...[
               const SizedBox(height: 14),
               const Text('Description',
-                  style: TextStyle(
-                      fontWeight: FontWeight.w600, fontSize: 14)),
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
               const SizedBox(height: 6),
               Text(p.description,
                   style: const TextStyle(
@@ -207,11 +197,10 @@ class _ProjectRequestsScreenState extends State<ProjectRequestsScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                    color: AppColors.danger.withOpacity(0.07),
+                    color: AppColors.danger.withValues(alpha: 0.07),
                     borderRadius: BorderRadius.circular(8),
                     border: const Border(
-                        left: BorderSide(
-                            color: AppColors.danger, width: 3))),
+                        left: BorderSide(color: AppColors.danger, width: 3))),
                 child: Text('💬 ${p.comment}',
                     style: const TextStyle(fontSize: 13)),
               ),
@@ -313,11 +302,9 @@ class _ProjectCard extends StatelessWidget {
         ]),
         const SizedBox(height: 6),
         Text('By: ${project.createdByName}',
-            style:
-                const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+            style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
         Text('Dept: ${project.department}',
-            style: const TextStyle(
-                fontSize: 11, color: AppColors.textLight),
+            style: const TextStyle(fontSize: 11, color: AppColors.textLight),
             maxLines: 1,
             overflow: TextOverflow.ellipsis),
         if (project.comment.isNotEmpty) ...[
@@ -330,16 +317,22 @@ class _ProjectCard extends StatelessWidget {
         const SizedBox(height: 10),
         Row(children: [
           AppButton(
-              label: 'View Details', variant: 'ghost', small: true,
+              label: 'View Details',
+              variant: 'ghost',
+              small: true,
               onTap: onView),
           const Spacer(),
           if (onApprove != null) ...[
             AppButton(
-                label: 'Approve', variant: 'approve', small: true,
+                label: 'Approve',
+                variant: 'approve',
+                small: true,
                 onTap: onApprove),
             const SizedBox(width: 6),
             AppButton(
-                label: 'Reject', variant: 'reject', small: true,
+                label: 'Reject',
+                variant: 'reject',
+                small: true,
                 onTap: onReject),
           ],
         ]),

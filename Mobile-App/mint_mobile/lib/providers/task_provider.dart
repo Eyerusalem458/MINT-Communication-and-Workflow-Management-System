@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import '../models/task_model.dart';
 import '../utils/storage.dart';
+import '../api/task_api.dart';
 
 class TaskProvider extends ChangeNotifier {
   List<TaskModel> _tasks = [];
@@ -17,17 +18,29 @@ class TaskProvider extends ChangeNotifier {
     try {
       final res = await TaskApi.getTasks();
       _tasks = (res.data as List).map((t) => TaskModel.fromJson(t)).toList();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('fetchTasks error: $e');
+    }
     _loading = false;
     notifyListeners();
   }
 
+  // FIX: send plain Map as JSON — no FormData — so backend req.body works
   Future<void> assignTask(Map<String, dynamic> data) async {
-    await TaskApi.createTask(data);
-    await fetchTasks();
+    try {
+      debugPrint('=== ASSIGNING TASK ===');
+      debugPrint('Data: $data');
+      final response = await TaskApi.createTask(data);
+      debugPrint('Response: ${response.statusCode}');
+      await fetchTasks();
+    } catch (e) {
+      debugPrint('=== ASSIGN ERROR: $e ===');
+      rethrow;
+    }
   }
 
-  Future<void> updateTaskStatus(String id, String status, {String comment = ''}) async {
+  Future<void> updateTaskStatus(String id, String status,
+      {String comment = ''}) async {
     final fd = FormData.fromMap({
       'status': status,
       if (comment.isNotEmpty) 'comment': comment,
@@ -36,7 +49,8 @@ class TaskProvider extends ChangeNotifier {
     await fetchTasks();
   }
 
-  Future<void> submitWork(String id, {String? filePath, String? fileName}) async {
+  Future<void> submitWork(String id,
+      {String? filePath, String? fileName}) async {
     final Map<String, dynamic> map = {'status': 'In Progress'};
     if (filePath != null && fileName != null) {
       map['file'] = await MultipartFile.fromFile(filePath, filename: fileName);
@@ -54,8 +68,7 @@ class TaskProvider extends ChangeNotifier {
 
   int get totalTasks => _tasks.length;
   int get completedTasks => _tasks.where((t) => t.status == 'Completed').length;
-  int get inProgressTasks => _tasks.where((t) => t.status == 'In Progress').length;
+  int get inProgressTasks =>
+      _tasks.where((t) => t.status == 'In Progress').length;
   int get pendingTasks => _tasks.where((t) => t.status == 'Pending').length;
-  
-  get TaskApi => null;
 }

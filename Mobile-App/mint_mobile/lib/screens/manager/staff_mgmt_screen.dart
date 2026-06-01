@@ -18,8 +18,8 @@ class _StaffMgmtScreenState extends State<StaffMgmtScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) =>
-        context.read<UserProvider>().fetchUsers('manager'));
+    WidgetsBinding.instance.addPostFrameCallback(
+        (_) => context.read<UserProvider>().fetchUsers('manager'));
   }
 
   List<UserModel> get _filtered {
@@ -49,7 +49,6 @@ class _StaffMgmtScreenState extends State<StaffMgmtScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.bgLight,
-      appBar: AppBar(title: const Text('Staff Management')),
       body: Column(children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
@@ -67,8 +66,7 @@ class _StaffMgmtScreenState extends State<StaffMgmtScreen> {
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide:
-                            const BorderSide(color: AppColors.border)),
+                        borderSide: const BorderSide(color: AppColors.border)),
                     filled: true,
                     fillColor: Colors.white,
                   ),
@@ -101,8 +99,7 @@ class _StaffMgmtScreenState extends State<StaffMgmtScreen> {
             const SizedBox(width: 8),
             _StatChip(
                 label: 'Inactive',
-                value:
-                    prov.users.where((u) => u.status == 'Inactive').length,
+                value: prov.users.where((u) => u.status == 'Inactive').length,
                 color: AppColors.danger),
           ]),
         ),
@@ -114,15 +111,13 @@ class _StaffMgmtScreenState extends State<StaffMgmtScreen> {
                   child: CircularProgressIndicator(color: AppColors.primary))
               : staff.isEmpty
                   ? const EmptyState(
-                      message: 'No staff found',
-                      icon: Icons.people_outline)
+                      message: 'No staff found', icon: Icons.people_outline)
                   : RefreshIndicator(
                       onRefresh: () => prov.fetchUsers('manager'),
                       child: ListView.separated(
                         padding: const EdgeInsets.all(12),
                         itemCount: staff.length,
-                        separatorBuilder: (_, __) =>
-                            const SizedBox(height: 10),
+                        separatorBuilder: (_, __) => const SizedBox(height: 10),
                         itemBuilder: (_, i) {
                           final u = staff[i];
                           return Container(
@@ -130,8 +125,7 @@ class _StaffMgmtScreenState extends State<StaffMgmtScreen> {
                             decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(12),
-                                border:
-                                    Border.all(color: AppColors.border)),
+                                border: Border.all(color: AppColors.border)),
                             child: Row(children: [
                               UserAvatar(
                                   avatarUrl: u.avatar != null
@@ -162,9 +156,8 @@ class _StaffMgmtScreenState extends State<StaffMgmtScreen> {
                                       const SizedBox(width: 6),
                                       if (u.gender.isNotEmpty)
                                         Container(
-                                          padding:
-                                              const EdgeInsets.symmetric(
-                                                  horizontal: 8, vertical: 3),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 3),
                                           decoration: BoxDecoration(
                                               color: AppColors.surface,
                                               borderRadius:
@@ -172,8 +165,7 @@ class _StaffMgmtScreenState extends State<StaffMgmtScreen> {
                                           child: Text(u.gender,
                                               style: const TextStyle(
                                                   fontSize: 10,
-                                                  color:
-                                                      AppColors.textMuted)),
+                                                  color: AppColors.textMuted)),
                                         ),
                                     ]),
                                     if (u.department.isNotEmpty) ...[
@@ -187,11 +179,9 @@ class _StaffMgmtScreenState extends State<StaffMgmtScreen> {
                                     ],
                                   ])),
                               IconButton(
-                                  onPressed: () =>
-                                      _showEditSheet(context, u),
+                                  onPressed: () => _showEditSheet(context, u),
                                   icon: const Icon(Icons.edit_outlined,
-                                      size: 18,
-                                      color: AppColors.textMuted)),
+                                      size: 18, color: AppColors.textMuted)),
                             ]),
                           );
                         },
@@ -215,7 +205,7 @@ class _StatChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8)),
       child: Row(children: [
         Text('$value',
@@ -223,8 +213,7 @@ class _StatChip extends StatelessWidget {
                 fontWeight: FontWeight.w700, fontSize: 15, color: color)),
         const SizedBox(width: 4),
         Text(label,
-            style:
-                const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+            style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
       ]),
     );
   }
@@ -289,58 +278,59 @@ class _EditStaffSheetState extends State<_EditStaffSheet> {
       padding: EdgeInsets.fromLTRB(
           20, 16, 20, MediaQuery.of(context).viewInsets.bottom + 20),
       child: SingleChildScrollView(
-        child: Column(mainAxisSize: MainAxisSize.min,
+        child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-          Row(children: [
-            const Expanded(
-                child: Text('Edit Staff',
-                    style: TextStyle(
-                        fontSize: 17, fontWeight: FontWeight.w700))),
-            IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.close)),
-          ]),
-          const SizedBox(height: 12),
-          _field('First Name', _firstName),
-          _field('Last Name', _lastName),
-          _field('Email', _email, keyboard: TextInputType.emailAddress),
-          _field('Phone', _phone, keyboard: TextInputType.phone),
-          DropdownButtonFormField<String>(
-            value: _gender.isNotEmpty ? _gender : null,
-            decoration: const InputDecoration(labelText: 'Gender'),
-            items: const [
-              DropdownMenuItem(value: 'Male', child: Text('Male')),
-              DropdownMenuItem(value: 'Female', child: Text('Female')),
-            ],
-            onChanged: (v) => setState(() => _gender = v ?? ''),
-          ),
-          const SizedBox(height: 12),
-          DropdownButtonFormField<String>(
-            value: _status,
-            decoration: const InputDecoration(labelText: 'Status'),
-            items: const [
-              DropdownMenuItem(value: 'Active', child: Text('Active')),
-              DropdownMenuItem(value: 'Inactive', child: Text('Inactive')),
-            ],
-            onChanged: (v) => setState(() => _status = v ?? 'Active'),
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton(
-              onPressed: _busy ? null : _save,
-              child: _busy
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                          color: Colors.white, strokeWidth: 2))
-                  : const Text('Save Changes'),
-            ),
-          ),
-        ]),
+              Row(children: [
+                const Expanded(
+                    child: Text('Edit Staff',
+                        style: TextStyle(
+                            fontSize: 17, fontWeight: FontWeight.w700))),
+                IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close)),
+              ]),
+              const SizedBox(height: 12),
+              _field('First Name', _firstName),
+              _field('Last Name', _lastName),
+              _field('Email', _email, keyboard: TextInputType.emailAddress),
+              _field('Phone', _phone, keyboard: TextInputType.phone),
+              DropdownButtonFormField<String>(
+                value: _gender.isNotEmpty ? _gender : null,
+                decoration: const InputDecoration(labelText: 'Gender'),
+                items: const [
+                  DropdownMenuItem(value: 'Male', child: Text('Male')),
+                  DropdownMenuItem(value: 'Female', child: Text('Female')),
+                ],
+                onChanged: (v) => setState(() => _gender = v ?? ''),
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: _status,
+                decoration: const InputDecoration(labelText: 'Status'),
+                items: const [
+                  DropdownMenuItem(value: 'Active', child: Text('Active')),
+                  DropdownMenuItem(value: 'Inactive', child: Text('Inactive')),
+                ],
+                onChanged: (v) => setState(() => _status = v ?? 'Active'),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: _busy ? null : _save,
+                  child: _busy
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2))
+                      : const Text('Save Changes'),
+                ),
+              ),
+            ]),
       ),
     );
   }

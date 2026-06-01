@@ -1,33 +1,31 @@
 import 'package:dio/dio.dart';
 import 'dio_client.dart';
 
-class ProjectApi {
-  static Future<Response> getProjects() =>
-      DioClient.instance.get('/projects');
+class TaskApi {
+  static Future<Response> getTasks() => DioClient.instance.get('/tasks');
 
-  static Future<Response> getProjectStats() =>
-      DioClient.instance.get('/projects/stats');
+  static Future<Response> getTaskById(String id) =>
+      DioClient.instance.get('/tasks/$id');
 
-  static Future<Response> createProject(FormData formData) =>
+  // FIX: send JSON instead of FormData so backend req.body can read it
+  static Future<Response> createTask(Map<String, dynamic> data) =>
       DioClient.instance.post(
-        '/projects',
-        data: formData,
-        options: Options(contentType: 'multipart/form-data'),
+        '/tasks',
+        data: data,
+        options: Options(contentType: 'application/json'),
       );
 
-  static Future<Response> updateProject(String id, FormData formData) =>
+  // Keep as FormData — handles file uploads
+  static Future<Response> updateTask(String id, FormData formData) =>
       DioClient.instance.put(
-        '/projects/$id',
+        '/tasks/$id',
         data: formData,
         options: Options(contentType: 'multipart/form-data'),
       );
 
-  static Future<Response> cancelProject(String id) =>
-      DioClient.instance.patch('/projects/$id/cancel');
+  static Future<Response> deleteTask(String id) =>
+      DioClient.instance.delete('/tasks/$id');
 
-  static Future<Response> approveProject(String id) =>
-      DioClient.instance.patch('/projects/$id/approve');
-
-  static Future<Response> rejectProject(String id, String comment) =>
-      DioClient.instance.patch('/projects/$id/reject', data: {'comment': comment});
+  static Future<Response> getTaskStats() =>
+      DioClient.instance.get('/tasks/stats');
 }

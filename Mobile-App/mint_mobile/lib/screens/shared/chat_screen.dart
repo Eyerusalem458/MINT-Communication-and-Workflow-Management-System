@@ -14,8 +14,6 @@ class _Brand {
   static const primary = AppColors.primary;
   static const primaryMid = AppColors.primary;
   static const accent = AppColors.accent;
-  static const accentDark = Color(0xFFE09415);
-  static const blue = Color(0xFF1D61C1);
   static const white = Colors.white;
 }
 
@@ -186,24 +184,29 @@ class _ChatScreenState extends State<ChatScreen>
                 child: Container(
                   height: 38,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.18),
+                    color: Colors.white.withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: TextField(
                     controller: _searchCtrl,
                     onChanged: (v) => setState(() => _search = v),
-                    style: const TextStyle(color: _Brand.white, fontSize: 14),
-                    decoration: const InputDecoration(
+                    style: TextStyle(
+                        color: isDark ? _Brand.white : AppColors.textPrimary,
+                        fontSize: 14),
+                    decoration: InputDecoration(
                       hintText: 'Search conversations...',
                       hintStyle: TextStyle(
-                        color: Colors.white60,
+                        color: isDark ? Colors.white60 : AppColors.textMuted,
                         fontSize: 14,
                         fontStyle: FontStyle.italic,
                       ),
-                      prefixIcon:
-                          Icon(Icons.search, color: Colors.white70, size: 18),
+                      prefixIcon: Icon(
+                        Icons.search,
+                        color: isDark ? Colors.white70 : AppColors.textMuted,
+                        size: 18,
+                      ),
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(vertical: 10),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 10),
                     ),
                   ),
                 ),

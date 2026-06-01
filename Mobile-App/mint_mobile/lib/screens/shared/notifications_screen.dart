@@ -18,8 +18,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   List<NotificationModel> _filtered(List<NotificationModel> all) {
     if (_filter == 'All') return all;
     if (_filter == 'Unseen') return all.where((n) => n.unseen).toList();
-    if (_filter == 'Tasks') return all.where((n) => ['Task', 'Deadline'].contains(n.type)).toList();
-    return all.where((n) => n.type.toLowerCase() == _filter.toLowerCase()).toList();
+    if (_filter == 'Tasks') {
+      return all.where((n) => ['Task', 'Deadline'].contains(n.type)).toList();
+    }
+    return all
+        .where((n) => n.type.toLowerCase() == _filter.toLowerCase())
+        .toList();
   }
 
   @override
@@ -34,7 +38,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         actions: [
           TextButton(
             onPressed: prov.markAllAsRead,
-            child: const Text('Mark all read', style: TextStyle(color: Colors.white, fontSize: 12)),
+            child: const Text('Mark all read',
+                style: TextStyle(color: Colors.white, fontSize: 12)),
           ),
         ],
       ),
@@ -54,19 +59,25 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 return GestureDetector(
                   onTap: () => setState(() => _filter = f),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
                     decoration: BoxDecoration(
-                      color: active ? AppColors.primary.withOpacity(0.12) : AppColors.surface,
+                      color: active
+                          ? AppColors.primary.withValues(alpha: 0.12)
+                          : AppColors.surface,
                       borderRadius: BorderRadius.circular(999),
                       border: Border.all(
                         color: active ? AppColors.primary : AppColors.border,
                       ),
                     ),
-                    child: Text(f, style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: active ? FontWeight.w600 : FontWeight.normal,
-                      color: active ? AppColors.primary : AppColors.textMuted,
-                    )),
+                    child: Text(f,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight:
+                              active ? FontWeight.w600 : FontWeight.normal,
+                          color:
+                              active ? AppColors.primary : AppColors.textMuted,
+                        )),
                   ),
                 );
               },
@@ -75,9 +86,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
           Expanded(
             child: prov.loading
-                ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                ? const Center(
+                    child: CircularProgressIndicator(color: AppColors.primary))
                 : items.isEmpty
-                    ? const EmptyState(message: 'No notifications found', icon: Icons.notifications_none)
+                    ? const EmptyState(
+                        message: 'No notifications found',
+                        icon: Icons.notifications_none)
                     : ListView.separated(
                         padding: const EdgeInsets.all(12),
                         itemCount: items.length,
@@ -85,56 +99,80 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         itemBuilder: (_, i) {
                           final n = items[i];
                           return GestureDetector(
-                            onTap: () { if (n.unseen) prov.markOneAsRead(n.id); },
+                            onTap: () {
+                              if (n.unseen) prov.markOneAsRead(n.id);
+                            },
                             child: Container(
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                color: n.unseen ? AppColors.primary.withOpacity(0.05) : Colors.white,
+                                color: n.unseen
+                                    ? AppColors.primary.withValues(alpha: 0.05)
+                                    : Colors.white,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: n.unseen ? AppColors.primary.withOpacity(0.2) : AppColors.border,
+                                  color: n.unseen
+                                      ? AppColors.primary.withValues(alpha: 0.2)
+                                      : AppColors.border,
                                 ),
                               ),
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Container(
-                                    width: 36, height: 36,
+                                    width: 36,
+                                    height: 36,
                                     decoration: BoxDecoration(
-                                      color: _typeColor(n.type).withOpacity(0.12),
+                                      color: _typeColor(n.type)
+                                          .withValues(alpha: 0.12),
                                       shape: BoxShape.circle,
                                     ),
-                                    child: Center(child: Text(_typeEmoji(n.type), style: const TextStyle(fontSize: 16))),
+                                    child: Center(
+                                        child: Text(_typeEmoji(n.type),
+                                            style:
+                                                const TextStyle(fontSize: 16))),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(n.message,
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: n.unseen ? FontWeight.w600 : FontWeight.normal,
-                                            color: AppColors.textPrimary,
-                                          )),
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: n.unseen
+                                                  ? FontWeight.w600
+                                                  : FontWeight.normal,
+                                              color: AppColors.textPrimary,
+                                            )),
                                         const SizedBox(height: 4),
                                         Row(children: [
                                           StatusBadge(n.type),
                                           if (n.unseen) ...[
                                             const SizedBox(width: 6),
                                             Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 6,
+                                                      vertical: 2),
                                               decoration: BoxDecoration(
                                                 color: AppColors.primary,
-                                                borderRadius: BorderRadius.circular(999),
+                                                borderRadius:
+                                                    BorderRadius.circular(999),
                                               ),
-                                              child: const Text('New', style: TextStyle(fontSize: 10, color: Colors.white)),
+                                              child: const Text('New',
+                                                  style: TextStyle(
+                                                      fontSize: 10,
+                                                      color: Colors.white)),
                                             ),
                                           ],
                                           const Spacer(),
                                           if (n.createdAt != null)
                                             Text(_formatDate(n.createdAt!),
-                                              style: const TextStyle(fontSize: 11, color: AppColors.textLight)),
+                                                style: const TextStyle(
+                                                    fontSize: 11,
+                                                    color:
+                                                        AppColors.textLight)),
                                         ]),
                                       ],
                                     ),
@@ -153,20 +191,30 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Color _typeColor(String type) {
     switch (type.toLowerCase()) {
-      case 'task': case 'deadline': return AppColors.warning;
-      case 'project': return AppColors.primary;
-      case 'system': return AppColors.textMuted;
-      default: return AppColors.success;
+      case 'task':
+      case 'deadline':
+        return AppColors.warning;
+      case 'project':
+        return AppColors.primary;
+      case 'system':
+        return AppColors.textMuted;
+      default:
+        return AppColors.success;
     }
   }
 
   String _typeEmoji(String type) {
     switch (type.toLowerCase()) {
-      case 'task': return '✅';
-      case 'deadline': return '⏰';
-      case 'project': return '📁';
-      case 'system': return '⚙️';
-      default: return '🔔';
+      case 'task':
+        return '✅';
+      case 'deadline':
+        return '⏰';
+      case 'project':
+        return '📁';
+      case 'system':
+        return '⚙️';
+      default:
+        return '🔔';
     }
   }
 

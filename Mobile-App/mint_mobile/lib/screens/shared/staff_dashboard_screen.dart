@@ -31,30 +31,9 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.bgLight,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('Hello, ${user?.firstName ?? ''} 👋',
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.white)),
-          const Text('Track your tasks and stay on top',
-            style: TextStyle(fontSize: 11, color: Colors.white70)),
-        ]),
-        actions: [
-          Stack(children: [
-            IconButton(icon: const Icon(Icons.notifications_outlined, color: Colors.white), onPressed: () {}),
-            if (notifs.unseenCount > 0)
-              Positioned(top: 8, right: 8,
-                child: Container(
-                  width: 16, height: 16,
-                  decoration: const BoxDecoration(color: AppColors.danger, shape: BoxShape.circle),
-                  child: Center(child: Text('${notifs.unseenCount}',
-                    style: const TextStyle(fontSize: 9, color: Colors.white, fontWeight: FontWeight.bold))),
-                )),
-          ]),
-        ],
-      ),
       body: tasks.loading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primary))
           : RefreshIndicator(
               onRefresh: () => tasks.fetchTasks(),
               child: SingleChildScrollView(
@@ -64,16 +43,27 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
                   children: [
                     // Metric cards
                     GridView.count(
-                      shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
-                      crossAxisCount: 3, crossAxisSpacing: 10, mainAxisSpacing: 10,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
                       childAspectRatio: 0.85,
                       children: [
-                        MetricCard(label: 'Assigned', value: '${tasks.totalTasks}',
-                          caption: 'Total tasks'),
-                        MetricCard(label: 'In Progress', value: '${tasks.inProgressTasks}',
-                          caption: 'Stay focused', valueColor: AppColors.warning),
-                        MetricCard(label: 'Completed', value: '${tasks.completedTasks}',
-                          caption: 'Great work!', valueColor: AppColors.success),
+                        MetricCard(
+                            label: 'Assigned',
+                            value: '${tasks.totalTasks}',
+                            caption: 'Total tasks'),
+                        MetricCard(
+                            label: 'In Progress',
+                            value: '${tasks.inProgressTasks}',
+                            caption: 'Stay focused',
+                            valueColor: AppColors.warning),
+                        MetricCard(
+                            label: 'Completed',
+                            value: '${tasks.completedTasks}',
+                            caption: 'Great work!',
+                            valueColor: AppColors.success),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -83,12 +73,21 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
                       title: 'Task Overview',
                       child: Column(
                         children: [
-                          ProgressBarRow(label: 'Completed', value: tasks.completedTasks,
-                            total: total, color: AppColors.success),
-                          ProgressBarRow(label: 'In Progress', value: tasks.inProgressTasks,
-                            total: total, color: AppColors.warning),
-                          ProgressBarRow(label: 'Pending', value: tasks.pendingTasks,
-                            total: total, color: const Color(0xFF9CA3AF)),
+                          ProgressBarRow(
+                              label: 'Completed',
+                              value: tasks.completedTasks,
+                              total: total,
+                              color: AppColors.success),
+                          ProgressBarRow(
+                              label: 'In Progress',
+                              value: tasks.inProgressTasks,
+                              total: total,
+                              color: AppColors.warning),
+                          ProgressBarRow(
+                              label: 'Pending',
+                              value: tasks.pendingTasks,
+                              total: total,
+                              color: const Color(0xFF9CA3AF)),
                         ],
                       ),
                     ),
@@ -98,25 +97,41 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
                     SectionCard(
                       title: 'Deadline Alerts',
                       child: tasks.tasks.isEmpty
-                          ? const EmptyState(message: 'No tasks assigned', icon: Icons.task_outlined)
+                          ? const EmptyState(
+                              message: 'No tasks assigned',
+                              icon: Icons.task_outlined)
                           : Column(
-                              children: tasks.tasks.take(5).map((t) => Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 6),
-                                child: Row(
-                                  children: [
-                                    Expanded(child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(t.title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
-                                        Text('${t.project.isNotEmpty ? t.project : 'No project'} · Due ${t.due}',
-                                          style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
-                                      ],
-                                    )),
-                                    const SizedBox(width: 8),
-                                    StatusBadge(t.priority),
-                                  ],
-                                ),
-                              )).toList(),
+                              children: tasks.tasks
+                                  .take(5)
+                                  .map((t) => Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 6),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                                child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(t.title,
+                                                    style: const TextStyle(
+                                                        fontSize: 13,
+                                                        fontWeight:
+                                                            FontWeight.w500)),
+                                                Text(
+                                                    '${t.project.isNotEmpty ? t.project : 'No project'} · Due ${t.due}',
+                                                    style: const TextStyle(
+                                                        fontSize: 11,
+                                                        color: AppColors
+                                                            .textMuted)),
+                                              ],
+                                            )),
+                                            const SizedBox(width: 8),
+                                            StatusBadge(t.priority),
+                                          ],
+                                        ),
+                                      ))
+                                  .toList(),
                             ),
                     ),
                     const SizedBox(height: 16),
@@ -125,25 +140,39 @@ class _StaffDashboardScreenState extends State<StaffDashboardScreen> {
                     SectionCard(
                       title: 'Recent Notifications',
                       child: notifs.notifications.isEmpty
-                          ? const EmptyState(message: 'No notifications', icon: Icons.notifications_none)
+                          ? const EmptyState(
+                              message: 'No notifications',
+                              icon: Icons.notifications_none)
                           : Column(
-                              children: notifs.notifications.take(5).map((n) => Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 6),
-                                child: Row(
-                                  children: [
-                                    Expanded(child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(n.message, style: const TextStyle(fontSize: 13)),
-                                        if (n.createdAt != null)
-                                          Text(_formatDate(n.createdAt!),
-                                            style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
-                                      ],
-                                    )),
-                                    StatusBadge(n.type),
-                                  ],
-                                ),
-                              )).toList(),
+                              children: notifs.notifications
+                                  .take(5)
+                                  .map((n) => Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 6),
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                                child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(n.message,
+                                                    style: const TextStyle(
+                                                        fontSize: 13)),
+                                                if (n.createdAt != null)
+                                                  Text(
+                                                      _formatDate(n.createdAt!),
+                                                      style: const TextStyle(
+                                                          fontSize: 11,
+                                                          color: AppColors
+                                                              .textMuted)),
+                                              ],
+                                            )),
+                                            StatusBadge(n.type),
+                                          ],
+                                        ),
+                                      ))
+                                  .toList(),
                             ),
                     ),
                   ],

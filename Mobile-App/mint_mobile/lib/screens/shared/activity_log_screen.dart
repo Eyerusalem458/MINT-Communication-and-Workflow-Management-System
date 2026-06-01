@@ -24,9 +24,8 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
     try {
       final res = await ActivityApi.getActivityLogs();
       setState(() {
-        _activity = (res.data as List)
-            .map((a) => ActivityModel.fromJson(a))
-            .toList();
+        _activity =
+            (res.data as List).map((a) => ActivityModel.fromJson(a)).toList();
         _loading = false;
       });
     } catch (_) {
@@ -74,7 +73,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                                       boxShadow: [
                                         BoxShadow(
                                           color: AppColors.primary
-                                              .withOpacity(0.3),
+                                              .withValues(alpha: 0.3),
                                           blurRadius: 6,
                                           spreadRadius: 1,
                                         )
@@ -111,7 +110,8 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                                     const SizedBox(height: 3),
 
                                     // ✅ FIX: use item.time directly — server already formats it
-                                    if (item.time != null && item.time!.isNotEmpty)
+                                    if (item.time != null &&
+                                        item.time!.isNotEmpty)
                                       Text(
                                         item.time!,
                                         style: const TextStyle(

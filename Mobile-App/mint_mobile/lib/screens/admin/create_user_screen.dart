@@ -32,16 +32,20 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
   bool get _hasUpper => _password.text.contains(RegExp(r'[A-Z]'));
   bool get _hasLower => _password.text.contains(RegExp(r'[a-z]'));
   bool get _hasNumber => _password.text.contains(RegExp(r'[0-9]'));
-  bool get _hasSymbol =>
-      _password.text.contains(RegExp(r'[!@#$%^&*]'));
+  bool get _hasSymbol => _password.text.contains(RegExp(r'[!@#$%^&*]'));
   bool get _allPwOk =>
       _hasLength && _hasUpper && _hasLower && _hasNumber && _hasSymbol;
 
   @override
   void dispose() {
     for (final c in [
-      _firstName, _middleName, _lastName, _email,
-      _phone, _password, _confirmPassword,
+      _firstName,
+      _middleName,
+      _lastName,
+      _email,
+      _phone,
+      _password,
+      _confirmPassword,
     ]) {
       c.dispose();
     }
@@ -59,8 +63,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
       return;
     }
     if (!_allPwOk) {
-      showSnack(context, 'Password does not meet requirements',
-          isError: true);
+      showSnack(context, 'Password does not meet requirements', isError: true);
       return;
     }
     if (_password.text != _confirmPassword.text) {
@@ -96,8 +99,13 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
 
   void _clearForm() {
     for (final c in [
-      _firstName, _middleName, _lastName, _email,
-      _phone, _password, _confirmPassword,
+      _firstName,
+      _middleName,
+      _lastName,
+      _email,
+      _phone,
+      _password,
+      _confirmPassword,
     ]) {
       c.clear();
     }
@@ -156,8 +164,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(fontSize: 12))))
                     .toList(),
-                onChanged: (v) =>
-                    setState(() => _department = v ?? ''),
+                onChanged: (v) => setState(() => _department = v ?? ''),
               ),
             ]),
           ),
@@ -192,24 +199,19 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                         size: 18, color: AppColors.textMuted),
                     suffixIcon: IconButton(
                       icon: Icon(
-                          _showPw
-                              ? Icons.visibility_off
-                              : Icons.visibility,
+                          _showPw ? Icons.visibility_off : Icons.visibility,
                           size: 18,
                           color: AppColors.textMuted),
-                      onPressed: () =>
-                          setState(() => _showPw = !_showPw),
+                      onPressed: () => setState(() => _showPw = !_showPw),
                     ),
                     filled: true,
                     fillColor: AppColors.surface,
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide:
-                            const BorderSide(color: AppColors.border)),
+                        borderSide: const BorderSide(color: AppColors.border)),
                     enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide:
-                            const BorderSide(color: AppColors.border)),
+                        borderSide: const BorderSide(color: AppColors.border)),
                     focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: const BorderSide(
@@ -228,13 +230,13 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                   margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
                     color: _allPwOk
-                        ? AppColors.success.withOpacity(0.07)
-                        : AppColors.warning.withOpacity(0.07),
+                        ? AppColors.success.withValues(alpha: 0.07)
+                        : AppColors.warning.withValues(alpha: 0.07),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                         color: _allPwOk
-                            ? AppColors.success.withOpacity(0.3)
-                            : AppColors.warning.withOpacity(0.3)),
+                            ? AppColors.success.withValues(alpha: 0.3)
+                            : AppColors.warning.withValues(alpha: 0.3)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -243,8 +245,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                       _pwRule('One uppercase letter', _hasUpper),
                       _pwRule('One lowercase letter', _hasLower),
                       _pwRule('One number', _hasNumber),
-                      _pwRule('One special symbol (!@#\$%^&*)',
-                          _hasSymbol),
+                      _pwRule('One special symbol (!@#\$%^&*)', _hasSymbol),
                     ],
                   ),
                 ),
@@ -267,19 +268,17 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                               : Icons.visibility,
                           size: 18,
                           color: AppColors.textMuted),
-                      onPressed: () => setState(
-                          () => _showConfirmPw = !_showConfirmPw),
+                      onPressed: () =>
+                          setState(() => _showConfirmPw = !_showConfirmPw),
                     ),
                     filled: true,
                     fillColor: AppColors.surface,
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide:
-                            const BorderSide(color: AppColors.border)),
+                        borderSide: const BorderSide(color: AppColors.border)),
                     enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide:
-                            const BorderSide(color: AppColors.border)),
+                        borderSide: const BorderSide(color: AppColors.border)),
                     focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: const BorderSide(
@@ -297,8 +296,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                 const Padding(
                   padding: EdgeInsets.only(bottom: 8),
                   child: Text('✖ Passwords do not match',
-                      style: TextStyle(
-                          fontSize: 12, color: AppColors.danger)),
+                      style: TextStyle(fontSize: 12, color: AppColors.danger)),
                 ),
             ]),
           ),
@@ -317,8 +315,8 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
                       child: CircularProgressIndicator(
                           color: Colors.white, strokeWidth: 2))
                   : const Text('Create User',
-                      style: TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w600)),
+                      style:
+                          TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
             ),
           ),
           const SizedBox(height: 30),
@@ -328,8 +326,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
   }
 
   // ── Helpers ───────────────────────────────────────────────────────
-  InputDecoration _dec(String label, {Widget? prefix}) =>
-      InputDecoration(
+  InputDecoration _dec(String label, {Widget? prefix}) => InputDecoration(
         labelText: label,
         prefixIcon: prefix,
         filled: true,
@@ -342,8 +339,7 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
             borderSide: const BorderSide(color: AppColors.border)),
         focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide:
-                const BorderSide(color: AppColors.primary, width: 1.5)),
+            borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
         isDense: true,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -381,8 +377,8 @@ class _CreateUserScreenState extends State<CreateUserScreen> {
               items.length,
               (i) => DropdownMenuItem(
                   value: items[i],
-                  child: Text(labels[i],
-                      style: const TextStyle(fontSize: 13)))),
+                  child:
+                      Text(labels[i], style: const TextStyle(fontSize: 13)))),
           onChanged: onChanged,
         ),
       );

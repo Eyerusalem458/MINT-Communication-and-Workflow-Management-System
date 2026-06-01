@@ -244,10 +244,10 @@ class _AppDrawer extends StatelessWidget {
                   width: 62,
                   height: 62,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.25),
+                    color: Colors.white.withValues(alpha: 0.25),
                     shape: BoxShape.circle,
                     border: Border.all(
-                        color: Colors.white.withOpacity(0.5), width: 2),
+                        color: Colors.white.withValues(alpha: 0.5), width: 2),
                   ),
                   child: Center(
                     child: Text(
@@ -272,7 +272,7 @@ class _AppDrawer extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(role,
@@ -296,7 +296,7 @@ class _AppDrawer extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                   child: Material(
                     color: isActive
-                        ? AppColors.primary.withOpacity(0.1)
+                        ? AppColors.primary.withValues(alpha: 0.1)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
                     child: InkWell(
@@ -362,6 +362,50 @@ class _AppDrawer extends StatelessWidget {
             ),
           ),
           const Divider(height: 1, color: Color(0xFFECEFF1)),
+
+          // ── Logout button ─────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            child: Material(
+              color: const Color(0xFFFFF0F0),
+              borderRadius: BorderRadius.circular(12),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () async {
+                  await context.read<AuthProvider>().logout();
+
+                  if (!context.mounted) return;
+
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    '/login',
+                    (route) => false,
+                  );
+                },
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.power_settings_new,
+                        color: Color(0xFFE53935),
+                        size: 22,
+                      ),
+                      SizedBox(width: 16),
+                      Text(
+                        'Log out',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFE53935),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
           Padding(
             padding: EdgeInsets.only(
               left: 20,

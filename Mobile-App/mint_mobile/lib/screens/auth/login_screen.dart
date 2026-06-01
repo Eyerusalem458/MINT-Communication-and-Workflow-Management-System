@@ -87,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 height: 320,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.12),
+                  color: Colors.white.withValues(alpha: 0.12),
                 ),
               ),
             ),
@@ -101,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 height: 500,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.08),
+                  color: Colors.white.withValues(alpha: 0.08),
                 ),
               ),
             ),
@@ -166,14 +166,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         width: 380,
                         padding: const EdgeInsets.all(26),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.18),
+                          color: Colors.white.withValues(alpha: 0.18),
                           borderRadius: BorderRadius.circular(30),
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.08),
+                              color: Colors.black.withValues(alpha: 0.08),
                               blurRadius: 20,
                               offset: const Offset(0, 8),
                             ),
@@ -187,7 +187,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               decoration: InputDecoration(
                                 hintText: 'Email',
                                 filled: true,
-                                fillColor: Colors.white.withOpacity(0.9),
+                                fillColor: Colors.white.withValues(alpha: 0.9),
                                 prefixIcon: const Icon(
                                   Icons.email_outlined,
                                   color: Color(0xFF0B4F63),
@@ -208,7 +208,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               decoration: InputDecoration(
                                 hintText: 'Password',
                                 filled: true,
-                                fillColor: Colors.white.withOpacity(0.9),
+                                fillColor: Colors.white.withValues(alpha: 0.9),
                                 prefixIcon: const Icon(
                                   Icons.lock_outline,
                                   color: Color(0xFF0B4F63),
