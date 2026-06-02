@@ -2,6 +2,7 @@ import User from "../models/User.js";
 import logActivity from "../utils/logActivity.js";
 import bcrypt from "bcryptjs";
 import sendEmail from "../utils/sendEmail.js";
+import createNotification from "../utils/createNotification.js";
 
 // @desc    Get all users (admin only)
 // @route   GET /api/users
@@ -154,6 +155,17 @@ const createUser = async (req, res) => {
       entityId: user._id.toString(),
     });
 
+    // ✅ Notify admin who created the user
+    await createNotification(
+      {
+        recipient: req.user._id,
+        sender: req.user._id,
+        type: "System",
+        message: `You created a new ${role} account for ${firstName} ${lastName} ✅`,
+      },
+      req.io,
+    );
+
     res.status(201).json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -283,7 +295,7 @@ const changeMyPassword = async (req, res) => {
 
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     console.log("isMatch:", isMatch); // ← add this
-    
+
     if (!isMatch) {
       return res.status(400).json({ message: "Current password is incorrect" });
     }
@@ -296,6 +308,17 @@ const changeMyPassword = async (req, res) => {
       action: "Changed password",
       entity: "Auth",
     });
+
+    // ✅ Notify user their password was changed
+    await createNotification(
+      {
+        recipient: user._id,
+        sender: user._id,
+        type: "System",
+        message: `Your password was changed successfully 🔒`,
+      },
+      req.io,
+    );
 
     res.json({ message: "Password changed successfully" });
   } catch (error) {

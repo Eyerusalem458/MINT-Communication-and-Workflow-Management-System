@@ -48,7 +48,7 @@ app.use((req, res, next) => {
 
 // Socket events
 io.on("connection", (socket) => {
- console.log(`🔌 Socket connected: ${socket.id}`);
+  console.log(`🔌 Socket connected: ${socket.id}`);
 
   socket.on("join_user", (userId) => {
     socket.join(`user_${userId}`);
@@ -70,8 +70,51 @@ io.on("connection", (socket) => {
     socket.to(`conversation_${conversationId}`).emit("stop_typing", { userId });
   });
 
+  // ── Call signaling ──────────────────────────────────────────────────────
+
+  // Caller starts a call → forward to everyone else in the conversation room
+  socket.on(
+    "start_call",
+    ({ conversationId, callType, offer, from, callerName }) => {
+      socket.to(`conversation_${conversationId}`).emit("incoming_call", {
+        conversationId,
+        callType,
+        offer,
+        from,
+        callerName,
+      });
+    },
+  );
+
+  // Callee accepts → send answer back to caller
+  socket.on("answer_call", ({ conversationId, answer }) => {
+    socket
+      .to(`conversation_${conversationId}`)
+      .emit("call_answered", { answer });
+  });
+
+  // ICE candidates — relay between both peers
+  socket.on("ice_candidate", ({ conversationId, candidate }) => {
+    socket
+      .to(`conversation_${conversationId}`)
+      .emit("ice_candidate", { candidate });
+  });
+
+  // Either side ends the call
+ socket.on("end_call", ({ conversationId, leavingUserId }) => {
+   // Only notify the leaving user's peer — not broadcast to everyone
+   socket
+     .to(`conversation_${conversationId}`)
+     .emit("peer_left", { leavingUserId });
+ });
+
+  // Callee declines the call
+  socket.on("decline_call", ({ conversationId }) => {
+    socket.to(`conversation_${conversationId}`).emit("call_declined");
+  });
+
   socket.on("disconnect", () => {
-   console.log(`🔌 Socket disconnected: ${socket.id}`);
+    console.log(`🔌 Socket disconnected: ${socket.id}`);
   });
 });
 

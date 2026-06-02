@@ -24,6 +24,9 @@ const messageSchema = new mongoose.Schema(
       ref: "Message",
       default: null,
     },
+    // Add this field to your schema:
+    isEdited: { type: Boolean, default: false },
+    
     isDeleted: { type: Boolean, default: false },
     readBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
