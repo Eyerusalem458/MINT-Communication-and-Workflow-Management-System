@@ -225,6 +225,12 @@ const getLastMessageLabel = (text, file) => {
   return `📎 ${originalname}`;
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// DROP-IN REPLACEMENT for the sendMessage function in your messageController.js
+// Replace the entire sendMessage export with this.
+// Everything else in the file stays the same.
+// ─────────────────────────────────────────────────────────────────────────────
+
 const sendMessage = async (req, res) => {
   try {
     const { conversationId } = req.params;
@@ -238,36 +244,45 @@ const sendMessage = async (req, res) => {
       .map((p) => p.toString())
       .includes(req.user._id.toString());
 
-    if (!isParticipant) {
+    if (!isParticipant)
       return res.status(403).json({ message: "Not a participant" });
-    }
 
+    // ── Build file fields ──────────────────────────────────────────────────
     let fileField = {};
-    if (req.file) {
-      const { mimetype, filename, originalname, size } = req.file;
 
-      if (mimetype.startsWith("image/") || mimetype.startsWith("video/")) {
+    if (req.file) {
+      const { filename, originalname, size } = req.file;
+
+      // FIX: strip codec params before checking MIME type
+      // e.g. "audio/webm;codecs=opus" → "audio/webm"
+      const mimeBase = req.file.mimetype.split(";")[0].trim().toLowerCase();
+      const mimeType = mimeBase.split("/")[0]; // "audio" | "image" | "video"
+
+      if (mimeType === "image" || mimeType === "video") {
         fileField = {
           media: `/uploads/media/${filename}`,
-          fileType: mimetype,
+          fileType: mimeBase,
           fileName: originalname,
+          fileSize: `${(size / 1024).toFixed(1)} KB`,
         };
-      } else if (mimetype.startsWith("audio/")) {
+      } else if (mimeType === "audio") {
         fileField = {
           audio: `/uploads/audio/${filename}`,
-          fileType: mimetype,
+          fileType: mimeBase,
           fileName: originalname,
+          fileSize: `${(size / 1024).toFixed(1)} KB`,
         };
       } else {
         fileField = {
           file: `/uploads/files/${filename}`,
-          fileType: mimetype,
+          fileType: mimeBase,
           fileName: originalname,
           fileSize: `${(size / 1024).toFixed(1)} KB`,
         };
       }
     }
 
+    // ── Create message ─────────────────────────────────────────────────────
     const message = await Message.create({
       conversationId,
       sender: req.user._id,
@@ -277,12 +292,13 @@ const sendMessage = async (req, res) => {
       ...fileField,
     });
 
-    // ── Update conversation lastMessage with proper label ─────────────────
+    // ── Update conversation preview ────────────────────────────────────────
     await Conversation.findByIdAndUpdate(conversationId, {
       lastMessage: getLastMessageLabel(text, req.file),
       lastMessageAt: new Date(),
     });
 
+    // ── Populate & emit ────────────────────────────────────────────────────
     const populated = await Message.findById(message._id)
       .populate("sender", "firstName lastName avatar role")
       .populate("replyTo");
@@ -291,12 +307,12 @@ const sendMessage = async (req, res) => {
       req.io.to(`conversation_${conversationId}`).emit("newMessage", populated);
     }
 
+    // ── Notifications ──────────────────────────────────────────────────────
     const otherParticipants = conversation.participants.filter(
       (p) => p.toString() !== req.user._id.toString(),
     );
 
     if (otherParticipants.length > 0) {
-      // ── Build notification message with correct media label ─────────────
       const snippet = getNotificationSnippet(text, req.file);
       await createNotification(
         {
@@ -314,7 +330,6 @@ const sendMessage = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 const deleteMessage = async (req, res) => {
   try {
     const message = await Message.findById(req.params.messageId);
