@@ -1,16 +1,64 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 import logo from "../../assets/images/logo.png";
 import robot from "../../assets/images/robot.png";
-
-import { FaFacebookF } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
-
 import { LockIcon, MailIcon } from "../shared/icon";
 import "../../assets/styles/Login.css";
 import { showSuccessToast, showErrorToast } from "../../utils/toast";
 import { AuthContext } from "../../context/AuthContext";
+
+const SLIDES = [
+  {
+    tag: "Digital Innovation",
+    icon: "🚀",
+    title: "Ethiopia's national digital transformation hub",
+    body: "MiNT leads the country's shift to a knowledge-based economy — developing smart infrastructure, e-government services, and digital public platforms used by millions of citizens.",
+    stats: [
+      { num: "47+", lbl: "e-services live" },
+      { num: "12M+", lbl: "citizens served" },
+    ],
+    color: "#e6f1fb",
+    textColor: "#185fa5",
+  },
+  {
+    tag: "Partnerships",
+    icon: "🤝",
+    title: "Building bridges between public and private sectors",
+    body: "Through strategic public-private partnerships, MiNT connects startups, enterprises, and international organizations to co-create solutions that accelerate Ethiopia's digital economy.",
+    stats: [
+      { num: "130+", lbl: "partner orgs" },
+      { num: "28", lbl: "countries engaged" },
+    ],
+    color: "#e1f5ee",
+    textColor: "#0f6e56",
+  },
+  {
+    tag: "Policy & Strategy",
+    icon: "🎯",
+    title: "Shaping national technology policy and regulation",
+    body: "MiNT drafts and enforces technology policy frameworks that ensure ethical AI adoption, data protection, and equitable access to digital tools across all regions of Ethiopia.",
+    stats: [
+      { num: "19", lbl: "active policies" },
+      { num: "6", lbl: "regulatory acts" },
+    ],
+    color: "#faeeda",
+    textColor: "#854f0b",
+  },
+  {
+    tag: "SDG Alignment",
+    icon: "🌍",
+    title: "Technology as a driver of sustainable development",
+    body: "Every MiNT initiative is mapped to Ethiopia's SDG commitments — from digital agriculture tools boosting food security to telemedicine platforms expanding healthcare access in rural areas.",
+    stats: [
+      { num: "9 SDGs", lbl: "directly supported" },
+      { num: "2030", lbl: "target horizon" },
+    ],
+    color: "#eaf3de",
+    textColor: "#3b6d11",
+  },
+];
+
+const SLIDE_DURATION = 3500;
 
 export default function Login() {
   const navigate = useNavigate();
@@ -18,47 +66,69 @@ export default function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  // State for modal
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalType, setModalType] = useState("privacy"); // "privacy" or "terms"
+  const [modalType, setModalType] = useState("privacy");
   const [showPassword, setShowPassword] = useState(false);
+
+  // ── Carousel state ──────────────────────────────────────────
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [prevSlide, setPrevSlide] = useState(null);
+  const [animating, setAnimating] = useState(false);
+  const timerRef = useRef(null);
+
+  const goToSlide = (index) => {
+    if (animating || index === activeSlide) return;
+    setAnimating(true);
+    setPrevSlide(activeSlide);
+    setActiveSlide(index);
+    setTimeout(() => {
+      setPrevSlide(null);
+      setAnimating(false);
+    }, 450);
+  };
+
+  const startTimer = () => {
+    clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setActiveSlide((prev) => {
+        const next = (prev + 1) % SLIDES.length;
+        setPrevSlide(prev);
+        setAnimating(true);
+        setTimeout(() => {
+          setPrevSlide(null);
+          setAnimating(false);
+        }, 450);
+        return next;
+      });
+    }, SLIDE_DURATION);
+  };
+
+  useEffect(() => {
+    startTimer();
+    return () => clearInterval(timerRef.current);
+  }, []);
+
+  const handleDotClick = (i) => {
+    goToSlide(i);
+    startTimer();
+  };
+  // ────────────────────────────────────────────────────────────
 
   const handleSignIn = async (e) => {
     e.preventDefault();
-
     try {
       const user = await login({ email, password });
-
       showSuccessToast("Login successful!");
-
-      if (user.role === "admin") {
-        navigate("/admin/dashboard");
-      } else if (user.role === "manager") {
-        navigate("/manager/dashboard");
-      } else {
-        navigate("/staff/dashboard");
-      }
+      if (user.role === "admin") navigate("/admin/dashboard");
+      else if (user.role === "manager") navigate("/manager/dashboard");
+      else navigate("/staff/dashboard");
     } catch (err) {
-      showErrorToast(err.response?.data?.message || "Login failed");
+      showErrorToast(
+        err.message || err.response?.data?.message || "Login failed",
+      );
     }
   };
-  // Simulate Google login (frontend-only)
-  const handleGoogleLogin = () => {
-    showSuccessToast("Google login successfully!", () => {
-      // below is replaced later just for testing navigation
-      navigate("/staff/dashboard");
-    });
-  };
 
-  // Simulate Facebook login (frontend-only)
-  const handleFacebookLogin = () => {
-    showSuccessToast("Facebook login successful!", () => {
-      // below is replaced later just for testing navigation
-      navigate("/staff/dashboard");
-    });
-  };
-
-  // Modal content based on type
   const getModalContent = () => {
     if (modalType === "privacy") {
       return {
@@ -86,39 +156,76 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Ministry Description */}
+        {/* Ministry Description — Auto-sliding Carousel */}
         <div className="ministry-description">
           <div className="description-content">
-            <h2 className="ministry-title">
-              Ministry of Innovation & Technology
-              <span className="expand-arrow">▼</span>
-            </h2>
-            <p className="ministry-subtitle">
-              Driving Ethiopia's Digital Transformation Through Innovation,
-              Collaboration, and Technological Excellence
-            </p>
-            <div className="ministry-details">
-              <div className="detail-item">
-                <span className="detail-icon">🚀</span>
-                <span className="detail-text">Digital Innovation Hub</span>
-              </div>
-              <div className="detail-item">
-                <span className="detail-icon">🤝</span>
-                <span className="detail-text">Public-Private Partnerships</span>
-              </div>
-              <div className="detail-item">
-                <span className="detail-icon">🎯</span>
-                <span className="detail-text">
-                  Technology Policy & Strategy
-                </span>
-              </div>
-              <div className="detail-item">
-                <span className="detail-icon">🌍</span>
-                <span className="detail-text">
-                  Sustainable Development Goals
-                </span>
-              </div>
+            <div className="carousel-track">
+              {SLIDES.map((slide, i) => {
+                let cls = "ministry-slide";
+                if (i === activeSlide) cls += " active";
+                else if (i === prevSlide) cls += " exit";
+                return (
+                  <div className={cls} key={i}>
+                    <div className="slide-icon-row">
+                      <div
+                        className="slide-icon-circle"
+                        style={{ background: slide.color }}
+                      >
+                        <span>{slide.icon}</span>
+                      </div>
+                      <span
+                        className="slide-tag"
+                        style={{
+                          background: slide.color,
+                          color: slide.textColor,
+                        }}
+                      >
+                        {slide.tag}
+                      </span>
+                    </div>
+                    <p className="slide-title">{slide.title}</p>
+                    <p className="slide-body">{slide.body}</p>
+                    <div className="slide-stats">
+                      {slide.stats.map((s, j) => (
+                        <div
+                          key={j}
+                          className="slide-stat"
+                          style={{ background: slide.color }}
+                        >
+                          <span
+                            className="stat-num"
+                            style={{ color: slide.textColor }}
+                          >
+                            {s.num}
+                          </span>
+                          <span
+                            className="stat-lbl"
+                            style={{ color: slide.textColor }}
+                          >
+                            {s.lbl}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
+
+            {/* Dots */}
+            <div className="slide-dots">
+              {SLIDES.map((_, i) => (
+                <button
+                  key={i}
+                  className={`slide-dot ${i === activeSlide ? "active" : ""}`}
+                  onClick={() => handleDotClick(i)}
+                  aria-label={`Go to slide ${i + 1}`}
+                />
+              ))}
+            </div>
+
+            {/* Progress bar — key forces remount to restart animation */}
+            <div className="slide-progress" key={activeSlide} />
           </div>
         </div>
 
@@ -126,6 +233,15 @@ export default function Login() {
         <div className="robot-wrapper">
           {/* Robot */}
           <img src={robot} alt="robot" className="robot-image" />
+          <div className="welcome-words">
+            <span>Welcome</span>
+            <span>to</span>
+            <span>MiNT</span>
+            <span className="accent">Platform</span>
+          </div>
+          <p className="welcome-sub">
+            Ministry of Innovation &amp; Technology, Ethiopia
+          </p>
 
           {/* Login Box */}
           <div className="login-box">
@@ -143,7 +259,6 @@ export default function Login() {
               </div>
 
               {/* Password */}
-              {/* Password */}
               <div className="input-group" style={{ position: "relative" }}>
                 <LockIcon className="login-input-icon" />
                 <input
@@ -155,6 +270,8 @@ export default function Login() {
                 />
                 <span
                   onClick={() => setShowPassword((prev) => !prev)}
+                  role="button"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                   style={{
                     position: "absolute",
                     right: 12,
@@ -169,6 +286,7 @@ export default function Login() {
                   {showPassword ? "🙈" : "👁"}
                 </span>
               </div>
+
               {/* Forgot Password */}
               <div className="forgot-link">
                 <Link to="/forgot-password">Forgot Password?</Link>
@@ -179,23 +297,6 @@ export default function Login() {
                 {loading ? "Signing In..." : "Sign In"}
               </button>
             </form>
-
-            {/* Divider */}
-            <div className="or-divider">
-              <span>OR</span>
-            </div>
-            {/* Social Login */}
-            <div className="social-buttons">
-              <button className="social-btn " onClick={handleGoogleLogin}>
-                <FcGoogle className="social-icon" />
-                <span>Log in with Google</span>
-              </button>
-
-              <button className="social-btn" onClick={handleFacebookLogin}>
-                <FaFacebookF className="social-icon facebook-icon" />
-                Log in with Facebook
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -203,11 +304,22 @@ export default function Login() {
       {/* Footer with modal-trigger links */}
       <footer className="login-footer">
         <div className="footer-links">
-          <Link to="http://www.mint.gov.et/vision-mission-values">
+          <a
+            href="http://www.mint.gov.et/vision-mission-values"
+            target="_blank"
+            rel="noreferrer"
+          >
             About Us
-          </Link>{" "}
-          |<Link to="http://www.mint.gov.et/contact-us">Contact</Link> |
-          {/* Privacy link – opens modal instead of navigating */}
+          </a>{" "}
+          |{" "}
+          <a
+            href="http://www.mint.gov.et/contact-us"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Contact
+          </a>{" "}
+          |
           <Link
             to="/"
             onClick={(e) => {
