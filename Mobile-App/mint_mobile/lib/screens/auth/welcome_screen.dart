@@ -22,7 +22,7 @@ class WelcomeScreen extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            // decorative circles (same as before)
+            // ── Decorative circles ──────────────────────────────────────────
             Positioned(
               top: -180,
               left: -150,
@@ -59,100 +59,98 @@ class WelcomeScreen extends StatelessWidget {
                 ),
               ),
             ),
+
+            // ── Main content ────────────────────────────────────────────────
             SafeArea(
               child: SingleChildScrollView(
-                // ✅ FIX: enables scrolling
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 28),
-                    child: Column(
-                      mainAxisSize:
-                          MainAxisSize.min, // ✅ FIX: no extra vertical space
-                      children: [
-                        Image.asset('assets/images/logo2.png',
-                            height: 160), // slightly reduced
-                        const SizedBox(height: 24),
-                        const Text(
-                          'Start Journey With MINT',
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 28),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(height: 24),
+                      Image.asset('assets/images/logo2.png', height: 150),
+                      const SizedBox(height: 24),
+                      const Text(
+                        'Start Journey With MINT',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF0B4F63),
+                          height: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Container(
+                        width: 90,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF4AE2B),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      const Text(
+                        'Smart, Gorgeous & Innovative Platform',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF29586B),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          'Track projects, manage innovation, and drive Ethiopia\'s digital transformation — all in one place.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF0B4F63),
-                            height: 1.2,
+                            fontSize: 15,
+                            height: 1.5,
+                            color: Color(0xFF40606E),
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        Container(
-                          width: 90,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF4AE2B),
-                            borderRadius: BorderRadius.circular(20),
+                      ),
+                      const SizedBox(height: 80),
+
+                      // ── Get Started button — centred ──────────────────────
+                      ElevatedButton(
+                        onPressed: () =>
+                            Navigator.pushReplacementNamed(context, '/login'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFF4AE2B),
+                          elevation: 6,
+                          shadowColor: const Color(0x66F4AE2B),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 28,
+                            vertical: 14,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50),
                           ),
                         ),
-                        const SizedBox(height: 24),
-                        const Text(
-                          'Smart, Gorgeous & Innovative Platform',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF29586B),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 12),
-                          child: Text(
-                            'Track projects, manage innovation, and drive Ethiopia’s digital transformation — all in one place.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 15,
-                              height: 1.5,
-                              color: Color(0xFF40606E),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 48),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 60,
-                          child: ElevatedButton(
-                            onPressed: () => Navigator.pushReplacementNamed(
-                                context, '/login'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFF4AE2B),
-                              elevation: 8,
-                              shadowColor: const Color(0x66F4AE2B),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50),
-                              ),
-                            ),
-                            child: const Text(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Text(
                               'Get Started',
                               style: TextStyle(
-                                fontSize: 20,
+                                fontSize: 15,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                               ),
                             ),
-                          ),
+                            SizedBox(width: 8),
+                            Icon(Icons.arrow_forward_rounded,
+                                color: Colors.white, size: 18),
+                          ],
                         ),
-                        const SizedBox(height: 32),
-                        const Text(
-                          '© 2026 Ministry of Innovation & Technology',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(
-                            height: 20), // extra bottom padding for comfort
-                      ],
-                    ),
+                      ),
+
+                      const SizedBox(height: 32),
+                    ],
                   ),
                 ),
               ),

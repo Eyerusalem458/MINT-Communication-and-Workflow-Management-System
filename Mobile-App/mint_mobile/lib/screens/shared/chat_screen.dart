@@ -29,6 +29,42 @@ class ThemeModeNotifier extends ChangeNotifier {
   }
 }
 
+// ─── URL helper (mirrors conversation_screen.dart) ─────────────────────────────
+String _resolveUrl(String? raw) {
+  if (raw == null || raw.isEmpty) return '';
+  if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
+  final path = raw.startsWith('/') ? raw : '/$raw';
+  return '$kMediaBaseUrl$path';
+}
+
+/// Extracts a profile photo URL from a participant map, checking all common
+/// field names (mirrors _userPhotoUrl in conversation_screen.dart).
+String _userPhotoUrl(Map<dynamic, dynamic>? user) {
+  if (user == null) return '';
+  for (final key in [
+    'profilePhoto', 'profilePicture', 'profileImage',
+    'avatar', 'photo', 'picture', 'image', 'avatarUrl',
+    'profilePhotoUrl', 'photoUrl',
+  ]) {
+    final v = user[key];
+    if (v != null && v.toString().trim().isNotEmpty) return v.toString().trim();
+  }
+  return '';
+}
+
+/// Returns the other participant's photo URL for a direct conversation.
+String _directPhotoUrl(ConversationModel conv, String myId) {
+  if (conv.type != 'direct') return '';
+  for (final p in conv.participants) {
+    final map = p as Map?;
+    final pid = map?['_id']?.toString() ?? map?['id']?.toString() ?? '';
+    if (pid != myId && pid.isNotEmpty) {
+      return _userPhotoUrl(map);
+    }
+  }
+  return '';
+}
+
 // ─── Chat Screen ───────────────────────────────────────────────────────────────
 class ChatScreen extends StatefulWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
@@ -215,7 +251,7 @@ class _ChatScreenState extends State<ChatScreen>
               TabBar(
                 controller: _tabs,
                 onTap: (_) => setState(() {}),
-                indicatorColor: _Brand.accent, // orange indicator
+                indicatorColor: _Brand.accent,
                 indicatorWeight: 3,
                 labelColor: _Brand.white,
                 unselectedLabelColor: Colors.white54,
@@ -305,6 +341,9 @@ class _ChatScreenState extends State<ChatScreen>
                     final initial = conv.getInitial(myId);
                     final isActive = chat.activeConversation?.id == conv.id;
 
+                    // Resolve the photo URL for direct chats
+                    final photoUrl = _directPhotoUrl(conv, myId);
+
                     return InkWell(
                       onTap: () async {
                         await context
@@ -331,6 +370,7 @@ class _ChatScreenState extends State<ChatScreen>
                             _ConvAvatar(
                               initial: initial,
                               isGroup: conv.type == 'group',
+                              photoUrl: photoUrl,
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -431,15 +471,46 @@ class _ChatScreenState extends State<ChatScreen>
 class _ConvAvatar extends StatelessWidget {
   final String initial;
   final bool isGroup;
-  const _ConvAvatar({required this.initial, required this.isGroup});
+  final String photoUrl; // resolved or raw URL for direct chats
+
+  const _ConvAvatar({
+    required this.initial,
+    required this.isGroup,
+    this.photoUrl = '',
+  });
 
   @override
   Widget build(BuildContext context) {
+    final resolved = _resolveUrl(photoUrl);
+
+    // Direct chat with a real photo → show it
+    if (!isGroup && resolved.isNotEmpty) {
+      return SizedBox(
+        width: 48,
+        height: 48,
+        child: ClipOval(
+          child: Image.network(
+            resolved,
+            width: 48,
+            height: 48,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _fallback(),
+            loadingBuilder: (_, child, prog) =>
+                prog == null ? child : _fallback(),
+          ),
+        ),
+      );
+    }
+
+    return _fallback();
+  }
+
+  Widget _fallback() {
     return Container(
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        // group → teal brand, direct → light blue
+        // group → brand primary, direct → light blue
         color: isGroup ? _Brand.primaryMid : const Color(0xFFCBD5F5),
         shape: BoxShape.circle,
       ),
