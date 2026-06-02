@@ -1133,3 +1133,335 @@ audio {
   color: green;
   font-weight: bold;
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   CHAT DARK MODE OVERRIDES
+   Add these rules to the BOTTOM of Chat.css (or global.css)
+   They only fire when [data-theme="dark"] is active.
+═══════════════════════════════════════════════════════════════════ */
+
+/* ── Sidebar ──────────────────────────────────────────────────────── */
+.staff-shell[data-theme="dark"] .staff-chat-sidebar,
+.staff-shell[data-theme="dark"] .staff-chat-sidebar--scroll {
+  background: rgba(2, 6, 23, 0.85) !important;
+  border-color: rgba(148, 163, 184, 0.18) !important;
+}
+
+/* Search bar inside sidebar */
+.staff-shell[data-theme="dark"] .chat-search-fixed {
+  background: rgba(15, 23, 42, 0.7) !important;
+  border-color: rgba(148, 163, 184, 0.2) !important;
+}
+.staff-shell[data-theme="dark"] .chat-search-fixed input {
+  color: #e2e8f0 !important;
+  background: transparent !important;
+}
+.staff-shell[data-theme="dark"] .chat-search-fixed input::placeholder {
+  color: rgba(148, 163, 184, 0.6) !important;
+}
+
+/* Tabs */
+.staff-shell[data-theme="dark"] .chat-tabs-fixed {
+  border-bottom-color: rgba(148, 163, 184, 0.18) !important;
+}
+.staff-shell[data-theme="dark"] .chat-tab {
+  color: rgba(148, 163, 184, 0.8) !important;
+}
+.staff-shell[data-theme="dark"] .chat-tab.active {
+  color: #60a5fa !important;
+}
+.staff-shell[data-theme="dark"] .chat-tab.active::after {
+  background: #60a5fa !important;
+}
+
+/* Conversation items */
+.staff-shell[data-theme="dark"] .staff-chat-thread,
+.staff-shell[data-theme="dark"] .chat-item-fixed {
+  border-bottom-color: rgba(148, 163, 184, 0.12) !important;
+}
+.staff-shell[data-theme="dark"] .chat-item-fixed.active,
+.staff-shell[data-theme="dark"] .staff-chat-thread--active,
+.staff-shell[data-theme="dark"] .chat-item-fixed:hover {
+  background: rgba(59, 130, 246, 0.12) !important;
+  border-radius: 8px;
+}
+.staff-shell[data-theme="dark"] .chat-info p {
+  color: #e2e8f0 !important;
+}
+.staff-shell[data-theme="dark"] .chat-info span {
+  color: rgba(148, 163, 184, 0.75) !important;
+}
+
+/* Unread badge — already blue, stays fine */
+
+/* New Conversation button */
+.staff-shell[data-theme="dark"] .new-chat-fixed {
+  border-top-color: rgba(148, 163, 184, 0.18) !important;
+  color: #60a5fa !important;
+}
+.staff-shell[data-theme="dark"] .new-chat-fixed:hover {
+  background: rgba(59, 130, 246, 0.1) !important;
+}
+
+/* ── Header ───────────────────────────────────────────────────────── */
+.staff-shell[data-theme="dark"] .staff-chat-header {
+  background: rgba(2, 6, 23, 0.9) !important;
+  border-bottom-color: rgba(148, 163, 184, 0.18) !important;
+}
+.staff-shell[data-theme="dark"] .chat-header-text h4 {
+  color: #e2e8f0 !important;
+}
+.staff-shell[data-theme="dark"] .chat-header-text span {
+  color: rgba(148, 163, 184, 0.75) !important;
+}
+.staff-shell[data-theme="dark"] .chat-header-actions svg,
+.staff-shell[data-theme="dark"] .chat-header-actions span {
+  color: rgba(148, 163, 184, 0.8) !important;
+}
+.staff-shell[data-theme="dark"] .chat-header-actions svg:hover,
+.staff-shell[data-theme="dark"] .chat-header-actions span:hover {
+  color: #60a5fa !important;
+}
+
+/* Inline search */
+.staff-shell[data-theme="dark"] .chat-inline-search {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border-bottom-color: rgba(148, 163, 184, 0.18) !important;
+}
+.staff-shell[data-theme="dark"] .chat-inline-search input {
+  background: rgba(15, 23, 42, 0.7) !important;
+  color: #e2e8f0 !important;
+  border-color: rgba(148, 163, 184, 0.3) !important;
+}
+
+/* ── Pinned banner ────────────────────────────────────────────────── */
+.staff-shell[data-theme="dark"] .staff-chat-messages > div[style*="border-bottom"] {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border-bottom-color: rgba(148, 163, 184, 0.18) !important;
+}
+
+/* ── Messages area ────────────────────────────────────────────────── */
+.staff-shell[data-theme="dark"] .staff-chat-main {
+  background: rgba(7, 18, 36, 0.95) !important;
+  border-color: rgba(148, 163, 184, 0.18) !important;
+}
+.staff-shell[data-theme="dark"] .staff-chat-messages--scroll,
+.staff-shell[data-theme="dark"] .staff-chat-messages {
+  background: transparent !important;
+}
+.staff-shell[data-theme="dark"] .chat-date {
+  color: rgba(148, 163, 184, 0.6) !important;
+}
+
+/* Incoming bubble */
+.staff-shell[data-theme="dark"] .msg-bubble.incoming {
+  background: rgba(30, 41, 59, 0.95) !important;
+  color: #e2e8f0 !important;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+/* Outgoing bubble — keep brand blue, just soften */
+.staff-shell[data-theme="dark"] .msg-bubble.outgoing {
+  background: #1d4ed8 !important;
+  color: #fff !important;
+}
+
+/* Reply preview inside bubble */
+.staff-shell[data-theme="dark"] .reply-preview {
+  border-left-color: rgba(148, 163, 184, 0.5) !important;
+  color: rgba(148, 163, 184, 0.8) !important;
+}
+
+/* File card */
+.staff-shell[data-theme="dark"] .file-card {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border-color: rgba(148, 163, 184, 0.2) !important;
+}
+.staff-shell[data-theme="dark"] .file-card.me {
+  background: rgba(29, 78, 216, 0.3) !important;
+}
+.staff-shell[data-theme="dark"] .file-card.other {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border-color: rgba(148, 163, 184, 0.2) !important;
+}
+.staff-shell[data-theme="dark"] .file-name {
+  color: #e2e8f0 !important;
+}
+.staff-shell[data-theme="dark"] .file-size {
+  color: rgba(148, 163, 184, 0.7) !important;
+}
+.staff-shell[data-theme="dark"] .file-download {
+  color: #60a5fa !important;
+}
+
+/* Call record bubble */
+.staff-shell[data-theme="dark"] .msg-bubble .file-top {
+  color: #e2e8f0 !important;
+}
+
+/* Typing indicator */
+.staff-shell[data-theme="dark"] .staff-chat-messages [style*="fontStyle: italic"] {
+  color: rgba(148, 163, 184, 0.7) !important;
+}
+
+/* ── Reply box ────────────────────────────────────────────────────── */
+.staff-shell[data-theme="dark"] .reply-box {
+  background: rgba(30, 41, 59, 0.9) !important;
+  border-left-color: #3b82f6 !important;
+  color: #e2e8f0 !important;
+}
+.staff-shell[data-theme="dark"] .reply-box span {
+  color: #e2e8f0 !important;
+}
+.staff-shell[data-theme="dark"] .reply-close {
+  color: rgba(148, 163, 184, 0.8) !important;
+}
+.staff-shell[data-theme="dark"] .reply-close:hover {
+  background: rgba(148, 163, 184, 0.15) !important;
+  color: #ef4444 !important;
+}
+
+/* ── Input row ────────────────────────────────────────────────────── */
+.staff-shell[data-theme="dark"] .staff-chat-input-row {
+  background: rgba(7, 18, 36, 0.95) !important;
+  border-top-color: rgba(148, 163, 184, 0.18) !important;
+}
+.staff-shell[data-theme="dark"] .input-box {
+  background: rgba(30, 41, 59, 0.85) !important;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+.staff-shell[data-theme="dark"] .chat-input-field {
+  color: #e2e8f0 !important;
+  caret-color: #60a5fa;
+}
+.staff-shell[data-theme="dark"] .chat-input-field::placeholder {
+  color: rgba(148, 163, 184, 0.55) !important;
+}
+.staff-shell[data-theme="dark"] .input-icon svg {
+  stroke: rgba(148, 163, 184, 0.8) !important;
+}
+.staff-shell[data-theme="dark"] .input-icon:hover {
+  background: rgba(148, 163, 184, 0.15) !important;
+}
+
+/* ── Context menu ─────────────────────────────────────────────────── */
+.staff-shell[data-theme="dark"] .context-menu {
+  background: #1e293b !important;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45) !important;
+}
+.staff-shell[data-theme="dark"] .context-menu div {
+  color: #e2e8f0 !important;
+}
+.staff-shell[data-theme="dark"] .context-menu div:hover {
+  background: rgba(148, 163, 184, 0.12) !important;
+}
+
+/* ── Emoji picker ─────────────────────────────────────────────────── */
+.staff-shell[data-theme="dark"] .emoji-picker {
+  background: #1e293b !important;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45) !important;
+}
+.staff-shell[data-theme="dark"] .emoji-category-label {
+  color: rgba(148, 163, 184, 0.6) !important;
+}
+.staff-shell[data-theme="dark"] .emoji-grid span:hover {
+  background: rgba(148, 163, 184, 0.15) !important;
+}
+
+/* ── Attachment menu ──────────────────────────────────────────────── */
+.staff-shell[data-theme="dark"] .attachment-menu {
+  background: #1e293b !important;
+  border-color: rgba(148, 163, 184, 0.2) !important;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.45) !important;
+}
+.staff-shell[data-theme="dark"] .attachment-menu div {
+  color: #e2e8f0 !important;
+}
+.staff-shell[data-theme="dark"] .attachment-menu div:hover {
+  background: rgba(148, 163, 184, 0.12) !important;
+}
+
+/* ── Filter menu ──────────────────────────────────────────────────── */
+.staff-shell[data-theme="dark"] .filter-menu {
+  background: #1e293b !important;
+  border-color: rgba(148, 163, 184, 0.2) !important;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.45) !important;
+}
+.staff-shell[data-theme="dark"] .filter-menu div {
+  color: #e2e8f0 !important;
+}
+.staff-shell[data-theme="dark"] .filter-menu div:hover {
+  background: rgba(148, 163, 184, 0.12) !important;
+}
+
+/* ── New Conversation / New Group panels ──────────────────────────── */
+.staff-shell[data-theme="dark"] .chat-details-panel {
+  background: #0f172a !important;
+  border-left-color: rgba(148, 163, 184, 0.2) !important;
+}
+.staff-shell[data-theme="dark"] .details-header {
+  border-bottom-color: rgba(148, 163, 184, 0.18) !important;
+}
+.staff-shell[data-theme="dark"] .details-header h4 {
+  color: #e2e8f0 !important;
+}
+.staff-shell[data-theme="dark"] .close-btn {
+  color: rgba(148, 163, 184, 0.75) !important;
+}
+.staff-shell[data-theme="dark"] .close-btn:hover {
+  color: #ef4444 !important;
+}
+.staff-shell[data-theme="dark"] .details-body {
+  background: #0f172a !important;
+}
+.staff-shell[data-theme="dark"] .group-user {
+  color: #e2e8f0 !important;
+}
+.staff-shell[data-theme="dark"] .group-user:hover {
+  background: rgba(59, 130, 246, 0.1) !important;
+}
+.staff-shell[data-theme="dark"] .group-user.selected {
+  background: rgba(59, 130, 246, 0.15) !important;
+}
+.staff-shell[data-theme="dark"] .staff-input {
+  background: rgba(30, 41, 59, 0.85) !important;
+  color: #e2e8f0 !important;
+  border-color: rgba(148, 163, 184, 0.3) !important;
+}
+.staff-shell[data-theme="dark"] .staff-input::placeholder {
+  color: rgba(148, 163, 184, 0.55) !important;
+}
+
+/* ── Divider ──────────────────────────────────────────────────────── */
+.staff-shell[data-theme="dark"] .staff-chat-divider {
+  background: rgba(148, 163, 184, 0.18) !important;
+}
+
+/* ── Avatar initials (in chat) ────────────────────────────────────── */
+.staff-shell[data-theme="dark"] .chat-avatar {
+  background: rgba(30, 41, 59, 0.9) !important;
+  color: #93c5fd !important;
+}
+
+/* ── Chat search highlight ────────────────────────────────────────── */
+.staff-shell[data-theme="dark"] .highlight {
+  background: rgba(250, 204, 21, 0.35) !important;
+  color: #fde68a !important;
+}
+
+/* ── Shared media tabs (details panel) ───────────────────────────── */
+.staff-shell[data-theme="dark"] .chat-details-panel [style*="borderBottom: 0.5px"] {
+  border-bottom-color: rgba(148, 163, 184, 0.18) !important;
+}
+
+/* ── Recording pulse animation color ─────────────────────────────── */
+.staff-shell[data-theme="dark"] .input-icon.recording {
+  background-color: rgba(239, 68, 68, 0.2) !important;
+}
+/* Pinned banner text — visible in dark mode */
+.staff-shell[data-theme="dark"] .staff-chat-main [style*="height: 38px"] span {
+  color: #e2e8f0 !important;
+}

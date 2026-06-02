@@ -56,7 +56,6 @@ class _ManagerShellState extends State<ManagerShell> {
     super.dispose();
   }
 
-  // ── CHANGED: late final so _scaffoldKey is accessible, passed to ChatScreen ──
   late final List<Widget> _screens = [
     ChatScreen(scaffoldKey: _scaffoldKey),
     const ManagerDashboardScreen(),
@@ -150,8 +149,8 @@ class _ManagerShellState extends State<ManagerShell> {
                           fontWeight: FontWeight.w700,
                           color: Colors.white)),
                   Text('Hello, ${user?.firstName ?? ''} 👋',
-                      style:
-                          const TextStyle(fontSize: 11, color: Colors.white70)),
+                      style: const TextStyle(
+                          fontSize: 11, color: Colors.white70)),
                 ],
               ),
               actions: [
@@ -217,11 +216,15 @@ class _AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final avatarUrl =
+        user?.avatar != null ? '$kMediaBaseUrl${user!.avatar}' : null;
+
     return Drawer(
       width: 290,
       backgroundColor: Colors.white,
       child: Column(
         children: [
+          // ── Header ────────────────────────────────────────────────────
           Container(
             width: double.infinity,
             padding: EdgeInsets.only(
@@ -240,23 +243,29 @@ class _AppDrawer extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // ── FIXED: show avatar photo, fallback to initials ──────
                 Container(
                   width: 62,
                   height: 62,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.25),
                     shape: BoxShape.circle,
                     border: Border.all(
                         color: Colors.white.withValues(alpha: 0.5), width: 2),
                   ),
-                  child: Center(
-                    child: Text(
-                      _initials(user?.firstName, user?.lastName),
-                      style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white),
-                    ),
+                  child: ClipOval(
+                    child: avatarUrl != null
+                        ? Image.network(
+                            avatarUrl,
+                            width: 62,
+                            height: 62,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (_, child, progress) =>
+                                progress == null
+                                    ? child
+                                    : _initialsCircle(),
+                            errorBuilder: (_, __, ___) => _initialsCircle(),
+                          )
+                        : _initialsCircle(),
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -276,12 +285,14 @@ class _AppDrawer extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(role,
-                      style:
-                          const TextStyle(fontSize: 11, color: Colors.white70)),
+                      style: const TextStyle(
+                          fontSize: 11, color: Colors.white70)),
                 ),
               ],
             ),
           ),
+
+          // ── Nav items ─────────────────────────────────────────────────
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(vertical: 10),
@@ -361,9 +372,10 @@ class _AppDrawer extends StatelessWidget {
               },
             ),
           ),
+
           const Divider(height: 1, color: Color(0xFFECEFF1)),
 
-          // ── Logout button ─────────────────────────────────────────────
+          // ── Logout ────────────────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             child: Material(
@@ -373,32 +385,25 @@ class _AppDrawer extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 onTap: () async {
                   await context.read<AuthProvider>().logout();
-
                   if (!context.mounted) return;
-
                   Navigator.of(context).pushNamedAndRemoveUntil(
                     '/login',
                     (route) => false,
                   );
                 },
                 child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 14, vertical: 13),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.power_settings_new,
-                        color: Color(0xFFE53935),
-                        size: 22,
-                      ),
+                      Icon(Icons.power_settings_new,
+                          color: Color(0xFFE53935), size: 22),
                       SizedBox(width: 16),
-                      Text(
-                        'Log out',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFFE53935),
-                        ),
-                      ),
+                      Text('Log out',
+                          style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFFE53935))),
                     ],
                   ),
                 ),
@@ -418,11 +423,31 @@ class _AppDrawer extends StatelessWidget {
                   size: 16, color: Color(0xFF90A4AE)),
               const SizedBox(width: 8),
               Text('MINT App · $role',
-                  style:
-                      const TextStyle(fontSize: 11, color: Color(0xFF90A4AE))),
+                  style: const TextStyle(
+                      fontSize: 11, color: Color(0xFF90A4AE))),
             ]),
           ),
         ],
+      ),
+    );
+  }
+
+  // ── Helpers ────────────────────────────────────────────────────────────
+
+  /// Fallback circle shown while the avatar loads or when there is no avatar.
+  Widget _initialsCircle() {
+    return Container(
+      width: 62,
+      height: 62,
+      color: Colors.white.withValues(alpha: 0.25),
+      child: Center(
+        child: Text(
+          _initials(user?.firstName, user?.lastName),
+          style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.white),
+        ),
       ),
     );
   }

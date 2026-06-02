@@ -11,7 +11,7 @@ class MessageModel {
   final String fileSize;
   final dynamic replyTo;
   final bool isDeleted;
-  final bool isEdited; // ← FIX 2: edit support
+  final bool isEdited;
   final DateTime? createdAt;
 
   MessageModel({
@@ -27,7 +27,7 @@ class MessageModel {
     this.fileSize = '',
     this.replyTo,
     this.isDeleted = false,
-    this.isEdited = false, // ← FIX 2
+    this.isEdited = false,
     this.createdAt,
   });
 
@@ -45,7 +45,7 @@ class MessageModel {
       fileSize: json['fileSize'] ?? '',
       replyTo: json['replyTo'],
       isDeleted: json['isDeleted'] ?? false,
-      isEdited: json['isEdited'] ?? false, // ← FIX 2
+      isEdited: json['isEdited'] ?? false,
       createdAt: json['createdAt'] != null
           ? DateTime.tryParse(json['createdAt'])
           : null,
@@ -60,6 +60,29 @@ class MessageModel {
   String get senderName {
     if (sender is Map) {
       return '${sender['firstName'] ?? ''} ${sender['lastName'] ?? ''}'.trim();
+    }
+    return '';
+  }
+
+  String get senderAvatar {
+    if (sender is Map) {
+      for (final key in [
+        'profilePhoto',
+        'profilePicture',
+        'profileImage',
+        'avatar',
+        'photo',
+        'picture',
+        'image',
+        'avatarUrl',
+        'profilePhotoUrl',
+        'photoUrl',
+      ]) {
+        final v = sender[key];
+        if (v != null && v.toString().trim().isNotEmpty) {
+          return v.toString().trim();
+        }
+      }
     }
     return '';
   }

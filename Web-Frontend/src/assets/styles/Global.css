@@ -129,9 +129,10 @@ body {
 .staff-sidebar {
   background: radial-gradient(
     circle at top left,
-    #0b63ce 0%,
-    #0b3f91 45%,
-    #041935 100%
+   #095957 0%,
+#166a68 35%,
+#073d3b 70%,
+#031616 100%
   );
   color: #e5efff;
   display: flex;
@@ -169,7 +170,7 @@ body {
   font-size: 12px;
   font-weight: 600;
   line-height: 1.2;
-  color: #68d4a9;
+ color: #7ececa;
 }
 
 .staff-logo-circle {
@@ -224,12 +225,14 @@ body {
 }
 
 .staff-nav-item:hover {
-  background: rgba(148, 163, 184, 0.25);
+background: rgba(194, 110, 36, 0.25);
+border-left: 3px solid #e67e22;
   opacity: 1;
 }
 
 .staff-nav-item--active {
-  background: rgba(15, 23, 42, 0.78);
+ background: rgba(168, 107, 17, 0.35);
+border-left: 5px solid #e67e22;
   opacity: 1;
   transform: translateX(2px);
   box-sizing: border-box;
@@ -248,7 +251,7 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #8fb6ff;
+color: #7ececa;
 }
 
 .staff-nav-item--active .staff-nav-icon {
@@ -300,10 +303,10 @@ body {
   max-width: 100vw;
   box-sizing: border-box;
   overflow-x: hidden;
-  margin-left: 250px;
+  margin-left: 300px;
 }
 .staff-sidebar:not(.staff-sidebar--open) + .staff-main {
-  margin-left: 20px; /* width of collapsed sidebar */
+  margin-left: 40px; /* width of collapsed sidebar */
 }
 
 .staff-topbar {
@@ -1729,6 +1732,395 @@ background: white;
   color: rgba(148, 163, 184, 0.75);
 }
 
+/* ── DARK MODE OVERRIDES FOR ALL PAGES ── */
+
+.staff-shell[data-theme="dark"] .sf-page,
+.staff-shell[data-theme="dark"] .mgr-page,
+.staff-shell[data-theme="dark"] .db-page,
+.staff-shell[data-theme="dark"] .mt-page,
+.staff-shell[data-theme="dark"] .mp-page,
+.staff-shell[data-theme="dark"] .al-page,
+.staff-shell[data-theme="dark"] .st-page,
+.staff-shell[data-theme="dark"] .tm-page,
+.staff-shell[data-theme="dark"] .sm-page,
+.staff-shell[data-theme="dark"] .rpt-page,
+.staff-shell[data-theme="dark"] .pr-page,
+.staff-shell[data-theme="dark"] .um-page {
+  color: #e5e7eb;
+}
+
+/* Cards / widgets / sections */
+.staff-shell[data-theme="dark"] .sf-card,
+.staff-shell[data-theme="dark"] .sf-widget,
+.staff-shell[data-theme="dark"] .mgr-card,
+.staff-shell[data-theme="dark"] .mgr-widget,
+.staff-shell[data-theme="dark"] .mgr-insight,
+.staff-shell[data-theme="dark"] .db-card,
+.staff-shell[data-theme="dark"] .db-widget,
+.staff-shell[data-theme="dark"] .mt-table-wrap,
+.staff-shell[data-theme="dark"] .mp-table-wrap,
+.staff-shell[data-theme="dark"] .mp-stat,
+.staff-shell[data-theme="dark"] .mp-modal,
+.staff-shell[data-theme="dark"] .al-item,
+.staff-shell[data-theme="dark"] .st-section,
+.staff-shell[data-theme="dark"] .st-hero,
+.staff-shell[data-theme="dark"] .tm-table-wrap,
+.staff-shell[data-theme="dark"] .sm-table-wrap,
+.staff-shell[data-theme="dark"] .rpt-card,
+.staff-shell[data-theme="dark"] .rpt-ring-card,
+.staff-shell[data-theme="dark"] .rpt-section,
+.staff-shell[data-theme="dark"] .pr-table-wrap,
+.staff-shell[data-theme="dark"] .pr-modal,
+.staff-shell[data-theme="dark"] .pr-stat,
+.staff-shell[data-theme="dark"] .um-table-wrap,
+.staff-shell[data-theme="dark"] .um-stat,
+.staff-shell[data-theme="dark"] .sf-stat,
+.staff-shell[data-theme="dark"] .mt-stat,
+.staff-shell[data-theme="dark"] .sm-stat,
+.staff-shell[data-theme="dark"] .tm-stat,
+.staff-shell[data-theme="dark"] .cu-wrap {
+  background: rgba(2, 6, 23, 0.72) !important;
+  border-color: rgba(148, 163, 184, 0.22) !important;
+}
+
+/* Table headers */
+.staff-shell[data-theme="dark"] .sf-page .mt-table th,
+.staff-shell[data-theme="dark"] .mt-table th,
+.staff-shell[data-theme="dark"] .mp-table th,
+.staff-shell[data-theme="dark"] .tm-table th,
+.staff-shell[data-theme="dark"] .sm-table th,
+.staff-shell[data-theme="dark"] .pr-table th,
+.staff-shell[data-theme="dark"] .um-table th,
+.staff-shell[data-theme="dark"] .rpt-table th {
+  background: rgba(15, 23, 42, 0.85) !important;
+  color: rgba(226, 232, 240, 0.9) !important;
+  border-bottom-color: rgba(148, 163, 184, 0.22) !important;
+}
+
+/* Table cells */
+.staff-shell[data-theme="dark"] .mt-table td,
+.staff-shell[data-theme="dark"] .mp-table td,
+.staff-shell[data-theme="dark"] .tm-table td,
+.staff-shell[data-theme="dark"] .sm-table td,
+.staff-shell[data-theme="dark"] .pr-table td,
+.staff-shell[data-theme="dark"] .um-table td,
+.staff-shell[data-theme="dark"] .rpt-table td {
+  color: rgba(226, 232, 240, 0.9) !important;
+  border-bottom-color: rgba(148, 163, 184, 0.12) !important;
+}
+
+/* Table row hover */
+.staff-shell[data-theme="dark"] .mt-table tbody tr:hover,
+.staff-shell[data-theme="dark"] .mp-table tbody tr:hover,
+.staff-shell[data-theme="dark"] .tm-table tbody tr:hover,
+.staff-shell[data-theme="dark"] .sm-table tbody tr:hover,
+.staff-shell[data-theme="dark"] .pr-table tbody tr:hover,
+.staff-shell[data-theme="dark"] .um-table tbody tr:hover,
+.staff-shell[data-theme="dark"] .rpt-table tbody tr:hover {
+  background: rgba(15, 23, 42, 0.55) !important;
+}
+
+/* Inputs and selects */
+.staff-shell[data-theme="dark"] .mt-input,
+.staff-shell[data-theme="dark"] .mp-input,
+.staff-shell[data-theme="dark"] .tm-input,
+.staff-shell[data-theme="dark"] .sm-input,
+.staff-shell[data-theme="dark"] .pr-input,
+.staff-shell[data-theme="dark"] .um-input,
+.staff-shell[data-theme="dark"] .rpt-input,
+.staff-shell[data-theme="dark"] .al-input,
+.staff-shell[data-theme="dark"] .cu-input,
+.staff-shell[data-theme="dark"] .st-input,
+.staff-shell[data-theme="dark"] .st-tab,
+.staff-shell[data-theme="dark"] .um-form-input {
+  background: rgba(15, 23, 42, 0.75) !important;
+  color: #e2e8f0 !important;
+  border-color: rgba(148, 163, 184, 0.3) !important;
+}
+
+.staff-shell[data-theme="dark"] .mt-input::placeholder,
+.staff-shell[data-theme="dark"] .mp-input::placeholder,
+.staff-shell[data-theme="dark"] .tm-input::placeholder,
+.staff-shell[data-theme="dark"] .sm-input::placeholder,
+.staff-shell[data-theme="dark"] .pr-input::placeholder,
+.staff-shell[data-theme="dark"] .um-input::placeholder,
+.staff-shell[data-theme="dark"] .rpt-input::placeholder,
+.staff-shell[data-theme="dark"] .al-input::placeholder,
+.staff-shell[data-theme="dark"] .cu-input::placeholder {
+  color: rgba(148, 163, 184, 0.6) !important;
+}
+
+/* Text colors */
+.staff-shell[data-theme="dark"] .mt-stat-val,
+.staff-shell[data-theme="dark"] .mp-stat-val,
+.staff-shell[data-theme="dark"] .tm-stat-val,
+.staff-shell[data-theme="dark"] .sm-stat-val,
+.staff-shell[data-theme="dark"] .pr-stat-val,
+.staff-shell[data-theme="dark"] .um-stat-val,
+.staff-shell[data-theme="dark"] .sf-card h1,
+.staff-shell[data-theme="dark"] .mgr-card h1,
+.staff-shell[data-theme="dark"] .db-card h1,
+.staff-shell[data-theme="dark"] .rpt-card h1,
+.staff-shell[data-theme="dark"] .um-name,
+.staff-shell[data-theme="dark"] .sm-profile-name,
+.staff-shell[data-theme="dark"] .tm-task-title,
+.staff-shell[data-theme="dark"] .mt-task-title,
+.staff-shell[data-theme="dark"] .mp-title,
+.staff-shell[data-theme="dark"] .pr-title {
+  color: #e5e7eb !important;
+}
+
+.staff-shell[data-theme="dark"] .mt-stat-label,
+.staff-shell[data-theme="dark"] .mp-stat-label,
+.staff-shell[data-theme="dark"] .tm-stat-label,
+.staff-shell[data-theme="dark"] .sm-stat-label,
+.staff-shell[data-theme="dark"] .pr-stat-label,
+.staff-shell[data-theme="dark"] .um-stat-label,
+.staff-shell[data-theme="dark"] .um-email,
+.staff-shell[data-theme="dark"] .mt-comment,
+.staff-shell[data-theme="dark"] .mp-comment,
+.staff-shell[data-theme="dark"] .mp-desc,
+.staff-shell[data-theme="dark"] .sf-card-sub,
+.staff-shell[data-theme="dark"] .mgr-card-sub,
+.staff-shell[data-theme="dark"] .db-card-sub,
+.staff-shell[data-theme="dark"] .sf-subtitle,
+.staff-shell[data-theme="dark"] .mgr-subtitle,
+.staff-shell[data-theme="dark"] .tm-subtitle,
+.staff-shell[data-theme="dark"] .mt-subtitle,
+.staff-shell[data-theme="dark"] .mp-subtitle,
+.staff-shell[data-theme="dark"] .pr-subtitle,
+.staff-shell[data-theme="dark"] .sm-subtitle,
+.staff-shell[data-theme="dark"] .al-subtitle,
+.staff-shell[data-theme="dark"] .rpt-subtitle {
+  color: rgba(148, 163, 184, 0.85) !important;
+}
+
+/* Task items / list items */
+.staff-shell[data-theme="dark"] .sf-task-item,
+.staff-shell[data-theme="dark"] .mgr-task-item,
+.staff-shell[data-theme="dark"] .sm-task-card,
+.staff-shell[data-theme="dark"] .al-skeleton {
+  background: rgba(15, 23, 42, 0.55) !important;
+}
+
+.staff-shell[data-theme="dark"] .sf-task-title,
+.staff-shell[data-theme="dark"] .mgr-task-title,
+.staff-shell[data-theme="dark"] .sf-task-meta,
+.staff-shell[data-theme="dark"] .mgr-task-meta,
+.staff-shell[data-theme="dark"] .sm-task-card-title {
+  color: #e2e8f0 !important;
+}
+
+/* Notification items */
+.staff-shell[data-theme="dark"] .sf-notif-item {
+  color: #e2e8f0 !important;
+}
+
+/* Action buttons */
+.staff-shell[data-theme="dark"] .mt-file-btn,
+.staff-shell[data-theme="dark"] .rpt-export-btn,
+.staff-shell[data-theme="dark"] .rpt-page-btn {
+  background: rgba(15, 23, 42, 0.75) !important;
+  color: #e2e8f0 !important;
+  border-color: rgba(148, 163, 184, 0.3) !important;
+}
+
+/* Activity log */
+.staff-shell[data-theme="dark"] .al-item {
+  color: #e2e8f0 !important;
+}
+.staff-shell[data-theme="dark"] .al-action,
+.staff-shell[data-theme="dark"] .al-user {
+  color: #e2e8f0 !important;
+}
+.staff-shell[data-theme="dark"] .al-time,
+.staff-shell[data-theme="dark"] .al-stat-label {
+  color: rgba(148, 163, 184, 0.75) !important;
+}
+
+/* Profile / settings */
+.staff-shell[data-theme="dark"] .st-field label,
+.staff-shell[data-theme="dark"] .st-info-label,
+.staff-shell[data-theme="dark"] .cu-label {
+  color: rgba(148, 163, 184, 0.85) !important;
+}
+.staff-shell[data-theme="dark"] .st-info-item,
+.staff-shell[data-theme="dark"] .st-info-val {
+  background: rgba(15, 23, 42, 0.55) !important;
+  color: #e2e8f0 !important;
+}
+.staff-shell[data-theme="dark"] .st-tab--active {
+  background: #2196F3 !important;
+  color: #fff !important;
+}
+
+/* Quick action cards (manager dashboard) */
+.staff-shell[data-theme="dark"] .mgr-action-card h4,
+.staff-shell[data-theme="dark"] .mgr-action-card p {
+  color: #fff !important;
+}
+
+/* Chart/ring text */
+.staff-shell[data-theme="dark"] .sf-ring-label,
+.staff-shell[data-theme="dark"] .mgr-ring-label,
+.staff-shell[data-theme="dark"] .rpt-ring-label {
+  color: #e5e7eb !important;
+}
+
+/* Modal backdrops */
+.staff-shell[data-theme="dark"] .mp-modal,
+.staff-shell[data-theme="dark"] .pr-modal {
+  background: #0f172a !important;
+  color: #e2e8f0 !important;
+}
+.staff-shell[data-theme="dark"] .mp-form-input,
+.staff-shell[data-theme="dark"] .pr-textarea {
+  background: rgba(15, 23, 42, 0.75) !important;
+  color: #e2e8f0 !important;
+  border-color: rgba(148, 163, 184, 0.3) !important;
+}
+.staff-shell[data-theme="dark"] .mp-form-label,
+.staff-shell[data-theme="dark"] .mp-modal-title,
+.staff-shell[data-theme="dark"] .pr-modal-title,
+.staff-shell[data-theme="dark"] .pr-detail-label,
+.staff-shell[data-theme="dark"] .pr-detail-val {
+  color: #e2e8f0 !important;
+}
+.staff-shell[data-theme="dark"] .pr-desc-box {
+  background: rgba(15, 23, 42, 0.55) !important;
+  color: #e2e8f0 !important;
+}
+
+/* Insight cards (manager) */
+.staff-shell[data-theme="dark"] .mgr-insight h4,
+.staff-shell[data-theme="dark"] .mgr-insight p,
+.staff-shell[data-theme="dark"] .mgr-insight span,
+.staff-shell[data-theme="dark"] .mgr-widget h3,
+.staff-shell[data-theme="dark"] .sf-widget h3,
+.staff-shell[data-theme="dark"] .db-widget h3,
+.staff-shell[data-theme="dark"] .rpt-section-header h3,
+.staff-shell[data-theme="dark"] .rpt-card h4 {
+  color: #e2e8f0 !important;
+}
+
+/* sm profile modal */
+.staff-shell[data-theme="dark"] .sm-profile-role,
+.staff-shell[data-theme="dark"] .sm-profile-label,
+.staff-shell[data-theme="dark"] .sm-profile-val,
+.staff-shell[data-theme="dark"] .sm-task-card-meta {
+  color: rgba(148, 163, 184, 0.85) !important;
+}
+
+/* um modal */
+.staff-shell[data-theme="dark"] .um-form-label {
+  color: rgba(148, 163, 184, 0.85) !important;
+}
+
+/* Reports: page background, stat text, pagination text */
+.staff-shell[data-theme="dark"] .rpt-page {
+  background: #071224 !important;
+}
+.staff-shell[data-theme="dark"] .rpt-card-stat-label,
+.staff-shell[data-theme="dark"] .rpt-card-stat-val,
+.staff-shell[data-theme="dark"] .rpt-card h4,
+.staff-shell[data-theme="dark"] .rpt-ring-card h4,
+.staff-shell[data-theme="dark"] .rpt-ring-label,
+.staff-shell[data-theme="dark"] .rpt-ring-label span,
+.staff-shell[data-theme="dark"] .rpt-pagination,
+.staff-shell[data-theme="dark"] .rpt-pagination span,
+.staff-shell[data-theme="dark"] .rpt-priority {
+  color: #e2e8f0 !important;
+}
+
+/* Reports: minibar background track */
+.staff-shell[data-theme="dark"] .rpt-card-stat > div {
+  background: rgba(148, 163, 184, 0.2) !important;
+}
+
+/* Staff dashboard: page background */
+.staff-shell[data-theme="dark"] .sf-page {
+  background: #071224 !important;
+}
+
+/* Staff dashboard: bar row labels and counts */
+.staff-shell[data-theme="dark"] .sf-bar-row,
+.staff-shell[data-theme="dark"] .sf-bar-label,
+.staff-shell[data-theme="dark"] .sf-bar-count,
+.staff-shell[data-theme="dark"] .sf-card h4,
+.staff-shell[data-theme="dark"] .sf-widget h3,
+.staff-shell[data-theme="dark"] .sf-ring-label,
+.staff-shell[data-theme="dark"] .sf-ring-label span {
+  color: #e2e8f0 !important;
+}
+
+/* Staff dashboard: bar track background */
+.staff-shell[data-theme="dark"] .sf-bar-wrap {
+  background: rgba(148, 163, 184, 0.2) !important;
+}
+
+/* Staff dashboard: ring completion text */
+.staff-shell[data-theme="dark"] .sf-ring-wrap > div:last-child {
+  color: #94a3b8 !important;
+}
+
+/* Admin dashboard: page background */
+.staff-shell[data-theme="dark"] .db-page {
+  background: #071224 !important;
+}
+
+/* Admin dashboard: role distribution */
+.staff-shell[data-theme="dark"] .role-item,
+.staff-shell[data-theme="dark"] .role-pct {
+  color: #e2e8f0 !important;
+}
+.staff-shell[data-theme="dark"] .role-bar-wrap {
+  background: rgba(148, 163, 184, 0.2) !important;
+}
+
+/* Admin dashboard: department names and counts */
+.staff-shell[data-theme="dark"] .dept-row,
+.staff-shell[data-theme="dark"] .dept-name,
+.staff-shell[data-theme="dark"] .dept-count {
+  color: #e2e8f0 !important;
+}
+.staff-shell[data-theme="dark"] .dept-bar-wrap {
+  background: rgba(148, 163, 184, 0.2) !important;
+}
+
+/* Admin dashboard: activity log username and action */
+.staff-shell[data-theme="dark"] .activity-item,
+.staff-shell[data-theme="dark"] .activity-item div,
+.staff-shell[data-theme="dark"] .activity-item strong {
+  color: #e2e8f0 !important;
+}
+.staff-shell[data-theme="dark"] .activity-time {
+  color: rgba(148, 163, 184, 0.75) !important;
+}
+
+/* Admin dashboard: db-top subtitle */
+.staff-shell[data-theme="dark"] .db-top p,
+.staff-shell[data-theme="dark"] .db-card h4,
+.staff-shell[data-theme="dark"] .db-card-sub {
+  color: rgba(148, 163, 184, 0.85) !important;
+}
+
+/* Admin/manager dashboard: widget backgrounds */
+.staff-shell[data-theme="dark"] .db-widget,
+.staff-shell[data-theme="dark"] .db-card {
+  background: rgba(2, 6, 23, 0.72) !important;
+}
+
+/* db skeleton in dark */
+.staff-shell[data-theme="dark"] .db-skeleton {
+  background: rgba(148, 163, 184, 0.15) !important;
+}
+
+/* Manager dashboard page background */
+.staff-shell[data-theme="dark"] .mgr-page {
+  background: #071224 !important;
+}
+
+
 .staff-chat-message {
   max-width: 70%;
 }
@@ -1920,8 +2312,8 @@ background: white;
   width: 9px;
   height: 9px;
   border-radius: 999px;
-  background: #0b63ce;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+background: #1a7a78;
+box-shadow: 0 0 0 3px rgba(26, 122, 120, 0.25)
 }
 
 .staff-timeline-time {

@@ -100,10 +100,21 @@ class AuthProvider extends ChangeNotifier {
   }
 
   String _parseError(dynamic e) {
-    try {
-      return e.response?.data['message'] ?? 'An error occurred';
-    } catch (_) {
-      return 'An error occurred';
+  try {
+    final statusCode = e.response?.statusCode;
+
+    switch (statusCode) {
+      case 401:
+        return 'Incorrect email or password.';
+      case 404:
+        return 'Account not found.';
+      case 500:
+        return 'Server error. Please try again later.';
+      default:
+        return e.response?.data['message'] ??
+            'Unable to login. Please try again.';
     }
+  } catch (_) {
+    return 'Network error. Please check your internet connection.';
   }
-}
+}}

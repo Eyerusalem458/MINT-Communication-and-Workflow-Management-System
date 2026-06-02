@@ -68,9 +68,8 @@ export const UserProvider = ({ children }) => {
   // ─── Toggle active/inactive status ────────────────────────────────────────
   const toggleStatus = useCallback(async (id) => {
     const res = await toggleUserStatus(id);
-    setUsers((prev) =>
-      prev.map((u) => (u._id === id ? { ...u, ...res.data } : u)),
-    );
+   const updated = res.data.user; // ✅ extract user from { message, user }
+   setUsers((prev) => prev.map((u) => (u._id === id ? updated : u)));
   }, []);
 
   return (

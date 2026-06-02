@@ -15,18 +15,45 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _showPass = false;
 
-  Future<void> _handleLogin() async {
+  // Inline error state for each field + a general login error
+  String? _emailError;
+  String? _passError;
+  String? _loginError;
+
+  /// Validates fields locally. Returns true if all inputs are valid.
+  bool _validate() {
+    String? emailErr;
+    String? passErr;
+
     final email = _emailCtrl.text.trim();
     final pass = _passCtrl.text.trim();
 
-    if (email.isEmpty || pass.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Enter email and password'),
-        ),
-      );
-      return;
+    if (email.isEmpty) {
+      emailErr = 'Email is required.';
+    } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
+      emailErr = 'Please enter a valid email address.';
     }
+
+    if (pass.isEmpty) {
+      passErr = 'Password is required.';
+    } else if (pass.length < 6) {
+      passErr = 'Password must be at least 6 characters.';
+    }
+
+    setState(() {
+      _emailError = emailErr;
+      _passError = passErr;
+      _loginError = null; // clear any previous server error
+    });
+
+    return emailErr == null && passErr == null;
+  }
+
+  Future<void> _handleLogin() async {
+    if (!_validate()) return;
+
+    final email = _emailCtrl.text.trim();
+    final pass = _passCtrl.text.trim();
 
     try {
       final user = await context.read<AuthProvider>().login(email, pass);
@@ -37,21 +64,30 @@ class _LoginScreenState extends State<LoginScreen> {
         case 'admin':
           Navigator.pushReplacementNamed(context, '/admin');
           break;
-
         case 'manager':
           Navigator.pushReplacementNamed(context, '/manager');
           break;
-
         default:
           Navigator.pushReplacementNamed(context, '/staff');
       }
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
+      final auth = context.read<AuthProvider>();
+
+      // Show the error inline inside the card — no raw SnackBar
+      setState(() {
+        _loginError =
+            auth.error ?? 'Login failed. Please try again.';
+      });
     }
+  }
+
+  @override
+  void dispose() {
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
+    super.dispose();
   }
 
   @override
@@ -141,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         width: 70,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: Color(0xFFF4AE2B),
+                          color: const Color(0xFFF4AE2B),
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
@@ -180,10 +216,24 @@ class _LoginScreenState extends State<LoginScreen> {
                           ],
                         ),
                         child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // EMAIL
+                            // ── SERVER / AUTH ERROR BANNER ──────────────────
+                            if (_loginError != null) ...[
+                              _ErrorBanner(message: _loginError!),
+                              const SizedBox(height: 18),
+                            ],
+
+                            // EMAIL FIELD
                             TextField(
                               controller: _emailCtrl,
+                              keyboardType: TextInputType.emailAddress,
+                              onChanged: (_) {
+                                // Clear field error as the user starts typing
+                                if (_emailError != null) {
+                                  setState(() => _emailError = null);
+                                }
+                              },
                               decoration: InputDecoration(
                                 hintText: 'Email',
                                 filled: true,
@@ -192,6 +242,25 @@ class _LoginScreenState extends State<LoginScreen> {
                                   Icons.email_outlined,
                                   color: Color(0xFF0B4F63),
                                 ),
+                                // Red border when there is a field error
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  borderSide: _emailError != null
+                                      ? const BorderSide(
+                                          color: Color(0xFFD93025),
+                                          width: 1.5,
+                                        )
+                                      : BorderSide.none,
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  borderSide: BorderSide(
+                                    color: _emailError != null
+                                        ? const Color(0xFFD93025)
+                                        : const Color(0xFF0B4F63),
+                                    width: 1.5,
+                                  ),
+                                ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(18),
                                   borderSide: BorderSide.none,
@@ -199,12 +268,21 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
 
+                            // EMAIL INLINE ERROR
+                            if (_emailError != null)
+                              _FieldError(message: _emailError!),
+
                             const SizedBox(height: 18),
 
-                            // PASSWORD
+                            // PASSWORD FIELD
                             TextField(
                               controller: _passCtrl,
                               obscureText: !_showPass,
+                              onChanged: (_) {
+                                if (_passError != null) {
+                                  setState(() => _passError = null);
+                                }
+                              },
                               decoration: InputDecoration(
                                 hintText: 'Password',
                                 filled: true,
@@ -215,14 +293,30 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 suffixIcon: IconButton(
                                   onPressed: () {
-                                    setState(() {
-                                      _showPass = !_showPass;
-                                    });
+                                    setState(() => _showPass = !_showPass);
                                   },
                                   icon: Icon(
                                     _showPass
                                         ? Icons.visibility_off
                                         : Icons.visibility,
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  borderSide: _passError != null
+                                      ? const BorderSide(
+                                          color: Color(0xFFD93025),
+                                          width: 1.5,
+                                        )
+                                      : BorderSide.none,
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  borderSide: BorderSide(
+                                    color: _passError != null
+                                        ? const Color(0xFFD93025)
+                                        : const Color(0xFF0B4F63),
+                                    width: 1.5,
                                   ),
                                 ),
                                 border: OutlineInputBorder(
@@ -231,6 +325,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                             ),
+
+                            // PASSWORD INLINE ERROR
+                            if (_passError != null)
+                              _FieldError(message: _passError!),
 
                             const SizedBox(height: 10),
 
@@ -256,7 +354,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             const SizedBox(height: 16),
 
-                            // BUTTON
+                            // LOGIN BUTTON
                             SizedBox(
                               width: double.infinity,
                               height: 58,
@@ -264,6 +362,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 onPressed: auth.loading ? null : _handleLogin,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFFF4AE2B),
+                                  disabledBackgroundColor:
+                                      const Color(0xFFF4AE2B).withValues(alpha: 0.6),
                                   elevation: 8,
                                   shadowColor: const Color(0x66F4AE2B),
                                   shape: RoundedRectangleBorder(
@@ -271,8 +371,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 ),
                                 child: auth.loading
-                                    ? const CircularProgressIndicator(
-                                        color: Colors.white,
+                                    ? const SizedBox(
+                                        width: 24,
+                                        height: 24,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2.5,
+                                        ),
                                       )
                                     : const Text(
                                         'Login',
@@ -307,6 +412,85 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Small helper widgets kept in the same file for simplicity.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Red inline text shown directly under a field that failed validation.
+class _FieldError extends StatelessWidget {
+  const _FieldError({required this.message});
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 6, left: 4),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.error_outline,
+            size: 14,
+            color: Color(0xFFD93025),
+          ),
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: Color(0xFFD93025),
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Soft red banner shown at the top of the card for server-side errors
+/// (wrong credentials, account not found, network issues, etc.).
+class _ErrorBanner extends StatelessWidget {
+  const _ErrorBanner({required this.message});
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFEDED),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFD93025).withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.cancel_outlined,
+            color: Color(0xFFD93025),
+            size: 20,
+          ),
+          const SizedBox(width: 10),
+          Flexible(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: Color(0xFFB71C1C),
+                fontSize: 13,
+                height: 1.4,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
