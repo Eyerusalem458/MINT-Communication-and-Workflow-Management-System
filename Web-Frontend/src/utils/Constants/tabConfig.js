@@ -10,7 +10,6 @@ import {
   NavReportsIcon,
   NavSettingsIcon,
   NavProjectIcon,
-  NavCreateUserIcon,
 } from "../../pages/shared/icon"; // correct path
 
 import { TABS } from "./constants";
@@ -129,12 +128,7 @@ export const TAB_CONFIG = {
     icon: NavStaffIcon,
     path: "/users",
   },
-  ADMIN_CREATE_USER: {
-    key: "ADMIN_CREATE_USER",
-    label: "Create User",
-    icon: NavCreateUserIcon,
-    path: "/create-user",
-  },
+
   ADMIN_CHAT: {
     key: "ADMIN_CHAT",
     label: "Chat",

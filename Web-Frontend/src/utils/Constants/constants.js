@@ -54,7 +54,6 @@ export const ROLE_TABS = {
   admin: [
     "ADMIN_DASHBOARD",
     "ADMIN_USER_MANAGEMENT",
-    "ADMIN_CREATE_USER",
     "ADMIN_CHAT",
     "ADMIN_NOTIFICATIONS",
     "ADMIN_ACTIVITY",
@@ -92,8 +91,6 @@ export const getPageTitle = (activeTab) => {
     case TABS.USER_MANAGEMENT:
       return "User Management";
 
-    case TABS.CREATE_USER:
-      return "Create User";
 
     case TABS.REPORTS:
       return "Reports";

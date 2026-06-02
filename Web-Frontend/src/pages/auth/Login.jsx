@@ -4,8 +4,6 @@ import { toast } from "react-toastify";
 import logo from "../../assets/images/logo.png";
 import robot from "../../assets/images/robot.png";
 
-import { FaFacebookF } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
 
 import { LockIcon, MailIcon } from "../shared/icon";
 import "../../assets/styles/Login.css";
@@ -39,24 +37,12 @@ export default function Login() {
         navigate("/staff/dashboard");
       }
     } catch (err) {
-      showErrorToast(err.response?.data?.message || "Login failed");
+      showErrorToast(
+        err.message || err.response?.data?.message || "Login failed",
+      );
     }
   };
-  // Simulate Google login (frontend-only)
-  const handleGoogleLogin = () => {
-    showSuccessToast("Google login successfully!", () => {
-      // below is replaced later just for testing navigation
-      navigate("/staff/dashboard");
-    });
-  };
 
-  // Simulate Facebook login (frontend-only)
-  const handleFacebookLogin = () => {
-    showSuccessToast("Facebook login successful!", () => {
-      // below is replaced later just for testing navigation
-      navigate("/staff/dashboard");
-    });
-  };
 
   // Modal content based on type
   const getModalContent = () => {
@@ -180,22 +166,7 @@ export default function Login() {
               </button>
             </form>
 
-            {/* Divider */}
-            <div className="or-divider">
-              <span>OR</span>
-            </div>
-            {/* Social Login */}
-            <div className="social-buttons">
-              <button className="social-btn " onClick={handleGoogleLogin}>
-                <FcGoogle className="social-icon" />
-                <span>Log in with Google</span>
-              </button>
 
-              <button className="social-btn" onClick={handleFacebookLogin}>
-                <FaFacebookF className="social-icon facebook-icon" />
-                Log in with Facebook
-              </button>
-            </div>
           </div>
         </div>
       </div>
