@@ -114,6 +114,34 @@ export default function Login() {
   };
   // ────────────────────────────────────────────────────────────
 
+  const handleSignIn = async (e) => {
+    e.preventDefault();
+    try {
+      const user = await login({ email, password });
+      showSuccessToast("Login successful!");
+      if (user.role === "admin") navigate("/admin/dashboard");
+      else if (user.role === "manager") navigate("/manager/dashboard");
+      else navigate("/staff/dashboard");
+    } catch (err) {
+      showErrorToast(
+        err.message || err.response?.data?.message || "Login failed",
+      );
+    }
+  };
+
+  };
+
+  useEffect(() => {
+    startTimer();
+    return () => clearInterval(timerRef.current);
+  }, []);
+
+  const handleDotClick = (i) => {
+    goToSlide(i);
+    startTimer();
+  };
+  // ────────────────────────────────────────────────────────────
+
  const handleSignIn = async (e) => {
   e.preventDefault();
 

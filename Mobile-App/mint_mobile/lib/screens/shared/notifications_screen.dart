@@ -15,6 +15,63 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   String _filter = 'All';
   final _filters = ['All', 'Tasks', 'Personal', 'System', 'Project', 'Unseen'];
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // Formats raw backend messages (call records, audio filenames, etc.)
+  // Mirrors the React formatMessage() helper so mobile renders identically.
+  // ─────────────────────────────────────────────────────────────────────────
+  String _formatMessage(String? message) {
+    if (message == null || message.isEmpty) return message ?? '';
+
+    // 1. Call record (broken JSON stored in DB)
+    if (message.contains('__callRecord')) {
+      final prefixMatch =
+          RegExp(r'^(New message from .+?:\s*)').firstMatch(message);
+      final prefix = prefixMatch?.group(1) ?? '';
+
+      final callType =
+          RegExp(r'"callType"\s*:\s*"([^"]+)"').firstMatch(message)?.group(1) ??
+              'voice';
+      final status =
+          RegExp(r'"status"\s*:\s*"([^"]*)"').firstMatch(message)?.group(1) ??
+              '';
+
+      final isVideo = callType == 'video';
+      final icon = isVideo ? '📹' : '📞';
+      final label = isVideo ? 'Video call' : 'Voice call';
+      final statusLabel = status == 'missed'
+          ? ' (Missed)'
+          : status == 'ended'
+              ? ' (Ended)'
+              : '';
+
+      return '$prefix$icon $label$statusLabel';
+    }
+
+    // 2. Audio filename patterns
+    final audioExt = RegExp(
+      r"\.(webm|mp3|ogg|wav|m4a|aac|opus|flac)(\s|$)",
+      caseSensitive: false,
+    );
+
+    if (message.contains('🎤')) return '🎵 Audio';
+
+    if (RegExp(r'📎\s*(audio|voice)', caseSensitive: false)
+        .hasMatch(message)) {
+      return '🎵 Audio';
+    }
+
+    if (message.contains('📎') && audioExt.hasMatch(message)) {
+      return '🎵 Audio';
+    }
+
+    if (audioExt.hasMatch(message)) return '🎵 Audio';
+
+    // 3. Everything else unchanged
+    return message;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+
   List<NotificationModel> _filtered(List<NotificationModel> all) {
     if (_filter == 'All') return all;
     if (_filter == 'Unseen') return all.where((n) => n.unseen).toList();
@@ -137,14 +194,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text(n.message,
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              fontWeight: n.unseen
-                                                  ? FontWeight.w600
-                                                  : FontWeight.normal,
-                                              color: AppColors.textPrimary,
-                                            )),
+                                        // ── FIXED: was n.message (raw JSON) ──
+                                        Text(
+                                          _formatMessage(n.message),
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: n.unseen
+                                                ? FontWeight.w600
+                                                : FontWeight.normal,
+                                            color: AppColors.textPrimary,
+                                          ),
+                                        ),
                                         const SizedBox(height: 4),
                                         Row(children: [
                                           StatusBadge(n.type),
