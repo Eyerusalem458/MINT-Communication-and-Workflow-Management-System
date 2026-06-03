@@ -40,6 +40,51 @@ String _resolveUrl(String? raw) {
   return '$kMediaBaseUrl$path';
 }
 
+// ─── Message formatter — mirrors React formatMessage() ───────────────────────
+// Converts raw backend JSON (call records, audio filenames) into readable text.
+// Used in both the message bubble and the reply/forward preview.
+String _formatMessage(String? message) {
+  if (message == null || message.isEmpty) return message ?? '';
+
+  // 1. Call record (broken JSON stored in DB)
+  if (message.contains('__callRecord')) {
+    final prefixMatch =
+        RegExp(r'^(New message from .+?:\s*)').firstMatch(message);
+    final prefix = prefixMatch?.group(1) ?? '';
+
+    final callType =
+        RegExp(r'"callType"\s*:\s*"([^"]+)"').firstMatch(message)?.group(1) ??
+            'voice';
+    final status =
+        RegExp(r'"status"\s*:\s*"([^"]*)"').firstMatch(message)?.group(1) ?? '';
+
+    final isVideo = callType == 'video';
+    final icon = isVideo ? '📹' : '📞';
+    final label = isVideo ? 'Video call' : 'Voice call';
+    final statusLabel = status == 'missed'
+        ? ' (Missed)'
+        : status == 'ended'
+            ? ' (Ended)'
+            : '';
+    return '$prefix$icon $label$statusLabel';
+  }
+
+  // 2. Audio filename patterns
+  final audioExt = RegExp(
+    r"\.(webm|mp3|ogg|wav|m4a|aac|opus|flac)(\s|$)",
+    caseSensitive: false,
+  );
+  if (message.contains('🎤')) return '🎵 Audio';
+  if (RegExp(r'📎\s*(audio|voice)', caseSensitive: false).hasMatch(message)) {
+    return '🎵 Audio';
+  }
+  if (message.contains('📎') && audioExt.hasMatch(message)) return '🎵 Audio';
+  if (audioExt.hasMatch(message)) return '🎵 Audio';
+
+  // 3. Everything else unchanged
+  return message;
+}
+
 void _showSnack(BuildContext context, String message, {bool isError = false}) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
@@ -106,7 +151,6 @@ class _ConversationScreenState extends State<ConversationScreen>
 
   // ── Playback ───────────────────────────────────────────────────────────────
   final AudioPlayer _audioPlayer = AudioPlayer();
-  // Probe player: used only to load a file and get its duration, then disposed
   AudioPlayer? _probePlayer;
   String? _playingMsgId;
   Duration _playPosition = Duration.zero;
@@ -115,9 +159,7 @@ class _ConversationScreenState extends State<ConversationScreen>
   StreamSubscription? _durationSub;
   StreamSubscription? _completeSub;
 
-  // Cache of probed durations keyed by resolved URL
   final Map<String, Duration> _probedDurations = {};
-  // Ongoing probe futures so we don't double-probe
   final Map<String, Future<Duration>> _probeInFlight = {};
 
   // ── Agora ──────────────────────────────────────────────────────────────────
@@ -152,9 +194,7 @@ class _ConversationScreenState extends State<ConversationScreen>
     _durationSub = _audioPlayer.onDurationChanged.listen((dur) {
       if (mounted) {
         setState(() => _playDuration = dur);
-        // Also cache this for future display
         if (_playingMsgId != null) {
-          // find the URL via the playing message; cache it under the msg id
           _probedDurations['__playing__$_playingMsgId'] = dur;
         }
       }
@@ -169,10 +209,6 @@ class _ConversationScreenState extends State<ConversationScreen>
     });
   }
 
-  // ── Real audio duration probing ────────────────────────────────────────────
-  /// Returns the real duration of the audio at [url].
-  /// Uses a silent probe AudioPlayer that loads the source, reads its duration,
-  /// then disposes. The result is cached so each URL is only probed once.
   Future<Duration> _probeDuration(String url) async {
     if (_probedDurations.containsKey(url)) return _probedDurations[url]!;
     if (_probeInFlight.containsKey(url)) return _probeInFlight[url]!;
@@ -188,7 +224,6 @@ class _ConversationScreenState extends State<ConversationScreen>
   Future<Duration> _doProbeDuration(String url) async {
     final probe = AudioPlayer();
     try {
-      // Set volume to 0 so the user doesn't hear anything
       await probe.setVolume(0);
       final completer = Completer<Duration>();
       late StreamSubscription sub;
@@ -198,8 +233,6 @@ class _ConversationScreenState extends State<ConversationScreen>
           sub.cancel();
         }
       });
-      // Timeout after 8 s to avoid hanging — typed as Future<Duration> so
-      // Future.any resolves to Duration (not Duration?).
       final Future<Duration> timeout = Future.delayed(
         const Duration(seconds: 8),
         () => Duration.zero,
@@ -528,7 +561,6 @@ class _ConversationScreenState extends State<ConversationScreen>
     }
 
     if (kIsWeb) {
-      // ── Web: fetch blob URL → ArrayBuffer → Uint8List ──────────────────────
       try {
         final jsResponse = await html.window.fetch(finalPath);
         final jsBlob = await jsResponse.blob();
@@ -542,7 +574,6 @@ class _ConversationScreenState extends State<ConversationScreen>
         }
       }
     } else {
-      // ── Native: use the file path ──────────────────────────────────────────
       final file = File(finalPath);
       if (!await file.exists()) {
         if (mounted) _showSnack(context, 'Recording failed to save.', isError: true);
@@ -867,7 +898,6 @@ class _ConversationScreenState extends State<ConversationScreen>
                 m.text.toLowerCase().contains(_searchQuery.toLowerCase()))
             .toList();
 
-    // Kick off duration probing for all visible voice notes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       for (final msg in messages) {
         final anyFile = msg.anyFile;
@@ -883,7 +913,7 @@ class _ConversationScreenState extends State<ConversationScreen>
         if (url.isEmpty) continue;
         if (!_probedDurations.containsKey(url) &&
             !_probeInFlight.containsKey(url)) {
-          _probeDuration(url); // fire and forget; updates state when done
+          _probeDuration(url);
         }
       }
     });
@@ -995,7 +1025,6 @@ class _ConversationScreenState extends State<ConversationScreen>
                                 );
                               }
                               final msg = messages[i];
-                              // Resolve probed duration for voice bubbles
                               final voiceUrl = _resolveUrl(msg.anyFile);
                               final probedDur =
                                   _probedDurations[voiceUrl] ?? Duration.zero;
@@ -1074,8 +1103,11 @@ class _ConversationScreenState extends State<ConversationScreen>
                     Expanded(
                       child: Text(
                         _replyTo!.text.isNotEmpty
-                            ? _replyTo!.text.substring(
-                                0, _replyTo!.text.length.clamp(0, 60))
+                            ? _formatMessage(_replyTo!.text).substring(
+                                0,
+                                _formatMessage(_replyTo!.text)
+                                    .length
+                                    .clamp(0, 60))
                             : '📎 file',
                         style: TextStyle(
                             fontSize: 13,
@@ -1135,7 +1167,6 @@ class _ConversationScreenState extends State<ConversationScreen>
 
   // ── AppBar ─────────────────────────────────────────────────────────────────
   PreferredSizeWidget _buildAppBar(ConversationModel? conv, String myId) {
-    // Extract the other participant's photo URL for direct chats
     String? otherPhotoUrl;
     if (conv != null && conv.type == 'direct') {
       for (final p in conv.participants) {
@@ -1588,9 +1619,7 @@ class _ConversationScreenState extends State<ConversationScreen>
     );
   }
 
-  // ── Message context menu (Telegram-style three-dot) ────────────────────────
-  /// Shows a compact Telegram-style popup menu anchored near the message.
-  /// Called from the ⋮ button on the bubble AND on long-press.
+  // ── Message context menu ───────────────────────────────────────────────────
   void _showMsgMenu(BuildContext context, MessageModel msg, String myId) {
     final isMe = msg.senderId == myId;
     showModalBottomSheet(
@@ -1604,7 +1633,6 @@ class _ConversationScreenState extends State<ConversationScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Drag handle
               Container(
                 width: 36,
                 height: 4,
@@ -1613,8 +1641,6 @@ class _ConversationScreenState extends State<ConversationScreen>
                     color: Colors.grey[400],
                     borderRadius: BorderRadius.circular(2)),
               ),
-
-              // ── Reply ──────────────────────────────────────────────────────
               if (!msg.isDeleted)
                 _MenuTile(
                   icon: Icons.reply_rounded,
@@ -1625,21 +1651,18 @@ class _ConversationScreenState extends State<ConversationScreen>
                     setState(() => _replyTo = msg);
                   },
                 ),
-
-              // ── Copy (text only) ───────────────────────────────────────────
               if (msg.text.isNotEmpty && !msg.isDeleted)
                 _MenuTile(
                   icon: Icons.copy_rounded,
                   label: 'Copy',
                   isDark: _isDark,
                   onTap: () {
+                    // Copy raw text (not formatted) so user gets real content
                     Clipboard.setData(ClipboardData(text: msg.text));
                     Navigator.pop(context);
                     _showSnack(context, 'Copied!');
                   },
                 ),
-
-              // ── Save / Download file ───────────────────────────────────────
               if (!msg.isDeleted &&
                   msg.anyFile != null &&
                   msg.anyFile!.isNotEmpty)
@@ -1652,8 +1675,6 @@ class _ConversationScreenState extends State<ConversationScreen>
                     _downloadAndOpenFile(msg);
                   },
                 ),
-
-              // ── Share (native share sheet) ─────────────────────────────────
               if (!msg.isDeleted && msg.text.isNotEmpty)
                 _MenuTile(
                   icon: Icons.share_rounded,
@@ -1661,16 +1682,11 @@ class _ConversationScreenState extends State<ConversationScreen>
                   isDark: _isDark,
                   onTap: () {
                     Navigator.pop(context);
-                    // Use Flutter's built-in share mechanism if share_plus
-                    // is available; otherwise fall back to clipboard.
-                    // If you have share_plus: Share.share(msg.text);
                     Clipboard.setData(ClipboardData(text: msg.text));
                     _showSnack(context,
                         'Text copied — paste to share (add share_plus for native sharing)');
                   },
                 ),
-
-              // ── Forward ────────────────────────────────────────────────────
               if (!msg.isDeleted)
                 _MenuTile(
                   icon: Icons.forward_rounded,
@@ -1681,8 +1697,6 @@ class _ConversationScreenState extends State<ConversationScreen>
                     _showForwardSheet(context, msg);
                   },
                 ),
-
-              // ── Edit (own text messages) ───────────────────────────────────
               if (isMe && msg.text.isNotEmpty && !msg.isDeleted)
                 _MenuTile(
                   icon: Icons.edit_outlined,
@@ -1693,8 +1707,6 @@ class _ConversationScreenState extends State<ConversationScreen>
                     _showEditDialog(context, msg);
                   },
                 ),
-
-              // ── Delete (own messages) ──────────────────────────────────────
               if (isMe && !msg.isDeleted)
                 _MenuTile(
                   icon: Icons.delete_outline_rounded,
@@ -1934,7 +1946,6 @@ class _ConversationScreenState extends State<ConversationScreen>
         ),
         Center(
           child: Column(children: [
-            // ── Large profile photo (WhatsApp-style) ─────────────────────────
             _ProfileAvatar(
               initial: conv.getInitial(myId),
               photoUrl: isDirect && otherUser != null
@@ -2100,7 +2111,7 @@ class _ConversationScreenState extends State<ConversationScreen>
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-//  MENU TILE — used inside the Telegram-style bottom-sheet menu
+//  MENU TILE
 // ═════════════════════════════════════════════════════════════════════════════
 class _MenuTile extends StatelessWidget {
   final IconData icon;
@@ -2145,11 +2156,9 @@ class _MessageBubble extends StatelessWidget {
   final String? playingMsgId;
   final Duration playPosition;
   final Duration playDuration;
-  /// Real pre-probed duration (shown before playback starts)
   final Duration probedDuration;
   final double? downloadProgress;
   final void Function(MessageModel) onLongPress;
-  /// Called when the ⋮ three-dot menu button is tapped
   final void Function(MessageModel) onMenuTap;
   final void Function(MessageModel) onReply;
   final Future<void> Function(String msgId, String fileUrl) onPlayVoice;
@@ -2204,7 +2213,6 @@ class _MessageBubble extends StatelessWidget {
         : '';
     final isPlaying = playingMsgId == msg.id;
 
-    // While playing, use live playDuration; before playing, use the probed one
     final displayDuration =
         isPlaying && playDuration > Duration.zero ? playDuration : probedDuration;
 
@@ -2225,7 +2233,6 @@ class _MessageBubble extends StatelessWidget {
             ),
             const SizedBox(width: 6),
           ],
-          // ── Bubble + three-dot menu ────────────────────────────────────────
           GestureDetector(
             onLongPress: () => onLongPress(msg),
             onDoubleTap: () => onReply(msg),
@@ -2238,7 +2245,6 @@ class _MessageBubble extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 8),
-                    // Extra right padding to make room for the ⋮ button
                     margin: const EdgeInsets.only(right: 4),
                     decoration: BoxDecoration(
                       color: isMe
@@ -2247,10 +2253,8 @@ class _MessageBubble extends StatelessWidget {
                       borderRadius: BorderRadius.only(
                         topLeft: const Radius.circular(16),
                         topRight: const Radius.circular(16),
-                        bottomLeft:
-                            Radius.circular(isMe ? 16 : 2),
-                        bottomRight:
-                            Radius.circular(isMe ? 2 : 16),
+                        bottomLeft: Radius.circular(isMe ? 16 : 2),
+                        bottomRight: Radius.circular(isMe ? 2 : 16),
                       ),
                       boxShadow: [
                         BoxShadow(
@@ -2285,8 +2289,9 @@ class _MessageBubble extends StatelessWidget {
                                       color: Colors.white70, width: 3)),
                             ),
                             child: Text(
+                              // ── FIXED: format reply preview too ──
                               msg.replyTo is Map
-                                  ? (msg.replyTo['text'] ?? '📎 file')
+                                  ? _formatMessage(msg.replyTo['text']) ?? '📎 file'
                                   : '📎',
                               style: TextStyle(
                                   fontSize: 11,
@@ -2298,7 +2303,7 @@ class _MessageBubble extends StatelessWidget {
                             ),
                           ),
 
-                        // ── Content ─────────────────────────────────────────
+                        // ── Content ──────────────────────────────────────────
                         if (msg.isDeleted)
                           Text('This message was deleted',
                               style: TextStyle(
@@ -2311,11 +2316,9 @@ class _MessageBubble extends StatelessWidget {
                           _VoiceNoteBubble(
                             isMe: isMe,
                             isPlaying: isPlaying,
-                            position:
-                                isPlaying ? playPosition : Duration.zero,
+                            position: isPlaying ? playPosition : Duration.zero,
                             duration: displayDuration,
-                            onTap: () =>
-                                onPlayVoice(msg.id, msg.anyFile!),
+                            onTap: () => onPlayVoice(msg.id, msg.anyFile!),
                           )
                         else if (_hasFile && _isImage)
                           _ImageBubble(
@@ -2337,14 +2340,17 @@ class _MessageBubble extends StatelessWidget {
                                 ? CrossAxisAlignment.end
                                 : CrossAxisAlignment.start,
                             children: [
-                              Text(msg.text,
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: isMe
-                                          ? Colors.white
-                                          : (isDark
-                                              ? Colors.white
-                                              : AppColors.textPrimary))),
+                              // ── FIXED: was msg.text (raw JSON) ──
+                              Text(
+                                _formatMessage(msg.text),
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    color: isMe
+                                        ? Colors.white
+                                        : (isDark
+                                            ? Colors.white
+                                            : AppColors.textPrimary)),
+                              ),
                               if (msg.isEdited == true)
                                 Text('edited',
                                     style: TextStyle(
@@ -2384,11 +2390,10 @@ class _MessageBubble extends StatelessWidget {
                   ),
                 ),
 
-                // ── Three-dot menu button (Telegram-style) ─────────────────
+                // ── Three-dot menu button ──────────────────────────────────
                 Positioned(
                   top: 0,
                   right: isMe ? null : null,
-                  // Place it at the top-right corner of the bubble
                   child: GestureDetector(
                     onTap: () => onMenuTap(msg),
                     child: Container(
@@ -2421,7 +2426,7 @@ class _MessageBubble extends StatelessWidget {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-//  VOICE NOTE BUBBLE — waveform + live/probed duration
+//  VOICE NOTE BUBBLE
 // ═════════════════════════════════════════════════════════════════════════════
 class _VoiceNoteBubble extends StatelessWidget {
   final bool isMe;
@@ -2454,7 +2459,6 @@ class _VoiceNoteBubble extends StatelessWidget {
         ? (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0)
         : 0.0;
 
-    // Duration label: show "MM:SS" if known, "●" if still probing
     final durLabel = duration.inSeconds > 0 ? _fmt(duration) : '—:——';
     final timeLabel = isPlaying && duration.inSeconds > 0
         ? '${_fmt(position)} / $durLabel'
@@ -3019,15 +3023,7 @@ class _InfoActionBtn extends StatelessWidget {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-//  PROFILE AVATAR — shows real photo with initials fallback.
-//  Mirrors WhatsApp / Telegram behaviour: real photo when available, else
-//  coloured circle with initial letter.
-//
-//  [photoUrl]   — raw URL or relative path (passed through _resolveUrl)
-//  [initial]    — single letter shown when no photo
-//  [radius]     — circle radius (default 20)
-//  [bgColor]    — background for initials fallback
-//  [onTap]      — optional tap handler (e.g. open full-screen photo)
+//  PROFILE AVATAR
 // ═════════════════════════════════════════════════════════════════════════════
 class _ProfileAvatar extends StatelessWidget {
   final String? photoUrl;
@@ -3054,17 +3050,6 @@ class _ProfileAvatar extends StatelessWidget {
 
     Widget avatar;
     if (hasPhoto) {
-      avatar = CircleAvatar(
-        radius: radius,
-        backgroundColor: bgColor,
-        backgroundImage: NetworkImage(resolvedUrl),
-        // Show initial while loading or on error
-        onBackgroundImageError: (_, __) {},
-        child: null,
-      );
-      // Wrap in a ClipOval so we can overlay the fallback on error.
-      // NetworkImage doesn't have a Flutter-native errorBuilder on CircleAvatar,
-      // so we use a Stack: Image.network with errorBuilder over a fallback circle.
       avatar = SizedBox(
         width: radius * 2,
         height: radius * 2,

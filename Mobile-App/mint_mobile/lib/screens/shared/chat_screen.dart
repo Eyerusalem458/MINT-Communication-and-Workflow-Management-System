@@ -65,6 +65,33 @@ String _directPhotoUrl(ConversationModel conv, String myId) {
   return '';
 }
 
+/// Parses a call-record JSON string into a readable label.
+/// Returns null if the string is not a call record.
+String? _parseCallRecord(String msg) {
+  if (!msg.contains('"__callRecord":true')) return null;
+  try {
+    final typeMatch = RegExp(r'"callType"\s*:\s*"(\w+)"').firstMatch(msg);
+    final statusMatch = RegExp(r'"status"\s*:\s*"(\w+)"').firstMatch(msg);
+    final callType = typeMatch?.group(1) ?? 'voice';
+    final status = statusMatch?.group(1) ?? '';
+
+    final typeLabel = callType == 'video' ? '📹 Video call' : '📞 Voice call';
+
+    switch (status) {
+      case 'missed':
+        return '$typeLabel (Missed)';
+      case 'declined':
+        return '$typeLabel (Declined)';
+      case 'ended':
+        return '$typeLabel (Ended)';
+      default:
+        return typeLabel;
+    }
+  } catch (_) {
+    return null;
+  }
+}
+
 // ─── Chat Screen ───────────────────────────────────────────────────────────────
 class ChatScreen extends StatefulWidget {
   final GlobalKey<ScaffoldState> scaffoldKey;
@@ -344,6 +371,12 @@ class _ChatScreenState extends State<ChatScreen>
                     // Resolve the photo URL for direct chats
                     final photoUrl = _directPhotoUrl(conv, myId);
 
+                    // ── Resolve last-message display text ──────────────────
+                    final rawLast = conv.lastMessage;
+                    final lastMessageText = rawLast.isNotEmpty
+                        ? (_parseCallRecord(rawLast) ?? rawLast)
+                        : 'No messages yet';
+
                     return InkWell(
                       onTap: () async {
                         await context
@@ -389,9 +422,7 @@ class _ChatScreenState extends State<ChatScreen>
                                   ),
                                   const SizedBox(height: 3),
                                   Text(
-                                    conv.lastMessage.isNotEmpty
-                                        ? conv.lastMessage
-                                        : 'No messages yet',
+                                    lastMessageText,
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: isDark
