@@ -9,6 +9,8 @@
   position: relative;
   overflow: hidden;
 }
+
+/* diagonal light-teal blob — same shape as before but tinted */
 .login-page::before {
   content: "";
   position: absolute;
@@ -16,6 +18,7 @@
   left: -20%;
   width: 140%;
   height: 140%;
+  background: rgba(255, 255, 255, 0.08);
   /* background: #1a7a8a; */
   transform: rotate(-25deg);
   border-radius: 40% 60% 60% 40% / 30% 40% 60% 70%;
@@ -257,6 +260,59 @@
   font-size: 15px;
   font-weight: 700;
   display: block;
+}
+
+.stat-lbl {
+  font-size: 10px;
+  display: block;
+  margin-top: 1px;
+}
+
+.slide-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.slide-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition:
+    width 0.3s ease,
+    background 0.3s ease;
+}
+
+.slide-dot.active {
+  width: 18px;
+  border-radius: 3px;
+  background: #1d61c1;
+}
+
+/* Progress bar — React key restarts animation each slide */
+.slide-progress {
+  height: 2px;
+  background: #1d61c1;
+  opacity: 0.4;
+  margin-top: 10px;
+  border-radius: 1px;
+  animation: progressBar 3.5s linear forwards;
+}
+
+@keyframes progressBar {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
 }
 
 .stat-lbl {
