@@ -3106,4 +3106,5 @@ String _userPhotoUrl(Map<dynamic, dynamic>? user) {
     if (v != null && v.toString().trim().isNotEmpty) return v.toString().trim();
   }
   return '';
+  
 }
