@@ -32,17 +32,24 @@ ensureUploadDirs();
 const app = express();
 const server = http.createServer(app);
 
+// ── CORS helper — allows localhost, local network IPs, and ngrok ─────────────
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true; // mobile apps / curl / Postman have no origin
+  if (origin.startsWith("http://localhost")) return true;
+  if (origin.startsWith("http://127.0.0.1")) return true;
+  if (origin.startsWith("http://192.168.")) return true; // local network
+  if (origin.startsWith("http://10.")) return true; // local network
+  if (origin.startsWith("http://172.")) return true; // local network
+  if (origin.includes("ngrok")) return true; // ngrok tunnels
+  if (origin.includes("ngrok-free.app")) return true; // ngrok free tier
+  return false;
+};
+
 // ── Socket.IO setup ──────────────────────────────────────────────────────────
 const io = new Server(server, {
   cors: {
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      if (
-        origin.startsWith("http://localhost") ||
-        origin.startsWith("http://127.0.0.1")
-      ) {
-        return callback(null, true);
-      }
+      if (isAllowedOrigin(origin)) return callback(null, true);
       return callback(new Error("Not allowed by CORS"));
     },
     methods: ["GET", "POST"],
@@ -81,26 +88,35 @@ io.on("connection", (socket) => {
   });
 
   // ── Call signaling ─────────────────────────────────────────────────────────
-  socket.on("start_call", ({ conversationId, callType, offer, from, callerName }) => {
-    socket.to(`conversation_${conversationId}`).emit("incoming_call", {
-      conversationId,
-      callType,
-      offer,
-      from,
-      callerName,
-    });
-  });
+  socket.on(
+    "start_call",
+    ({ conversationId, callType, offer, from, callerName }) => {
+      socket.to(`conversation_${conversationId}`).emit("incoming_call", {
+        conversationId,
+        callType,
+        offer,
+        from,
+        callerName,
+      });
+    },
+  );
 
   socket.on("answer_call", ({ conversationId, answer }) => {
-    socket.to(`conversation_${conversationId}`).emit("call_answered", { answer });
+    socket
+      .to(`conversation_${conversationId}`)
+      .emit("call_answered", { answer });
   });
 
   socket.on("ice_candidate", ({ conversationId, candidate }) => {
-    socket.to(`conversation_${conversationId}`).emit("ice_candidate", { candidate });
+    socket
+      .to(`conversation_${conversationId}`)
+      .emit("ice_candidate", { candidate });
   });
 
   socket.on("end_call", ({ conversationId, leavingUserId }) => {
-    socket.to(`conversation_${conversationId}`).emit("peer_left", { leavingUserId });
+    socket
+      .to(`conversation_${conversationId}`)
+      .emit("peer_left", { leavingUserId });
   });
 
   socket.on("decline_call", ({ conversationId }) => {
@@ -116,38 +132,26 @@ io.on("connection", (socket) => {
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      if (
-        origin.startsWith("http://localhost") ||
-        origin.startsWith("http://127.0.0.1")
-      ) {
-        return callback(null, true);
-      }
+      if (isAllowedOrigin(origin)) return callback(null, true);
       return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
-  })
+  }),
 );
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ── Static file serving ──────────────────────────────────────────────────────
-// FIX: serve uploaded files with proper caching.
-// path.join(__dirname, "uploads") is absolute — always resolves correctly
-// regardless of where `node` is run from.
-// This serves:  GET /uploads/audio/xxx.webm
-//               GET /uploads/media/xxx.jpg
-//               GET /uploads/files/xxx.pdf
 app.use(
   "/uploads",
   express.static(path.join(__dirname, "uploads"), {
-    maxAge: "1d",       // browser can cache files for 1 day
-    fallthrough: true,  // pass to next handler if file not found
-  })
+    maxAge: "1d",
+    fallthrough: true,
+  }),
 );
 
-// Clean JSON 404 for missing upload files (instead of ugly HTML)
+// Clean JSON 404 for missing upload files
 app.use("/uploads", (req, res) => {
   res.status(404).json({
     message: `File not found: ${req.path}`,

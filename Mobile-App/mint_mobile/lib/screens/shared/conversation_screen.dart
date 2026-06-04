@@ -1,8 +1,7 @@
 import 'dart:async';
 // ignore: avoid_web_libraries_in_flutter
-import 'dart:js_interop';
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html;
+import 'package:mint_mobile/utils/web_audio_helper_stub.dart'
+    if (dart.library.html) 'package:mint_mobile/utils/web_audio_helper.dart';
 import 'dart:io' show File, Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -364,7 +363,8 @@ class _ConversationScreenState extends State<ConversationScreen>
     status = await permission.request();
     if (status.isGranted) return true;
     if (status.isPermanentlyDenied && mounted) {
-      _showSnack(context, '$label permission is disabled. Enable it in Settings.',
+      _showSnack(
+          context, '$label permission is disabled. Enable it in Settings.',
           isError: true);
       openAppSettings();
     }
@@ -385,7 +385,8 @@ class _ConversationScreenState extends State<ConversationScreen>
           withData: kIsWeb,
           withReadStream: false);
     } catch (e) {
-      if (mounted) _showSnack(context, 'Could not open file picker: $e', isError: true);
+      if (mounted)
+        _showSnack(context, 'Could not open file picker: $e', isError: true);
       return;
     }
     if (result == null || result.files.isEmpty) return;
@@ -412,46 +413,53 @@ class _ConversationScreenState extends State<ConversationScreen>
     if (kIsWeb) {
       FilePickerResult? result;
       try {
-        result = await FilePicker.platform
-            .pickFiles(type: FileType.image, allowMultiple: false, withData: true);
+        result = await FilePicker.platform.pickFiles(
+            type: FileType.image, allowMultiple: false, withData: true);
       } catch (e) {
-        if (mounted) _showSnack(context, 'Could not open picker: $e', isError: true);
+        if (mounted)
+          _showSnack(context, 'Could not open picker: $e', isError: true);
         return;
       }
       if (result == null || result.files.isEmpty) return;
       final bytes = result.files.first.bytes;
       if (bytes == null) return;
-      await _uploadBytes(bytes, 'photo_${DateTime.now().millisecondsSinceEpoch}.jpg');
+      await _uploadBytes(
+          bytes, 'photo_${DateTime.now().millisecondsSinceEpoch}.jpg');
       return;
     }
     if (!await _requestPermission(Permission.camera, 'Camera')) return;
     XFile? photo;
     try {
-      photo = await ImagePicker().pickImage(source: ImageSource.camera, imageQuality: 85);
+      photo = await ImagePicker()
+          .pickImage(source: ImageSource.camera, imageQuality: 85);
     } catch (e) {
       if (mounted) _showSnack(context, 'Camera error: $e', isError: true);
       return;
     }
     if (photo == null) return;
-    await _uploadFile(photo.path, 'photo_${DateTime.now().millisecondsSinceEpoch}.jpg');
+    await _uploadFile(
+        photo.path, 'photo_${DateTime.now().millisecondsSinceEpoch}.jpg');
   }
 
   Future<void> _pickImageAndSend() async {
     setState(() => _showAttach = false);
     if (!kIsWeb) {
       if (Platform.isAndroid) {
-        bool granted = await _requestPermission(Permission.photos, 'Photo library');
-        if (!granted) granted = await _requestPermission(Permission.storage, 'Storage');
+        bool granted =
+            await _requestPermission(Permission.photos, 'Photo library');
+        if (!granted)
+          granted = await _requestPermission(Permission.storage, 'Storage');
         if (!granted) return;
       } else if (Platform.isIOS) {
-        if (!await _requestPermission(Permission.photos, 'Photo library')) return;
+        if (!await _requestPermission(Permission.photos, 'Photo library'))
+          return;
       }
     }
     if (kIsWeb) {
       FilePickerResult? result;
       try {
-        result = await FilePicker.platform
-            .pickFiles(type: FileType.image, allowMultiple: false, withData: true);
+        result = await FilePicker.platform.pickFiles(
+            type: FileType.image, allowMultiple: false, withData: true);
       } catch (e) {
         if (mounted) _showSnack(context, 'Gallery error: $e', isError: true);
         return;
@@ -466,20 +474,23 @@ class _ConversationScreenState extends State<ConversationScreen>
     }
     XFile? photo;
     try {
-      photo = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
+      photo = await ImagePicker()
+          .pickImage(source: ImageSource.gallery, imageQuality: 85);
     } catch (e) {
       if (mounted) _showSnack(context, 'Gallery error: $e', isError: true);
       return;
     }
     if (photo == null) return;
-    await _uploadFile(photo.path, 'image_${DateTime.now().millisecondsSinceEpoch}.jpg');
+    await _uploadFile(
+        photo.path, 'image_${DateTime.now().millisecondsSinceEpoch}.jpg');
   }
 
   Future<void> _pickAndSendAudio() async {
     setState(() => _showAttach = false);
     if (!kIsWeb && Platform.isAndroid) {
       bool granted = await _requestPermission(Permission.audio, 'Audio');
-      if (!granted) granted = await _requestPermission(Permission.storage, 'Storage');
+      if (!granted)
+        granted = await _requestPermission(Permission.storage, 'Storage');
       if (!granted) return;
     }
     FilePickerResult? result;
@@ -487,7 +498,8 @@ class _ConversationScreenState extends State<ConversationScreen>
       result = await FilePicker.platform.pickFiles(
           type: FileType.audio, allowMultiple: false, withData: kIsWeb);
     } catch (e) {
-      if (mounted) _showSnack(context, 'Could not open audio picker: $e', isError: true);
+      if (mounted)
+        _showSnack(context, 'Could not open audio picker: $e', isError: true);
       return;
     }
     if (result == null || result.files.isEmpty) return;
@@ -508,7 +520,8 @@ class _ConversationScreenState extends State<ConversationScreen>
     if (_isRecording) return;
     if (!await _requestPermission(Permission.microphone, 'Microphone')) return;
     if (!await _recorder.hasPermission()) {
-      if (mounted) _showSnack(context, 'Microphone permission denied.', isError: true);
+      if (mounted)
+        _showSnack(context, 'Microphone permission denied.', isError: true);
       return;
     }
     try {
@@ -529,10 +542,12 @@ class _ConversationScreenState extends State<ConversationScreen>
         _recordDuration = Duration.zero;
       });
       _recordTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-        if (mounted) setState(() => _recordDuration = Duration(seconds: timer.tick));
+        if (mounted)
+          setState(() => _recordDuration = Duration(seconds: timer.tick));
       });
     } catch (e) {
-      if (mounted) _showSnack(context, 'Could not start recording: $e', isError: true);
+      if (mounted)
+        _showSnack(context, 'Could not start recording: $e', isError: true);
     }
   }
 
@@ -549,24 +564,24 @@ class _ConversationScreenState extends State<ConversationScreen>
     try {
       stoppedPath = await _recorder.stop();
     } catch (e) {
-      if (mounted) _showSnack(context, 'Failed to stop recording: $e', isError: true);
+      if (mounted)
+        _showSnack(context, 'Failed to stop recording: $e', isError: true);
       _recordedFilePath = null;
       return;
     }
 
     final finalPath = stoppedPath ?? recordedPath;
     if (finalPath == null) {
-      if (mounted) _showSnack(context, 'Recording path is null.', isError: true);
+      if (mounted)
+        _showSnack(context, 'Recording path is null.', isError: true);
       return;
     }
 
     if (kIsWeb) {
       try {
-        final jsResponse = await html.window.fetch(finalPath);
-        final jsBlob = await jsResponse.blob();
-        final jsArrayBuffer = await jsBlob.arrayBuffer();
-        final bytes = Uint8List.view(jsArrayBuffer.toDart.buffer);
-        final fileName = 'voicenote_${DateTime.now().millisecondsSinceEpoch}.webm';
+        final bytes = await fetchBlobAsBytes(finalPath);
+        final fileName =
+            'voicenote_${DateTime.now().millisecondsSinceEpoch}.webm';
         await _uploadBytes(bytes, fileName);
       } catch (e) {
         if (mounted) {
@@ -576,7 +591,8 @@ class _ConversationScreenState extends State<ConversationScreen>
     } else {
       final file = File(finalPath);
       if (!await file.exists()) {
-        if (mounted) _showSnack(context, 'Recording failed to save.', isError: true);
+        if (mounted)
+          _showSnack(context, 'Recording failed to save.', isError: true);
         _recordedFilePath = null;
         return;
       }
@@ -693,7 +709,8 @@ class _ConversationScreenState extends State<ConversationScreen>
       await OpenFilex.open(savePath);
     } catch (e) {
       setState(() => _downloadProgress.remove(msg.id));
-      if (mounted) _showSnack(context, 'Could not open file: $e', isError: true);
+      if (mounted)
+        _showSnack(context, 'Could not open file: $e', isError: true);
     }
   }
 
@@ -717,18 +734,21 @@ class _ConversationScreenState extends State<ConversationScreen>
       return;
     }
     try {
-      if (!await _requestPermission(Permission.microphone, 'Microphone')) return;
-      if (video && !await _requestPermission(Permission.camera, 'Camera')) return;
+      if (!await _requestPermission(Permission.microphone, 'Microphone'))
+        return;
+      if (video && !await _requestPermission(Permission.camera, 'Camera'))
+        return;
 
       final engine = createAgoraRtcEngine();
       await engine.initialize(RtcEngineContext(appId: _agoraAppId));
 
       engine.registerEventHandler(RtcEngineEventHandler(
         onUserJoined: (conn, uid, elapsed) {
-          if (mounted) setState(() {
-            _remoteUid = uid;
-            _remoteJoined = true;
-          });
+          if (mounted)
+            setState(() {
+              _remoteUid = uid;
+              _remoteJoined = true;
+            });
         },
         onUserOffline: (conn, uid, reason) {
           if (mounted) setState(() => _remoteUid = null);
@@ -787,7 +807,8 @@ class _ConversationScreenState extends State<ConversationScreen>
   Future<void> _endCall() async {
     if (!_inCall) return;
     final started = _callStartTime;
-    final duration = started != null ? DateTime.now().difference(started) : null;
+    final duration =
+        started != null ? DateTime.now().difference(started) : null;
     final durText = duration != null ? _formatDuration(duration) : null;
     final summary = _remoteJoined
         ? (_callIsVideo
@@ -929,9 +950,18 @@ class _ConversationScreenState extends State<ConversationScreen>
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
-        if (_showEmoji) { setState(() => _showEmoji = false); return; }
-        if (_showAttach) { setState(() => _showAttach = false); return; }
-        if (_searchMode) { _toggleSearch(); return; }
+        if (_showEmoji) {
+          setState(() => _showEmoji = false);
+          return;
+        }
+        if (_showAttach) {
+          setState(() => _showAttach = false);
+          return;
+        }
+        if (_searchMode) {
+          _toggleSearch();
+          return;
+        }
         Navigator.of(context).pop();
       },
       child: Scaffold(
@@ -942,7 +972,8 @@ class _ConversationScreenState extends State<ConversationScreen>
             if (_uploadingFile)
               Container(
                 color: AppColors.primary.withValues(alpha: 0.9),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: const Row(children: [
                   SizedBox(
                       width: 16,
@@ -954,7 +985,6 @@ class _ConversationScreenState extends State<ConversationScreen>
                       style: TextStyle(color: Colors.white, fontSize: 13)),
                 ]),
               ),
-
             if (_searchMode)
               Container(
                 color: _appBarBg,
@@ -973,18 +1003,19 @@ class _ConversationScreenState extends State<ConversationScreen>
                     decoration: const InputDecoration(
                       hintText: 'Search messages...',
                       hintStyle: TextStyle(color: Colors.black45),
-                      prefixIcon: Icon(Icons.search, color: Colors.black45, size: 18),
+                      prefixIcon:
+                          Icon(Icons.search, color: Colors.black45, size: 18),
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.symmetric(vertical: 10),
                     ),
                   ),
                 ),
               ),
-
             Expanded(
               child: chat.loadingMessages
                   ? const Center(
-                      child: CircularProgressIndicator(color: AppColors.primary))
+                      child:
+                          CircularProgressIndicator(color: AppColors.primary))
                   : messages.isEmpty
                       ? Center(
                           child: Text(
@@ -1037,14 +1068,12 @@ class _ConversationScreenState extends State<ConversationScreen>
                                 playPosition: _playPosition,
                                 playDuration: _playDuration,
                                 probedDuration: probedDur,
-                                downloadProgress:
-                                    _downloadProgress[msg.id],
+                                downloadProgress: _downloadProgress[msg.id],
                                 onLongPress: (m) =>
                                     _showMsgMenu(context, m, myId),
                                 onMenuTap: (m) =>
                                     _showMsgMenu(context, m, myId),
-                                onReply: (m) =>
-                                    setState(() => _replyTo = m),
+                                onReply: (m) => setState(() => _replyTo = m),
                                 onPlayVoice: _togglePlayVoiceNote,
                                 onOpenFile: _downloadAndOpenFile,
                                 onTapImage: (url) =>
@@ -1054,7 +1083,6 @@ class _ConversationScreenState extends State<ConversationScreen>
                           ),
                         ),
             ),
-
             if (_showAttach)
               Container(
                 color: _inputBg,
@@ -1086,7 +1114,6 @@ class _ConversationScreenState extends State<ConversationScreen>
                   ],
                 ),
               ),
-
             if (_replyTo != null)
               Container(
                 padding:
@@ -1111,9 +1138,8 @@ class _ConversationScreenState extends State<ConversationScreen>
                             : '📎 file',
                         style: TextStyle(
                             fontSize: 13,
-                            color: _isDark
-                                ? Colors.white54
-                                : AppColors.textMuted),
+                            color:
+                                _isDark ? Colors.white54 : AppColors.textMuted),
                       ),
                     ),
                     IconButton(
@@ -1124,9 +1150,7 @@ class _ConversationScreenState extends State<ConversationScreen>
                   ],
                 ),
               ),
-
             _buildInputBar(),
-
             if (_showEmoji)
               SizedBox(
                 height: 280,
@@ -1146,8 +1170,8 @@ class _ConversationScreenState extends State<ConversationScreen>
                   },
                   config: Config(
                     height: 280,
-                    emojiViewConfig: EmojiViewConfig(
-                        backgroundColor: _inputBg, columns: 8),
+                    emojiViewConfig:
+                        EmojiViewConfig(backgroundColor: _inputBg, columns: 8),
                     categoryViewConfig: CategoryViewConfig(
                       backgroundColor: _inputBg,
                       indicatorColor: AppColors.primary,
@@ -1360,9 +1384,8 @@ class _ConversationScreenState extends State<ConversationScreen>
                       decoration: InputDecoration(
                         hintText: 'Type a message...',
                         hintStyle: TextStyle(
-                            color: _isDark
-                                ? Colors.white30
-                                : AppColors.textLight,
+                            color:
+                                _isDark ? Colors.white30 : AppColors.textLight,
                             fontSize: 14),
                         border: InputBorder.none,
                         isDense: true,
@@ -1434,8 +1457,8 @@ class _ConversationScreenState extends State<ConversationScreen>
               controller: VideoViewController.remote(
                 rtcEngine: _agoraEngine!,
                 canvas: VideoCanvas(uid: _remoteUid),
-                connection: RtcConnection(
-                    channelId: chat.activeConversation?.id ?? ''),
+                connection:
+                    RtcConnection(channelId: chat.activeConversation?.id ?? ''),
               ),
             ),
           ),
@@ -1466,10 +1489,9 @@ class _ConversationScreenState extends State<ConversationScreen>
                       child: Center(
                         child: Text(
                           chat.activeConversation
-                                  ?.getInitial(context
-                                      .read<AuthProvider>()
-                                      .user
-                                      ?.id ?? '')
+                                  ?.getInitial(
+                                      context.read<AuthProvider>().user?.id ??
+                                          '')
                                   .toUpperCase() ??
                               '?',
                           style: const TextStyle(
@@ -1528,7 +1550,9 @@ class _ConversationScreenState extends State<ConversationScreen>
             ),
           ),
         Positioned(
-          top: 0, left: 0, right: 0,
+          top: 0,
+          left: 0,
+          right: 0,
           child: SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -1553,11 +1577,12 @@ class _ConversationScreenState extends State<ConversationScreen>
           ),
         ),
         Positioned(
-          bottom: 0, left: 0, right: 0,
+          bottom: 0,
+          left: 0,
+          right: 0,
           child: SafeArea(
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 32, vertical: 28),
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 28),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.bottomCenter,
@@ -1738,14 +1763,13 @@ class _ConversationScreenState extends State<ConversationScreen>
           controller: editCtrl,
           autofocus: true,
           maxLines: null,
-          style: TextStyle(
-              color: _isDark ? Colors.white : AppColors.textPrimary),
+          style:
+              TextStyle(color: _isDark ? Colors.white : AppColors.textPrimary),
           decoration: InputDecoration(
             hintText: 'Edit your message…',
             hintStyle: TextStyle(
                 color: _isDark ? Colors.white38 : AppColors.textLight),
-            border:
-                OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: AppColors.primary),
@@ -1758,8 +1782,7 @@ class _ConversationScreenState extends State<ConversationScreen>
               child: const Text('Cancel',
                   style: TextStyle(color: AppColors.textMuted))),
           ElevatedButton(
-            style:
-                ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
             onPressed: () async {
               final newText = editCtrl.text.trim();
               if (newText.isEmpty || newText == msg.text) {
@@ -1767,9 +1790,7 @@ class _ConversationScreenState extends State<ConversationScreen>
                 return;
               }
               Navigator.pop(ctx);
-              await context
-                  .read<ChatProvider>()
-                  .editMessage(msg.id, newText);
+              await context.read<ChatProvider>().editMessage(msg.id, newText);
             },
             child: const Text('Save', style: TextStyle(color: Colors.white)),
           ),
@@ -1829,7 +1850,8 @@ class _ConversationScreenState extends State<ConversationScreen>
                               for (final p in conv.participants) {
                                 final map = p as Map?;
                                 final pid = map?['_id']?.toString() ??
-                                    map?['id']?.toString() ?? '';
+                                    map?['id']?.toString() ??
+                                    '';
                                 if (pid != myId && pid.isNotEmpty) {
                                   return _userPhotoUrl(map);
                                 }
@@ -1844,8 +1866,9 @@ class _ConversationScreenState extends State<ConversationScreen>
                     ),
                     title: Text(conv.getDisplayName(myId),
                         style: TextStyle(
-                            color:
-                                _isDark ? Colors.white : AppColors.textPrimary)),
+                            color: _isDark
+                                ? Colors.white
+                                : AppColors.textPrimary)),
                     onTap: () async {
                       Navigator.pop(ctx);
                       final currentConv = chat.activeConversation;
@@ -1877,8 +1900,7 @@ class _ConversationScreenState extends State<ConversationScreen>
     if (isDirect) {
       for (final p in conv.participants) {
         final map = p as Map?;
-        final pid =
-            map?['_id']?.toString() ?? map?['id']?.toString() ?? '';
+        final pid = map?['_id']?.toString() ?? map?['id']?.toString() ?? '';
         if (pid != myId && pid.isNotEmpty) {
           otherParticipant = map;
           break;
@@ -1911,8 +1933,8 @@ class _ConversationScreenState extends State<ConversationScreen>
                       final data = snapshot.data!.data;
                       if (data is Map<String, dynamic>) fullUser = data;
                     } else {
-                      fullUser = Map<String, dynamic>.from(
-                          otherParticipant ?? {});
+                      fullUser =
+                          Map<String, dynamic>.from(otherParticipant ?? {});
                     }
                     return _buildInfoSheet(
                         ctrl, conv, myId, isDirect, fullUser);
@@ -1967,8 +1989,7 @@ class _ConversationScreenState extends State<ConversationScreen>
                 style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    color:
-                        _isDark ? Colors.white : AppColors.textPrimary)),
+                    color: _isDark ? Colors.white : AppColors.textPrimary)),
             if (conv.type == 'group')
               Text('${conv.participants.length} members',
                   style: const TextStyle(color: AppColors.textMuted)),
@@ -2086,12 +2107,9 @@ class _ConversationScreenState extends State<ConversationScreen>
               ),
               title: Text(name,
                   style: TextStyle(
-                      color:
-                          _isDark ? Colors.white : AppColors.textPrimary)),
+                      color: _isDark ? Colors.white : AppColors.textPrimary)),
               subtitle: Text(
-                  [role, dept, email]
-                      .where((s) => s.isNotEmpty)
-                      .join(' · '),
+                  [role, dept, email].where((s) => s.isNotEmpty).join(' · '),
                   style: const TextStyle(
                       fontSize: 11, color: AppColors.textMuted)),
               contentPadding: EdgeInsets.zero,
@@ -2104,7 +2122,8 @@ class _ConversationScreenState extends State<ConversationScreen>
 
   String _firstNonEmpty(List<dynamic> values) {
     for (final v in values) {
-      if (v != null && v.toString().trim().isNotEmpty) return v.toString().trim();
+      if (v != null && v.toString().trim().isNotEmpty)
+        return v.toString().trim();
     }
     return 'N/A';
   }
@@ -2130,8 +2149,8 @@ class _MenuTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveColor = color ??
-        (isDark ? Colors.white70 : AppColors.textPrimary);
+    final effectiveColor =
+        color ?? (isDark ? Colors.white70 : AppColors.textPrimary);
     return ListTile(
       dense: true,
       leading: Icon(icon, color: effectiveColor, size: 22),
@@ -2213,8 +2232,9 @@ class _MessageBubble extends StatelessWidget {
         : '';
     final isPlaying = playingMsgId == msg.id;
 
-    final displayDuration =
-        isPlaying && playDuration > Duration.zero ? playDuration : probedDuration;
+    final displayDuration = isPlaying && playDuration > Duration.zero
+        ? playDuration
+        : probedDuration;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
@@ -2243,13 +2263,11 @@ class _MessageBubble extends StatelessWidget {
                   constraints: BoxConstraints(
                       maxWidth: MediaQuery.of(context).size.width * 0.68),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     margin: const EdgeInsets.only(right: 4),
                     decoration: BoxDecoration(
-                      color: isMe
-                          ? AppColors.bubbleOutgoing
-                          : bubbleIncoming,
+                      color: isMe ? AppColors.bubbleOutgoing : bubbleIncoming,
                       borderRadius: BorderRadius.only(
                         topLeft: const Radius.circular(16),
                         topRight: const Radius.circular(16),
@@ -2291,7 +2309,8 @@ class _MessageBubble extends StatelessWidget {
                             child: Text(
                               // ── FIXED: format reply preview too ──
                               msg.replyTo is Map
-                                  ? _formatMessage(msg.replyTo['text']) ?? '📎 file'
+                                  ? _formatMessage(msg.replyTo['text']) ??
+                                      '📎 file'
                                   : '📎',
                               style: TextStyle(
                                   fontSize: 11,
@@ -2400,10 +2419,9 @@ class _MessageBubble extends StatelessWidget {
                       width: 22,
                       height: 22,
                       decoration: BoxDecoration(
-                        color: (isMe
-                                ? AppColors.bubbleOutgoing
-                                : bubbleIncoming)
-                            .withValues(alpha: 0.85),
+                        color:
+                            (isMe ? AppColors.bubbleOutgoing : bubbleIncoming)
+                                .withValues(alpha: 0.85),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -2482,10 +2500,8 @@ class _VoiceNoteBubble extends StatelessWidget {
                         : AppColors.primary.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                      isPlaying ? Icons.pause : Icons.play_arrow,
-                      color: iconColor,
-                      size: 22),
+                  child: Icon(isPlaying ? Icons.pause : Icons.play_arrow,
+                      color: iconColor, size: 22),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -2493,12 +2509,30 @@ class _VoiceNoteBubble extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: List.generate(22, (i) {
                       const heights = [
-                        10.0, 16.0, 8.0, 20.0, 12.0, 18.0, 6.0,
-                        22.0, 14.0, 10.0, 18.0, 8.0, 20.0, 12.0,
-                        16.0, 6.0, 14.0, 20.0, 10.0, 18.0, 8.0, 12.0
+                        10.0,
+                        16.0,
+                        8.0,
+                        20.0,
+                        12.0,
+                        18.0,
+                        6.0,
+                        22.0,
+                        14.0,
+                        10.0,
+                        18.0,
+                        8.0,
+                        20.0,
+                        12.0,
+                        16.0,
+                        6.0,
+                        14.0,
+                        20.0,
+                        10.0,
+                        18.0,
+                        8.0,
+                        12.0
                       ];
-                      final filled =
-                          progress > 0 && (i / 22) <= progress;
+                      final filled = progress > 0 && (i / 22) <= progress;
                       return Container(
                         width: 2.5,
                         height: heights[i % heights.length],
@@ -2570,8 +2604,7 @@ class _ImageBubble extends StatelessWidget {
                 child: Center(
                   child: CircularProgressIndicator(
                     value: prog.expectedTotalBytes != null
-                        ? prog.cumulativeBytesLoaded /
-                            prog.expectedTotalBytes!
+                        ? prog.cumulativeBytesLoaded / prog.expectedTotalBytes!
                         : null,
                     color: AppColors.primary,
                     strokeWidth: 2,
@@ -2598,8 +2631,8 @@ class _ImageBubble extends StatelessWidget {
                 decoration: BoxDecoration(
                     color: Colors.black45,
                     borderRadius: BorderRadius.circular(4)),
-                child: const Icon(Icons.fullscreen,
-                    size: 14, color: Colors.white),
+                child:
+                    const Icon(Icons.fullscreen, size: 14, color: Colors.white),
               ),
             ),
           ],
@@ -2643,8 +2676,7 @@ class _FileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDownloading =
-        downloadProgress != null && downloadProgress! < 1.0;
+    final isDownloading = downloadProgress != null && downloadProgress! < 1.0;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -2658,8 +2690,7 @@ class _FileCard extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                  color: _iconColor,
-                  borderRadius: BorderRadius.circular(8)),
+                  color: _iconColor, borderRadius: BorderRadius.circular(8)),
               child: Center(
                 child: isDownloading
                     ? SizedBox(
@@ -2705,8 +2736,7 @@ class _FileCard extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           Icon(isDownloading ? Icons.downloading : Icons.download,
-              size: 18,
-              color: isMe ? Colors.white70 : AppColors.textMuted),
+              size: 18, color: isMe ? Colors.white70 : AppColors.textMuted),
         ]),
       ),
     );
@@ -2757,8 +2787,8 @@ class _FullScreenImageViewer extends StatelessWidget {
                     decoration: BoxDecoration(
                         color: Colors.black54,
                         borderRadius: BorderRadius.circular(50)),
-                    child: const Icon(Icons.close,
-                        color: Colors.white, size: 22),
+                    child:
+                        const Icon(Icons.close, color: Colors.white, size: 22),
                   ),
                 ),
               ),
@@ -2806,8 +2836,7 @@ class _CallControlBtn extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(label,
-              style:
-                  const TextStyle(color: Colors.white60, fontSize: 11)),
+              style: const TextStyle(color: Colors.white60, fontSize: 11)),
         ],
       ),
     );
@@ -2917,13 +2946,11 @@ class _AttachBtn extends StatelessWidget {
             width: 52,
             height: 52,
             decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.15),
-                shape: BoxShape.circle),
+                color: color.withValues(alpha: 0.15), shape: BoxShape.circle),
             child: Icon(icon, color: color, size: 24)),
         const SizedBox(height: 6),
         Text(label,
-            style: const TextStyle(
-                fontSize: 11, color: AppColors.textMuted)),
+            style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
       ]),
     );
   }
@@ -2949,14 +2976,12 @@ class _InfoTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF252837) : AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-            color: isDark ? Colors.white10 : AppColors.border),
+        border: Border.all(color: isDark ? Colors.white10 : AppColors.border),
       ),
       child: Row(
         children: [
           Icon(icon,
-              size: 20,
-              color: isDark ? Colors.white38 : AppColors.textMuted),
+              size: 20, color: isDark ? Colors.white38 : AppColors.textMuted),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -2965,18 +2990,14 @@ class _InfoTile extends StatelessWidget {
                 Text(label,
                     style: TextStyle(
                         fontSize: 11,
-                        color: isDark
-                            ? Colors.white38
-                            : AppColors.textLight,
+                        color: isDark ? Colors.white38 : AppColors.textLight,
                         letterSpacing: 0.3)),
                 const SizedBox(height: 2),
                 Text(value,
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: isDark
-                            ? Colors.white
-                            : AppColors.textPrimary)),
+                        color: isDark ? Colors.white : AppColors.textPrimary)),
               ],
             ),
           ),
@@ -3015,8 +3036,7 @@ class _InfoActionBtn extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(label,
-            style: const TextStyle(
-                fontSize: 11, color: AppColors.textMuted)),
+            style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
       ]),
     );
   }
@@ -3098,13 +3118,19 @@ class _ProfileAvatar extends StatelessWidget {
 String _userPhotoUrl(Map<dynamic, dynamic>? user) {
   if (user == null) return '';
   for (final key in [
-    'profilePhoto', 'profilePicture', 'profileImage',
-    'avatar', 'photo', 'picture', 'image', 'avatarUrl',
-    'profilePhotoUrl', 'photoUrl',
+    'profilePhoto',
+    'profilePicture',
+    'profileImage',
+    'avatar',
+    'photo',
+    'picture',
+    'image',
+    'avatarUrl',
+    'profilePhotoUrl',
+    'photoUrl',
   ]) {
     final v = user[key];
     if (v != null && v.toString().trim().isNotEmpty) return v.toString().trim();
   }
   return '';
-  
 }

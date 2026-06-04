@@ -1,10 +1,24 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 // ─── BASE URL ─────────────────────────────────────────────────────────────────
-// Change this to your server IP when testing on a real device
-const String kBaseUrl = 'http://localhost:5000/api';
-const String kSocketUrl = 'http://localhost:5000';
-const String kMediaBaseUrl = 'http://localhost:5000';
+// Automatically selects the correct server address for each platform:
+//   • Android emulator  → 10.0.2.2  (loopback alias to host PC)
+//   • Web (Chrome/Edge) → localhost  (same machine)
+//   • Physical device   → YOUR_SERVER_IP (change this to your PC's local IP)
+//
+// HOW TO FIND YOUR PC's LOCAL IP:
+//   Windows: run "ipconfig" in terminal → look for IPv4 Address under WiFi
+//   macOS/Linux: run "ifconfig" → look for inet under en0
+//
+// ⚠️  YOUR PHONE AND PC MUST BE ON THE SAME WiFi NETWORK.
+
+const String _serverIp = 'ruby-landfill-cushy.ngrok-free.dev';
+const int _serverPort = 443;
+
+String get kBaseUrl => 'https://$_serverIp/api';
+String get kSocketUrl => 'https://$_serverIp';
+String get kMediaBaseUrl => 'https://$_serverIp';
 
 // ─── ROLES ────────────────────────────────────────────────────────────────────
 const String kRoleStaff = 'staff';
